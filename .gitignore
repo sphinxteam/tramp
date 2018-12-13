@@ -1,0 +1,15 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Jupyter Notebook
+.ipynb_checkpoints
+wip_notebooks
+
+*.pdf
+
+# MacOS
+.DS_Store
+
+# Logs
+*.log
