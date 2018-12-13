@@ -2,7 +2,7 @@
 
 Implement gaussian expectation propagation (aka VAMP)
 for any tree-like probabilistic graphical models.
-If this package ever achieves a certain level of awesomesness it
+If this package ever achieves a certain level of awesomeness it
 will be renamed supertramp.
 
 ## FIXME
