@@ -33,7 +33,7 @@ class MultiLayerModel(FactorPGM):
         return f"MultiLayer({inner})"
 
     def _build_factor_dag(self, layers):
-        dag = nx.DiGraph()
-        dag.add_nodes_from(layers)
-        dag.add_edges_from(zip(layers[:-1], layers[1:]))
-        return dag
+        factor_dag = layers[0]
+        for layer in layers[1:]:
+            factor_dag = factor_dag @ layer
+        return factor_dag

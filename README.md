@@ -23,6 +23,12 @@ will be renamed supertramp.
   - [x] callbacks
   - [x] initial conditions
   - [x] a general MessagePassing class
+- DAG
+  - [ ] a general DAG class that implement forward pass
+  - [ ] tau in MessagePassing
+  - [ ] sample in DAGModel
+  - [ ] compute x,y in Layout
+  - [ ] propagate shape and id in compute_augmented_dag
 - explainer
   - [ ] animation of message passing (store daft every step)
   - [ ] evolution of beliefs / state evo
@@ -31,7 +37,7 @@ will be renamed supertramp.
   - [x] generative / inference mode
   - [x] mutlilayer
   - [x] glm
-  - [ ] model algebra (compose/concat/duplicate)
+  - [x] model algebra (compose/concat/duplicate)
   - [ ] committee
 - priors
   - [ ] TV prior (using MAP)

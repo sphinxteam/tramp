@@ -145,6 +145,14 @@ class FinalVariable(Variable):
 
 class Factor(ReprMixin):
 
+    def __add__(self, other):
+        from .models.factor_algebra import FactorDAG
+        return FactorDAG(self) + other
+
+    def __matmul__(self, other):
+        from .models.factor_algebra import FactorDAG
+        return FactorDAG(self) @ other
+
     def check_message(self, message):
         for source, target, data in message:
             if (target != self):
