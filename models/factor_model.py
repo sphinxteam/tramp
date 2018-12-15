@@ -25,7 +25,7 @@ def compute_augmented_dag(factor_dag):
     return augmented_dag
 
 
-class FactorPGM(DAGModel):
+class FactorModel(DAGModel):
     def __init__(self, factor_dag):
         if not isinstance(factor_dag, FactorDAG):
             raise TypeError(f"factor_dag {factor_dag} is not a FactorDAG")

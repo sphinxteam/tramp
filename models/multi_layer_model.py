@@ -1,5 +1,5 @@
 from ..base import Prior, Channel, Likelihood
-from .factor_pgm import FactorPGM
+from .factor_model import FactorModel
 import networkx as nx
 
 
@@ -16,13 +16,13 @@ def check_layers(layers):
         raise ValueError("last layer must be a Channel or a Likelihood")
 
 
-class MultiLayerModel(FactorPGM):
+class MultiLayerModel(FactorModel):
     def __init__(self, layers):
         check_layers(layers)
         self.observed = isinstance(layers[-1], Likelihood)
         self.layers = layers
         factor_dag = self._build_factor_dag(layers)
-        FactorPGM.__init__(self, factor_dag)
+        FactorModel.__init__(self, factor_dag)
 
     def __repr__(self):
         pad = "  "
