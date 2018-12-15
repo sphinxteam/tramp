@@ -99,13 +99,14 @@ class MessagePassing():
 
 
 def get_size(x):
-    return np.size(x) if len(np.shape(x))<=1 else np.shape(x)
+    return np.size(x) if len(np.shape(x)) <= 1 else np.shape(x)
 
 
 def info_message(message, keys=["a", "n_iter"]):
 
-    if len(message)==0:
+    if len(message) == 0:
         return "[]"
+
     def info(source, target, data):
         m = f"{source}->{target}" if data["direction"] == "fwd" else f"{target}<-{source}"
         if "a" in keys:
@@ -161,8 +162,71 @@ class ExplainMessagePassing(MessagePassing):
         self.init_message_dag(initializer)
 
         print("FORWARD PASS")
-        print("-"*len("FORWARD PASS"))
+        print("-" * len("FORWARD PASS"))
         self.forward_message()
         print("BACKWARD PASS")
-        print("-"*len("BACKWARD PASS"))
+        print("-" * len("BACKWARD PASS"))
+        self.backward_message()
+
+
+from IPython.display import display_latex
+
+
+def display_latex_message(message, comment):
+    bwd_sources = [
+        source for source, target, data in message
+        if data["direction"] == "fwd"
+    ]
+    fwd_sources = [
+        source for source, target, data in message
+        if data["direction"] == "bwd"
+    ]
+    targets = [
+        target for source, target, data in message
+    ]
+    m = r"$\mathrm{" + comment + r"}\;"
+    for source in set(bwd_sources):
+        m += source.math()[1:-1]
+    if bwd_sources:
+        m += r" \rightarrow "
+    for target in set(targets):
+        m += target.math()[1:-1]
+    if fwd_sources:
+        m += r" \leftarrow "
+    for source in set(fwd_sources):
+        m += source.math()[1:-1]
+    m += "$"
+    display_latex(m, raw=True)
+
+
+class DisplayLatexMessagePassing(MessagePassing):
+    def __init__(self, model, keys=[]):
+        def forward(node, message):
+            display_latex_message(message, "incoming")
+            new_message = node.forward_message(message)
+            display_latex_message(new_message, "outcoming")
+            return new_message
+
+        def backward(node, message):
+            display_latex_message(message, "incoming")
+            new_message = node.backward_message(message)
+            display_latex_message(new_message, "outcoming")
+            return new_message
+
+        def update(variable, message):
+            r, v = variable.posterior_rv(message)
+            return dict(r=r, v=v)
+
+        super().__init__(
+            model, message_keys=["a", "b"],
+            forward=forward, backward=backward, update=update
+        )
+
+    def run(self):
+
+        initializer = self._default_initializer
+        self.init_message_dag(initializer)
+        print("FORWARD PASS")
+        self.forward_message()
+        print("BACKWARD PASS")
         self.backward_message()
