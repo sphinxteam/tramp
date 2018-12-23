@@ -33,5 +33,12 @@ class DuplicateChannel(Factor):
         v = 1. / a
         return [(r, v)]
 
-    def proba_beliefs(self, message):
-        raise NotImplementedError
+    def forward_error(self, message):
+        a = sum(data["a"] for source, target, data in message)
+        v = 1. / a
+        return [v, v]
+
+    def backward_error(self, message):
+        a = sum(data["a"] for source, target, data in message)
+        v = 1. / a
+        return [v]

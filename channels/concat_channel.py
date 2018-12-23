@@ -44,6 +44,16 @@ class ConcatChannel(Factor):
         assert bx.shape[self.axis]==self.N
         return az1, bz1, az2, bz2, ax, bx
 
+    def _parse_message_a(self, message):
+        # for x=[z1, z2]
+        fwd_message = filter_message(message, "fwd")
+        bwd_message = filter_message(message, "bwd")
+        assert len(fwd_message) == 2 and len(bwd_message) == 1
+        _, _, z1data = fwd_message[0] # prev variable z1 send fwd message
+        _, _, z2data = fwd_message[1] # prev variable z2 send fwd message
+        _, _, xdata = bwd_message[0]  # next variable x  send bwd message
+        return z1data["a"], z2data["a"], xdata["a"]
+
     def forward_posterior(self, message):
         # estimate x from x = [z1, z2]
         [(r1, v1), (r2, v2)] = self.backward_posterior(message)
@@ -62,5 +72,13 @@ class ConcatChannel(Factor):
         v2 = 1 / (az2 + ax)
         return [(r1, v1), (r2, v2)]
 
-    def proba_beliefs(self, message):
-        raise NotImplementedError
+    def forward_error(self, message):
+        [v1, v2] = self.backward_error(message)
+        vx = (self.N1 * v1 + self.N2 * v2) / self.N
+        return [vx]
+
+    def backward_error(self, message):
+        az1, az2, ax = self._parse_message_a(message)
+        v1 = 1 / (az1 + ax)
+        v2 = 1 / (az2 + ax)
+        return [v1, v2]
