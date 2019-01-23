@@ -1,43 +1,63 @@
 import unittest
 from tramp.channels import AbsChannel, SngChannel
 import numpy as np
-from scipy.integrate import quad, dblquad
-import logging
 
 
-def explicit_integral(az, bz, ax, bx, f):
+def empirical_second_moment(mean, sigma, channel):
     """
-    Compute rx, vx, rz, vz for channel x = f(z) by explicit integration
-    over the partition function
+    Estimate second_moment by sampling.
     """
-    def integrand(z):
-        x = f(z)
+    noise = np.random.standard_normal(size=1000 * 1000)
+    Z = mean + sigma * noise
+    tau_Z = (Z**2).mean()
+    X = channel.sample(Z)
+    tau_X = (X**2).mean()
+    return tau_Z, tau_X
+
+def explicit_integral(ax, bx, prior):
+    """
+    Compute rx, vx for prior p(x) by integration.
+    """
+    def belief(x):
+        L = -0.5 * ax * (x**2) + bx * x
+        return np.exp(L)
+    def x_belief(x):
+        return x*belief(x)
+    def x2_belief(x):
+        return (x**2)*belief(x)
+
+    Z = prior.measure(belief)
+    rx = prior.measure(x_belief) / Z
+    x2 = prior.measure(x2_belief) / Z
+    vx = x2 - rx**2
+    return rx, vx
+
+
+def explicit_integral(az, bz, ax, bx, channel):
+    """
+    Compute rx, vx, rz, vz for p(x|z) by integration
+    """
+    def belief(z, x):
         L = -0.5 * ax * (x**2) + bx * x - 0.5 * az * (z**2) + bz * z
         return np.exp(L)
+    def z_belief(z, x):
+        return z * belief(z, x)
+    def z2_belief(z, x):
+        return (z**2) * belief(z, x)
+    def x_belief(z, x):
+        return x * belief(z, x)
+    def x2_belief(z, x):
+        return (x**2) * belief(z, x)
 
-    def z_integrand(z):
-        return z * integrand(z)
+    zmin = bz / az - 10 / np.sqrt(az)
+    zmax = bz / az + 10 / np.sqrt(az)
 
-    def z2_integrand(z):
-        return (z**2) * integrand(z)
-
-    def x_integrand(z):
-        return f(z) * integrand(z)
-
-    def x2_integrand(z):
-        return (f(z)**2) * integrand(z)
-
-    zmin = -5
-    zmax = 5
-    Z = quad(integrand, zmin, zmax)[0]
-    lnZ = np.log(Z)
-
-    rx = quad(x_integrand, zmin, zmax)[0] / Z
-    x2 = quad(x2_integrand, zmin, zmax)[0] / Z
+    Z = channel.measure(belief, zmin, zmax)
+    rx = channel.measure(x_belief, zmin, zmax) / Z
+    x2 = channel.measure(x2_belief, zmin, zmax) / Z
     vx = x2 - rx**2
-
-    rz = quad(z_integrand, zmin, zmax)[0] / Z
-    z2 = quad(z2_integrand, zmin, zmax)[0] / Z
+    rz = channel.measure(z_belief, zmin, zmax) / Z
+    z2 = channel.measure(z2_belief, zmin, zmax) / Z
     vz = z2 - rz**2
 
     return rz, vz, rx, vx
@@ -48,81 +68,67 @@ class ChannelsTest(unittest.TestCase):
             dict(mean=-3.2, sigma=1.7),
             dict(mean=0., sigma=2.0),
         ]
-        self.posterior_records = [
+        self.records = [
             dict(az=2.0, bz=2.0, ax=2.0, bx=2.0, tau=1.3),
             dict(az=0.9, bz=1.6, ax=1.5, bx=1.3, tau=2.),
             dict(az=0.9, bz=-1.6, ax=1.5, bx=1.3, tau=2.)
         ]
-        def parse_record_ab(record):
-            return record["az"], record["bz"], record["ax"], record["bx"]
-        def parse_record_ab_tau(record):
-            return record["az"], record["bz"], record["ax"], record["bx"], record["tau"]
-        self.parse_record_ab = parse_record_ab
-        self.parse_record_ab_tau = parse_record_ab_tau
 
     def tearDown(self):
         pass
 
-    def _test_function_second_moment(self, channel):
-        for record in self.second_moment_records:
-            noise = np.random.standard_normal(size=1000 * 1000)
-            Z = record["mean"] + record["sigma"] * noise
-            tau_Z = (Z**2).mean()
-            X = channel.sample(Z)
-            tau_X = (X**2).mean()
+    def _test_function_second_moment(self, channel, records, places=6):
+        for record in records:
+            tau_Z, tau_X = empirical_second_moment(
+                record["mean"], record["sigma"], channel
+            )
             tau_X_hat = channel.second_moment(tau_Z)
             msg = f"record={record}"
-            self.assertAlmostEqual(tau_X_hat, tau_X, places=6, msg=msg)
+            self.assertAlmostEqual(tau_X_hat, tau_X, places=places, msg=msg)
 
-    def _test_function_posterior(self, channel, f):
-        # modify _parse_message_ab accept a record as input
-        channel._parse_message_ab = self.parse_record_ab
-        for record in self.posterior_records:
-            az, bz, ax, bx = self.parse_record_ab(record)
-            rz, vz, rx, vx = explicit_integral(az, bz, ax, bx, f)
-            [(rx_hat, vx_hat)] = channel.forward_posterior(record)
-            [(rz_hat, vz_hat)] = channel.backward_posterior(record)
+    def _test_function_posterior(self, channel, records, places=12):
+        for record in records:
+            az, bz, ax, bx = record["az"], record["bz"], record["ax"], record["bx"]
+            rz, vz, rx, vx = explicit_integral(az, bz, ax, bx, channel)
+            rx_hat, vx_hat = channel.compute_forward_posterior(az, bz, ax, bx)
+            rz_hat, vz_hat = channel.compute_backward_posterior(az, bz, ax, bx)
             msg = f"record={record}"
-            self.assertAlmostEqual(rx, rx_hat, places=1, msg=msg)
-            self.assertAlmostEqual(vx, vx_hat, places=1, msg=msg)
-            self.assertAlmostEqual(rz, rz_hat, places=1, msg=msg)
-            self.assertAlmostEqual(vz, vz_hat, places=1 , msg=msg)
+            self.assertAlmostEqual(rx, rx_hat, places=places, msg=msg)
+            self.assertAlmostEqual(vx, vx_hat, places=places, msg=msg)
+            self.assertAlmostEqual(rz, rz_hat, places=places, msg=msg)
+            self.assertAlmostEqual(vz, vz_hat, places=places, msg=msg)
 
-    def _test_function_proba(self, channel):
-        # modify _parse_message_ab accept a record as input
-        channel._parse_message_ab_tau = self.parse_record_ab_tau
-        for record in self.posterior_records:
-            az, _, ax, _, tau = self.parse_record_ab_tau(record)
-            def proba_beliefs(x, z):
-                _record = dict(bx=x, bz=z, az=az, ax=ax, tau=tau)
-                return channel.proba_beliefs(_record)
-            sum_proba = dblquad(proba_beliefs, -10, 10, -10, 10)[0]
+    def _test_function_proba(self, channel, records, places=12):
+        for record in records:
+            az, ax, tau = record["az"], record["ax"], record["tau"]
+            one = lambda bz, bx: 1
+            sum_proba = channel.beliefs_measure(az, ax, tau, f=one)
             msg = f"record={record}"
-            self.assertAlmostEqual(sum_proba, 1., places=6, msg=msg)
+            self.assertAlmostEqual(sum_proba, 1., places=places, msg=msg)
 
     def test_abs_posterior(self):
         channel = AbsChannel()
-        self._test_function_posterior(channel, np.abs)
+        self._test_function_posterior(channel, self.records, places=6)
 
     def test_sng_posterior(self):
         channel = SngChannel()
-        self._test_function_posterior(channel, np.sign)
+        self._test_function_posterior(channel, self.records, places=6)
 
     def test_abs_second_moment(self):
         channel = AbsChannel()
-        self._test_function_second_moment(channel)
+        self._test_function_second_moment(channel, self.second_moment_records)
 
     def test_sng_second_moment(self):
         channel = SngChannel()
-        self._test_function_second_moment(channel)
+        self._test_function_second_moment(channel, self.second_moment_records)
 
     def test_abs_proba(self):
         channel = AbsChannel()
-        self._test_function_proba(channel)
+        self._test_function_proba(channel, self.records)
 
     def test_sng_proba(self):
         channel = SngChannel()
-        self._test_function_proba(channel)
+        self._test_function_proba(channel, self.records)
 
 if __name__ == "__main__":
     unittest.main()

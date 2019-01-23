@@ -52,3 +52,7 @@ class GaussBernouilliPrior(Prior):
         )
         mu = (1 - self.rho) * mu_0 + self.rho * mu_1
         return mu
+
+    def measure(self, f):
+        g = gaussian_measure(self.mean, self.sigma, f)
+        return (1 - self.rho) * f(0) + self.rho * g

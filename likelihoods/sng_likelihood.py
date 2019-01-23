@@ -3,6 +3,7 @@ from scipy.special import erfcx
 from scipy.stats import norm
 from ..base import Likelihood
 from ..utils.integration import gaussian_measure
+from scipy.integrate import quad
 
 
 def phi_0(x):
@@ -47,3 +48,9 @@ class SngLikelihood(Likelihood):
         mu_pos = gaussian_measure(0, s, f_pos)
         mu_neg = gaussian_measure(0, s, f_neg)
         return mu_pos + mu_neg
+
+    def measure(self, y, f, max = 10):
+        if (y>0):
+            return quad(f, 0, max)[0]
+        else:
+            return quad(f, -max, 0)[0]

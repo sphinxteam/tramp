@@ -36,3 +36,6 @@ class BinaryPrior(Prior):
         mu_neg = gaussian_measure(-ax, np.sqrt(ax), f)
         mu = self.p_pos * mu_pos + self.p_neg * mu_neg
         return mu
+
+    def measure(self, f):
+        return self.p_pos * f(+1) + self.p_neg * f(-1)

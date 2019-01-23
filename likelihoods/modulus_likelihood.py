@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.stats import norm
 from scipy.special import ive
+from scipy.integrate import quad
 from ..base import Likelihood
 from ..utils.integration import gaussian_measure_2d
 
@@ -36,3 +37,8 @@ class ModulusLikelihood(Likelihood):
             return _factor(b) * _factor(y) * ive(0, b * y) * f(b, y)
         mu = gaussian_measure_2d(0, 1, 0, 1, f_scaled)
         return mu
+
+    def measure(self, y, f):
+        def polar_f(theta):
+            return y * f(y * np.exp(theta * 1j))
+        return quad(polar_f, 0, 2*np.pi)[0]

@@ -1,5 +1,6 @@
 import numpy as np
 from ..base import Likelihood
+from ..utils.integration import gaussian_measure
 
 
 class GaussianLikelihood(Likelihood):
@@ -19,6 +20,13 @@ class GaussianLikelihood(Likelihood):
     def math(self):
         return r"$\mathcal{N}$"
 
+    def compute_backward_posterior(self, az, bz, y):
+        a = az + self.a
+        b = bz + (y / self.var)
+        rz = b / a
+        vz = 1 / a
+        return rz, vz
+
     def backward_message(self, message):
         source, target = self._parse_endpoints(message)
         new_data = dict(a=self.a, b=self.b, direction="bwd")
@@ -30,3 +38,6 @@ class GaussianLikelihood(Likelihood):
         new_data = dict(a=self.a, direction="bwd")
         new_message = [(target, source, new_data)]
         return new_message
+
+    def measure(self, y, f):
+        return gaussian_measure(y, self.sigma, f)

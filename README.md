@@ -7,24 +7,29 @@ will be renamed supertramp.
 
 ## FIXME
 
-- [ ] modulus measure not normalized
-- [x] fix integration limits in state evolution
-- [x] handle stat evo likelihood : avg over y ?
-- [ ] numerical instability: zerodivision error, nan
-- [ ] initial conditions in EP and SE
+- [ ] (tests) modulus measure not normalized
+- [ ] (tests) modulus posterior : why numerical integration less precise ?
+- [ ] numerical instability: zerodivision error, nan, overflow
+- [ ] implement AbsChannel.beliefs_measure
 
 ## TODO
 
-- [ ] notebook for each channel / prior / likelihood
-- [ ] mutual info, free energy,  etc...
+- notebooks
+  - [ ] channels
+  - [ ] priors
+  - [ ] likelihoods
+  - [ ] ridge regression
+  - [ ] sparse regression
+  - [ ] perceptron
+  - [ ] probit classification
 - initial conditions in EP and SE:
-  - such that a > 1/tau
+  - [ ] a > 1/tau
 - tests
   - [x] channel posterior
   - [x] proba belief normalized
   - [x] second_moment
   - [x] priors
-  - [ ] likelihoods
+  - [x] likelihoods
 - EP algo
   - [x] message passing
   - [x] callbacks
@@ -43,12 +48,9 @@ will be renamed supertramp.
 - priors
   - [ ] TV prior (using MAP)
 - channels
-  - [ ] proba_beliefs concat channel
-  - [ ] proba_beliefs duplicate channel
   - [ ] modulus
   - [ ] ReLU
   - [ ] pow(x, 2)
-  - [ ] tanh
 - likelihood
   - [ ] modulus
 - nodes

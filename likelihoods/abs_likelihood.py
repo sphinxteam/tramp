@@ -31,3 +31,6 @@ class AbsLikelihood(Likelihood):
             return f(bz, y)
         mu = gaussian_measure_2d(0, 1, 0, 1, f_scaled)
         return mu
+
+    def measure(self, y, f):
+        return f(+y) + f(-y)

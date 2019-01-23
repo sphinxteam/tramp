@@ -1,6 +1,6 @@
 import numpy as np
 from ..base import Prior
-
+from ..utils.integration import gaussian_measure
 
 class GaussianPrior(Prior):
     def __init__(self, size, mean=0, var=1):
@@ -22,6 +22,13 @@ class GaussianPrior(Prior):
     def second_moment(self):
         return self.mean**2 + self.var
 
+    def compute_forward_posterior(self, ax, bx):
+        a = ax + self.a
+        b = bx + self.b
+        rx = b / a
+        vx = 1 / a
+        return rx, vx
+
     def forward_message(self, message):
         source, target = self._parse_endpoints(message)
         new_data = dict(a=self.a, b=self.b, direction="fwd")
@@ -33,3 +40,6 @@ class GaussianPrior(Prior):
         new_data = dict(a=self.a, direction="fwd")
         new_message = [(target, source, new_data)]
         return new_message
+
+    def measure(self, f):
+        return gaussian_measure(self.mean, self.sigma, f)

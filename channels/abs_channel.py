@@ -3,6 +3,7 @@ from scipy.stats import norm
 from scipy.special import erfcx
 from ..base import Channel
 import logging
+from scipy.integrate import quad
 
 
 def phi_0(x):
@@ -83,3 +84,8 @@ class AbsChannel(Channel):
 
     def beliefs_measure(self, az, ax, tau, f):
         raise NotImplementedError
+
+    def measure(self, f, zmin, zmax):
+        def integrand(z):
+            return f(z, np.abs(z))
+        return quad(integrand, zmin, zmax)[0]

@@ -1,7 +1,8 @@
 import numpy as np
 from scipy.stats import norm
 from ..base import Channel
-
+from ..utils.integration import gaussian_measure_2d
+from scipy.integrate import quad
 
 def compute_sng_proba_beliefs(az, bz, ax, bx, tau):
     # p(bz,bx|az,ax,tau) for x=sng(z)
@@ -42,7 +43,7 @@ class SngChannel(Channel):
         vx = np.mean(v)
         return rx, vx
 
-    def compute_backward_posterior(az, bz, ax, bx):
+    def compute_backward_posterior(self, az, bz, ax, bx):
         # estimate z from x = sng(z)
         x = bz / np.sqrt(az)
         p_pos = norm.cdf(+x)
@@ -64,3 +65,8 @@ class SngChannel(Channel):
         mu_pos = gaussian_measure_2d(0, s_eff, +ax, np.sqrt(ax), f_pos)
         mu_neg = gaussian_measure_2d(0, s_eff, -ax, np.sqrt(ax), f_neg)
         return mu_pos + mu_neg
+
+    def measure(self, f, zmin, zmax):
+        def integrand(z):
+            return f(z, np.sign(z))
+        return quad(integrand, zmin, zmax)[0]
