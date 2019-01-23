@@ -46,6 +46,23 @@ class LogProgress(Callback):
                 logging.info(f"variable={data['variable']} v={data['v']:.3f}")
 
 
+class TrackEvolution(Callback):
+    def __init__(self, every=1):
+        self.every = every
+        self.repr_init()
+        self.records = []
+        self.last = None
+
+    def __call__(self, algo,  i, max_iter):
+        if (i == 0):
+            self.records = []
+        if (i % self.every == 0):
+            variables_data = algo.get_variables_data()
+            for data in variables_data:
+                record = dict(id=data["id"], v=data["v"], iter=i)
+                self.records.append(record)
+
+
 class TrackErrors(Callback):
     def __init__(self, true_values, metric="mse", every=1):
         self.metric = metric
@@ -68,16 +85,20 @@ class TrackErrors(Callback):
             errors = [
                 {
                     "id": id,
-                    self.metric: self.compute_metric(X_pred[id], self.X_true[id])
+                    self.metric: self.compute_metric(
+                        X_pred[id], self.X_true[id]
+                    ),
+                    "iter": i
                 }
                 for id in self.X_true.keys()
             ]
-            self.errors.append(errors)
+            self.errors += errors
 
 
 class EarlyStopping(Callback):
-    def __init__(self, tol=0.01):
+    def __init__(self, tol=1e-13, min_variance=0):
         self.tol = tol
+        self.min_variance = min_variance
         self.repr_init()
         self.old_vs = None
 
@@ -86,14 +107,20 @@ class EarlyStopping(Callback):
             self.old_vs = None
         variables_data = algo.get_variables_data()
         new_vs = [data["v"] for data in variables_data]
+        if any(v<self.min_variance for v in new_vs):
+            logging.info(f"early stopping: min variance {min(new_vs)}")
+            return True
+        if any(np.isnan(v) for v in new_vs):
+            logging.info(f"early stopping: nan values")
+            return True
         if self.old_vs:
             tols = [
                 np.mean((old_v - new_v) ** 2)
                 for old_v, new_v in zip(self.old_vs, new_vs)
             ]
-            logging.info(f"tolerances max={max(tols):.2e} min={min(tols):.2e}")
+            logging.debug(f"tolerances max={max(tols):.2e} min={min(tols):.2e}")
             if max(tols) < self.tol:
-                logging.info(f"all tolerances are below tol={self.tol:.2e}")
+                logging.info(f"early stopping: all tolerances are below tol={self.tol:.2e}")
                 return True
         # for next iteration
         self.old_vs = new_vs
