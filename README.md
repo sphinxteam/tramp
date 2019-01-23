@@ -7,11 +7,18 @@ will be renamed supertramp.
 
 ## FIXME
 
-- [ ] abs proba_beliefs not normalized
-- [x] tau in state evolution
+- [ ] modulus measure not normalized
+- [x] fix integration limits in state evolution
+- [x] handle stat evo likelihood : avg over y ?
+- [ ] numerical instability: zerodivision error, nan
+- [ ] initial conditions in EP and SE
 
 ## TODO
 
+- [ ] notebook for each channel / prior / likelihood
+- [ ] mutual info, free energy,  etc...
+- initial conditions in EP and SE:
+  - such that a > 1/tau
 - tests
   - [x] channel posterior
   - [x] proba belief normalized

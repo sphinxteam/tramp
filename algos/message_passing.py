@@ -27,7 +27,7 @@ class MessagePassing():
 
     def init_message_dag(self, initializer):
         message_dag = nx.DiGraph()
-        message_dag.add_nodes_from(self.model_dag.nodes(data=True), n_iter=0)
+        message_dag.add_nodes_from(self.model_dag.nodes(data=True))
         message_dag.add_edges_from(
             self.model_dag.edges(data=True), direction="fwd", n_iter=0
         )
@@ -92,7 +92,7 @@ class MessagePassing():
             self.update_variables()
             self.n_iter += 1
             stop = callback(self, i, max_iter)
-            logging.info(f"n_iter={self.n_iter}")
+            logging.debug(f"n_iter={self.n_iter}")
             if stop:
                 logging.info(f"terminated after n_iter={self.n_iter} iterations")
                 return
