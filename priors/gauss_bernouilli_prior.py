@@ -2,6 +2,7 @@ import numpy as np
 from scipy.integrate import quad
 from scipy.stats import norm
 from ..base import Prior
+from ..utils.integration import gaussian_measure
 
 
 def sigmoid(x):
@@ -32,25 +33,22 @@ class GaussBernouilliPrior(Prior):
     def second_moment(self):
         return self.rho * (self.mean**2 + self.var)
 
-    def forward_posterior(self, message):
-        ax, bx = self._parse_message_ab(message)
+    def compute_forward_posterior(self, ax, bx):
         a = self.a + ax
         b = self.b + bx
         phi = 0.5 * (b**2 / a - self.b**2 / self.a + np.log(self.a / a))
         zeta = phi + self.log_odds
         s = sigmoid(zeta)
         s_prime = s * (1 - s)
-        r_hat = (b / a) * s
+        rx = (b / a) * s
         v = (1 / a) * s + (b / a)**2 * s_prime
-        v_hat = np.mean(v)
-        return [(r_hat, v_hat)]
+        vx = np.mean(v)
+        return rx, vx
 
-    def proba_beliefs(self, message):
-        ax, bx = self._parse_message_ab(message)
-        r1 = ax * self.mean
-        s1 = np.sqrt(ax * (ax * self.var + 1))
-        r2 = 0
-        s2 = np.sqrt(ax)
-        p1, p2 = self.rho, 1 - self.rho
-        return (p1 * norm.pdf(bx, loc=r1, scale=s1) +
-                p2 * norm.pdf(bx, loc=r2, scale=s2))
+    def beliefs_measure(self, ax, f):
+        mu_0 = gaussian_measure(0, np.sqrt(ax), f)
+        mu_1 = gaussian_measure(
+            ax * self.mean, np.sqrt(ax + (ax**2) * self.var), f
+        )
+        mu = (1 - self.rho) * mu_0 + self.rho * mu_1
+        return mu

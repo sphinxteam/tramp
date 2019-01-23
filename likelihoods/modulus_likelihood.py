@@ -2,7 +2,11 @@ import numpy as np
 from scipy.stats import norm
 from scipy.special import ive
 from ..base import Likelihood
+from ..utils.integration import gaussian_measure_2d
 
+
+def _factor(x):
+    return 2 * np.pi * x * (x>0)
 
 class ModulusLikelihood(Likelihood):
     def __init__(self, y):
@@ -16,15 +20,19 @@ class ModulusLikelihood(Likelihood):
     def math(self):
         return r"$|.|$"
 
-    def backward_posterior(self, message):
-        az, bz = self._parse_message_ab(message)
-        r = np.absolute(bz)
-        z = r * self.y
-        I = ive(1, z) / ive(0, z)
-        r_hat = bz * (self.y / r) * I
-        v = 0.5 * (self.y**2) * (1 - I**2)
-        v_hat = np.mean(v)
-        return [(r_hat, v_hat)]
+    def compute_backward_posterior(self, az, bz, y):
+        b = np.absolute(bz)
+        I = ive(1, b * y) / ive(0, b * y)
+        rz = bz * (y / b) * I
+        v = 0.5 * (y**2) * (1 - I**2)
+        vz = np.mean(v)
+        return rz, vz
 
-    def proba_beliefs(self, message):
-        raise NotImplementedError
+    def beliefs_measure(self, az, tau, f):
+        a_eff = az * (az * tau - 1)
+        def f_scaled(xi_b, xi_y):
+            b = np.sqrt(a_eff) * xi_b
+            y = b / az + xi_y / np.sqrt(az)
+            return _factor(b) * _factor(y) * ive(0, b * y) * f(b, y)
+        mu = gaussian_measure_2d(0, 1, 0, 1, f_scaled)
+        return mu

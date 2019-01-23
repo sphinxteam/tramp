@@ -16,44 +16,6 @@ def phi_1(x):
 def phi_2(x):
     return (1 + x**2) * phi_0(x) + x / np.sqrt(2 * np.pi)
 
-def compute_abs_forward_posterior(az, bz, ax, bx):
-    # estimate x from x = abs(z)
-    a = ax + az
-    x_pos = (bx + bz) / np.sqrt(a)
-    x_neg = (bx - bz) / np.sqrt(a)
-    u0 = phi_0(x_pos) + phi_0(x_neg)
-    u1 = (phi_1(x_pos) + phi_1(x_neg)) / np.sqrt(a)
-    u2 = (phi_2(x_pos) + phi_2(x_neg)) / a
-    v = u2 / u0 - (u1 / u0)**2
-    rx = u1 / u0
-    vx = np.mean(v)
-    return rx, vx
-
-def compute_abs_backward_posterior(az, bz, ax, bx):
-    # estimate z from x = abs(z)
-    a = ax + az
-    x_pos = (bx + bz) / np.sqrt(a)
-    x_neg = (bx - bz) / np.sqrt(a)
-    u0 = phi_0(x_pos) + phi_0(x_neg)
-    u1 = (phi_1(x_pos) - phi_1(x_neg)) / np.sqrt(a)
-    u2 = (phi_2(x_pos) + phi_2(x_neg)) / a
-    v = u2 / u0 - (u1 / u0)**2
-    rz = u1 / u0
-    vz = np.mean(v)
-    return rz, vz
-
-def compute_abs_proba_beliefs(az, bz, ax, bx, tau):
-    # p(bz,bx|az,ax,tau) for x=abs(z)
-    a = ax + az
-    x_pos = (bx + bz) / np.sqrt(a)
-    x_neg = (bx - bz) / np.sqrt(a)
-    u0 = phi_0(x_pos) + phi_0(x_neg)
-    sx = np.sqrt(ax)
-    sz = np.sqrt(az)
-    s_eff = np.sqrt(az * (az * tau - 1))
-    return (u0 * np.sqrt(2 * np.pi / a) *
-            norm.pdf(bx, loc=sx) *
-            norm.pdf(bz, loc=sz) * norm.pdf(bz, loc=s_eff))
 
 class AbsChannel(Channel):
     def __init__(self):
@@ -69,6 +31,18 @@ class AbsChannel(Channel):
     def second_moment(self, tau):
         return tau
 
+    def check_params(self, ax, az, tau = None):
+        if (ax <= 0):
+            logging.warn(f"in AbsChannel negative ax={ax}")
+            ax = 1e-11
+        if (az <= 0):
+            logging.warn(f"in AbsChannel negative az={az}")
+            az = 1e-11
+        if tau and (az < 1 / tau):
+            logging.warn(f"in AbsChannel az={az}<1/tau={1/tau}")
+            az = 1 / tau + 1e-11
+        return ax, ax, tau
+
     def forward_posterior(self, message):
         # estimate x from x = abs(z)
         az, bz, ax, bx = self._parse_message_ab(message)
@@ -81,28 +55,31 @@ class AbsChannel(Channel):
         rx, vx = compute_abs_forward_posterior(az, bz, ax, bx)
         return [(rx, vx)]
 
-    def backward_posterior(self, message):
-        # estimate z from x = abs(z)
-        az, bz, ax, bx = self._parse_message_ab(message)
-        if (ax <= 0):
-            logging.warn(f"in AbsChannel.backward_posterior negative ax={ax}")
-            ax = 1e-11
-        if (az <= 0):
-            logging.warn(f"in AbsChannel.backward_posterior negative az={az}")
-            az = 1e-11
-        rz, vz = compute_abs_backward_posterior(az, bz, ax, bx)
-        return [(rz, vz)]
+    def compute_forward_posterior(self, az, bz, ax, bx):
+        # estimate x from x = abs(z)
+        a = ax + az
+        x_pos = (bx + bz) / np.sqrt(a)
+        x_neg = (bx - bz) / np.sqrt(a)
+        u0 = phi_0(x_pos) + phi_0(x_neg)
+        u1 = (phi_1(x_pos) + phi_1(x_neg)) / np.sqrt(a)
+        u2 = (phi_2(x_pos) + phi_2(x_neg)) / a
+        v = u2 / u0 - (u1 / u0)**2
+        rx = u1 / u0
+        vx = np.mean(v)
+        return rx, vx
 
-    def proba_beliefs(self, message):
-        az, bz, ax, bx, tau = self._parse_message_ab_tau(message)
-        if (ax <= 0):
-            logging.warn(f"in AbsChannel.proba_beliefs negative ax={ax}")
-            ax = 1e-11
-        if (az <= 0):
-            logging.warn(f"in AbsChannel.proba_beliefs negative az={az}")
-            az = 1e-11
-        if (az < 1 / tau):
-            logging.warn(f"in AbsChannel.proba_beliefs az={az}<1/tau={1/tau}")
-            az = 1 / tau + 1e-11
-        proba = compute_abs_proba_beliefs(az, bz, ax, bx, tau)
-        return proba
+    def compute_backward_posterior(self, az, bz, ax, bx):
+        # estimate z from x = abs(z)
+        a = ax + az
+        x_pos = (bx + bz) / np.sqrt(a)
+        x_neg = (bx - bz) / np.sqrt(a)
+        u0 = phi_0(x_pos) + phi_0(x_neg)
+        u1 = (phi_1(x_pos) - phi_1(x_neg)) / np.sqrt(a)
+        u2 = (phi_2(x_pos) + phi_2(x_neg)) / a
+        v = u2 / u0 - (u1 / u0)**2
+        rz = u1 / u0
+        vz = np.mean(v)
+        return rz, vz
+
+    def beliefs_measure(self, az, ax, tau, f):
+        raise NotImplementedError

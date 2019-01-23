@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.stats import norm
 from ..base import Likelihood
+from ..utils.integration import gaussian_measure_2d
 
 
 class AbsLikelihood(Likelihood):
@@ -15,19 +16,18 @@ class AbsLikelihood(Likelihood):
     def math(self):
         return r"$\mathrm{abs}$"
 
-    def backward_posterior(self, message):
-        az, bz = self._parse_message_ab(message)
-        r_hat = bz * np.tanh(bz * self.y)
-        v = (bz / np.cosh(bz * self.y))**2
-        v_hat = np.mean(v)
-        return [(r_hat, v_hat)]
+    def compute_backward_posterior(self, az, bz, y):
+        rz = y * np.tanh(bz * y)
+        v = (y / np.cosh(bz * y))**2
+        vz = np.mean(v)
+        return rz, vz
 
-    def proba_beliefs(self, message):
-        az, bz, tau = self._parse_message_ab_tau(message)
-        a_eff = az - 1 / tau
-        # TODO y can be a vector !!
-        m = self.y * a_eff
-        s = np.sqrt(a_eff)
-        proba =  0.5 * (norm.pdf(bz, loc=+m, scale=s) +
-                        norm.pdf(bz, loc=-m, scale=s))
-        return proba
+    def beliefs_measure(self, az, tau, f):
+        "NB: Assumes that f(bz, y) pair in y."
+        a_eff = az * (az * tau - 1)
+        def f_scaled(xi_b, xi_y):
+            bz = np.sqrt(a_eff) * xi_b
+            y = bz / az + xi_y / np.sqrt(az)
+            return f(bz, y)
+        mu = gaussian_measure_2d(0, 1, 0, 1, f_scaled)
+        return mu

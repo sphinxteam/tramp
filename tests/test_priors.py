@@ -6,9 +6,18 @@ from scipy.stats import norm
 import logging
 
 
+def empirical_second_moment(prior):
+    """
+    Estimate second_moment by sampling.
+    """
+    prior.size = 1000*1000
+    X = prior.sample()
+    tau = (X**2).mean()
+    return tau
+
 def explicit_integral(ax, bx, prior):
     """
-    Compute rx, vx for prior p(x) by monte carlo
+    Compute rx, vx for prior p(x) by integration
     """
     def belief(x):
         L = -0.5 * ax * (x**2) + bx * x
@@ -52,44 +61,34 @@ class PriorsTest(unittest.TestCase):
             dict(ax=2.0, bx=2.0),
             dict(ax=1.5, bx=1.3)
         ]
-        def parse_record_ab(record):
-            return record["ax"], record["bx"]
-        self.parse_record_ab = parse_record_ab
 
     def tearDown(self):
         pass
 
     def _test_function_second_moment(self, prior):
-        prior.size = 1000*1000
-        X = prior.sample()
-        tau = (X**2).mean()
+        tau = empirical_second_moment(prior)
         tau_hat = prior.second_moment()
         msg = f"prior={prior}"
         self.assertAlmostEqual(tau, tau_hat, places=2, msg=msg)
 
     def _test_function_posterior(self, prior):
-        # modify _parse_message_ab accept a record as input
-        prior._parse_message_ab = self.parse_record_ab
         for record in self.posterior_records:
-            ax, bx = self.parse_record_ab(record)
+            ax, bx = record["ax"], record["bx"]
             rx, vx = explicit_integral(ax, bx, prior)
-            [(rx_hat, vx_hat)] = prior.forward_posterior(record)
+            rx_hat, vx_hat = prior.compute_forward_posterior(ax, bx)
             rx_hat = float(rx_hat)
             msg = f"record={record} prior={prior}"
-            self.assertAlmostEqual(rx, rx_hat, places=2, msg=msg)
-            self.assertAlmostEqual(vx, vx_hat, places=2, msg=msg)
+            self.assertAlmostEqual(rx, rx_hat, places=12, msg=msg)
+            self.assertAlmostEqual(vx, vx_hat, places=12, msg=msg)
 
     def _test_function_proba(self, prior):
-        # modify _parse_message_ab accept a record as input
-        prior._parse_message_ab = self.parse_record_ab
         for record in self.posterior_records:
-            ax, _ = self.parse_record_ab(record)
-            def proba_beliefs(x):
-                _record = dict(bx=x, ax=ax)
-                return prior.proba_beliefs(_record)
-            sum_proba = quad(proba_beliefs, -10, 10)[0]
+            ax = record["ax"]
+            def one(bx):
+                return 1.
+            sum_proba = prior.beliefs_measure(ax, f = one)
             msg = f"record={record} prior={prior}"
-            self.assertAlmostEqual(sum_proba, 1., places=2, msg=msg)
+            self.assertAlmostEqual(sum_proba, 1., places=12, msg=msg)
 
     def test_binary_posterior(self):
         priors = [

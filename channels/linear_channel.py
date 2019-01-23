@@ -11,16 +11,23 @@ def svd(X):
     svd_X = (U, S, V)
     return svd_X
 
-# TODO : precompute svd
 
 class LinearChannel(Channel):
-    def __init__(self, W):
+    def __init__(self, W, precompute_svd = True):
         self.Nx = W.shape[0]
         self.Nz = W.shape[1]
+        self.precompute_svd = True
         self.repr_init()
         self.W = W
-        self.C = W.T @ W
-        self.spectrum = np.linalg.eigvalsh(self.C)
+        if precompute_svd:
+            self.U, S, self.V = svd(W)
+            self.S = S
+            self.spectrum = np.diag(S.T @ S)
+            assert self.spectrum.shape == (self.Nz,)
+        else:
+            self.C = W.T @ W
+            self.spectrum = np.linalg.eigvalsh(self.C)
+            assert self.spectrum.shape == (self.Nz,)
 
     def sample(self, Z):
         X = self.W @ Z
@@ -36,9 +43,15 @@ class LinearChannel(Channel):
         # estimate z from x = Wz
         az, bz, ax, bx = self._parse_message_ab(message)
         resolvent = 1 / (az + ax * self.spectrum)
-        a = az * np.identity(self.Nz) + ax * self.C
-        b = (bz + self.W.T @ bx)
-        rz = np.linalg.solve(a, b)
+        if self.precompute_svd:
+            bx_svd = self.U.T @ bx
+            bz_svd = self.V.T @ bz
+            rz_svd = resolvent * (bz_svd + self.S.T @ bx_svd)
+            rz = self.V @ rz_svd
+        else:
+            a = az * np.identity(self.Nz) + ax * self.C
+            b = (bz + self.W.T @ bx)
+            rz = np.linalg.solve(a, b)
         vz = resolvent.mean()
         return [(rz, vz)]
 

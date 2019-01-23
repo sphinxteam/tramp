@@ -176,7 +176,7 @@ class Factor(ReprMixin):
             return new_data
         full_message = [
             (source, target, update(data, b=b_value))
-            for b, (source, target, data) in zip(b_values, message)
+            for b_value, (source, target, data) in zip(b_values, message)
         ]
         return full_message
 
@@ -227,12 +227,10 @@ class Factor(ReprMixin):
         assert len(bwd_error) == len(fwd_message)
         new_message = [
             (target, source,
-             dict(a=1. / v - data["a"], b=r / v - data["b"], direction="bwd"))
+             dict(a=1. / v - data["a"], direction="bwd"))
             for v, (source, target, data) in zip(bwd_error, fwd_message)
         ]
         return new_message
-
-# TODO how to fix integration region in dblquad and quad ?
 
 
 class Channel(Factor):
@@ -266,91 +264,103 @@ class Channel(Factor):
         source, target, _ = dir_message[0]
         return source, target
 
+    def forward_posterior(self, message):
+        zdata, xdata = self._parse_message(message)
+        az, bz, ax, bx = zdata["a"], zdata["b"], xdata["a"], xdata["b"]
+        rx, vx = self.compute_forward_posterior(az, bz, ax, bx )
+        return [(rx, vx)]
+
+    def backward_posterior(self, message):
+        zdata, xdata = self._parse_message(message)
+        az, bz, ax, bx = zdata["a"], zdata["b"], xdata["a"], xdata["b"]
+        rz, vz = self.compute_backward_posterior(az, bz, ax, bx)
+        return [(rz, vz)]
+
     def forward_error(self, message):
-        def integrand(bx, bz):
-            bs = {"bwd": bx, "fwd": bz}
-            b_values = [bs[data["direction"]] for source, target, data in message]
-            full_message = self.get_full_message(b_values, message)
-            fwd_posterior = self.forward_posterior(full_message)
-            r_hat, v_hat = fwd_posterior[0]
-            proba = self.proba_beliefs(full_message)
-            return proba * v_hat
-        error = dblquad(integrand, -10, 10, -10, 10)[0]
-        return error
+        zdata, xdata = self._parse_message(message)
+        az, ax = zdata["a"], xdata["a"]
+        def variance(bz, bx):
+            rx, vx = self.compute_forward_posterior(az, bz, ax, bx)
+            return vx
+        error = self.beliefs_measure(az, ax, tau, f=variance)
+        return [error]
 
     def backward_error(self, message):
-        def integrand(bx, bz):
-            bs = {"bwd": bx, "fwd": bz}
-            b_values = [bs[data["direction"]] for source, target, data in message]
-            full_message = self.get_full_message(b_values, message)
-            bwd_posterior = self.backward_posterior(full_message)
-            r_hat, v_hat = bwd_posterior[0]
-            proba = self.proba_beliefs(full_message)
-            return proba * v_hat
-        error = dblquad(integrand, -10, 10, -10, 10)[0]
-        return error
+        zdata, xdata = self._parse_message(message)
+        az, ax = zdata["a"], xdata["a"]
+        def variance(bz, bx):
+            rz, vz = self.compute_backward_posterior(az, bz, ax, bx)
+            return vz
+        error = self.beliefs_measure(az, ax, tau, f=variance)
+        return [error]
 
 
 class Likelihood(Factor):
     n_next = 0
     n_prev = 1
 
-    def _parse_message_ab_tau(self, message):
+    def _parse_message(self, message):
         source, target, data = message[0]
         assert len(message) == 1 and data["direction"] == "fwd"
-        return data["a"], data["b"], data["tau"]
-
-    def _parse_message_ab(self, message):
-        source, target, data = message[0]
-        assert len(message) == 1 and data["direction"] == "fwd"
-        return data["a"], data["b"]
+        return data
 
     def _parse_endpoints(self, message):
         source, target, data = message[0]
         assert len(message) == 1 and data["direction"] == "fwd"
         return source, target
 
+    def backward_posterior(self, message):
+        data = self._parse_message(message)
+        az, bz = data["a"], data["b"]
+        rz, vz = self.compute_backward_posterior(az, bz, self.y)
+        return [(rz, vz)]
+
     def backward_error(self, message):
-        def integrand(bz):
-            b_values = [bz]
-            full_message = self.get_full_message(b_values, message)
-            bwd_posterior = self.backward_posterior(full_message)
-            r_hat, v_hat = bwd_posterior[0]
-            proba = self.proba_beliefs(full_message)
-            return proba * v_hat
-        error = quad(integrand, -10, 10)[0]
-        return error
+        data = self._parse_message(message)
+        az, tau = data["a"], data["tau"]
+        def variance(bz, y):
+            rz, vz = self.compute_backward_posterior(az, bz, y)
+            return vz
+        error = self.beliefs_measure(az, tau, f=variance)
+        return [error]
 
 
 class Prior(Factor):
     n_next = 1
     n_prev = 0
 
-    def _parse_message_ab(self, message):
+    def _parse_message(self, message):
         source, target, data = message[0]
         assert len(message) == 1 and data["direction"] == "bwd"
-        return data["a"], data["b"]
+        return data
 
     def _parse_endpoints(self, message):
         source, target, data = message[0]
         assert len(message) == 1 and data["direction"] == "bwd"
         return source, target
 
+    def forward_posterior(self, message):
+        data = self._parse_message(message)
+        ax, bx = data["a"], data["b"]
+        rx, vx = self.compute_forward_posterior(ax, bx)
+        return [(rx, vx)]
+
     def forward_error(self, message):
-        def integrand(bx):
-            b_values = [bx]
-            full_message = self.get_full_message(b_values, message)
-            fwd_posterior = self.forward_posterior(full_message)
-            r_hat, v_hat = fwd_posterior[0]
-            proba = self.proba_beliefs(full_message)
-            return proba * v_hat
-        error = quad(integrand, -10, 10)[0]
-        return error
+        data = self._parse_message(message)
+        ax = data["a"]
+        def variance(bx):
+            rx, vx = self.compute_forward_posterior(ax, bx)
+            return vx
+        error = self.beliefs_measure(ax, f=variance)
+        return [error]
 
 
 class Ensemble(ReprMixin):
     pass
 
+
+class Input(ReprMixin):
+    pass
 
 class Student(ReprMixin):
     pass

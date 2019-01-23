@@ -2,6 +2,7 @@ import numpy as np
 from scipy.integrate import quad
 from scipy.stats import norm
 from ..base import Prior
+from ..utils.integration import gaussian_measure
 
 
 class BinaryPrior(Prior):
@@ -23,17 +24,15 @@ class BinaryPrior(Prior):
     def second_moment(self):
         return 1.
 
-    def forward_posterior(self, message):
-        ax, bx = self._parse_message_ab(message)
+    def compute_forward_posterior(self, ax, bx):
         eta = bx + 0.5 * self.log_odds
-        r_hat = np.tanh(eta)
+        rx = np.tanh(eta)
         v = 1 / (np.cosh(eta)**2)
-        v_hat = np.mean(v)
-        return [(r_hat, v_hat)]
+        vx = np.mean(v)
+        return rx, vx
 
-    def proba_beliefs(self, message):
-        ax, bx = self._parse_message_ab(message)
-        r, s = ax, np.sqrt(ax)
-        p1, p2 = self.p_pos, self.p_neg
-        return (p1 * norm.pdf(bx, loc=+r, scale=s) +
-                p2 * norm.pdf(bx, loc=-r, scale=s))
+    def beliefs_measure(self, ax, f):
+        mu_pos = gaussian_measure(+ax, np.sqrt(ax), f)
+        mu_neg = gaussian_measure(-ax, np.sqrt(ax), f)
+        mu = self.p_pos * mu_pos + self.p_neg * mu_neg
+        return mu

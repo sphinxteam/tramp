@@ -2,6 +2,7 @@ import numpy as np
 from scipy.special import erfcx
 from scipy.stats import norm
 from ..base import Likelihood
+from ..utils.integration import gaussian_measure
 
 
 def phi_0(x):
@@ -30,16 +31,19 @@ class SngLikelihood(Likelihood):
     def math(self):
         return r"$\mathrm{sng}$"
 
-    def backward_posterior(self, message):
-        az, bz = self._parse_message_ab(message)
-        x = self.y * bz / np.sqrt(az)
-        r_hat = psi(x) * self.y / np.sqrt(az)
+    def compute_backward_posterior(self, az, bz, y):
+        x = y * bz / np.sqrt(az)
+        rz = psi(x) * y / np.sqrt(az)
         v = psi_prime(x) / az
-        v_hat = np.mean(v)
-        return [(r_hat, v_hat)]
+        vz = np.mean(v)
+        return rz, vz
 
-    def proba_beliefs(self, message):
-        az, bz, tau = self._parse_message_ab_tau(message)
-        x = self.y * bz / np.sqrt(az)
+    def beliefs_measure(self, az, tau, f):
+        def f_pos(bz):
+            return norm.cdf(+bz / np.sqrt(az)) * f(bz, +1)
+        def f_neg(bz):
+            return norm.cdf(-bz / np.sqrt(az)) * f(bz, -1)
         s = np.sqrt(az * (az * tau - 1))
-        return 2 * norm.cdf(x) * norm.pdf(bz, scale=s)
+        mu_pos = gaussian_measure(0, s, f_pos)
+        mu_neg = gaussian_measure(0, s, f_neg)
+        return mu_pos + mu_neg

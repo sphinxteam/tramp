@@ -3,32 +3,6 @@ from scipy.stats import norm
 from ..base import Channel
 
 
-def compute_sng_forward_posterior(az, bz, ax, bx):
-    # estimate x from x = sng(z)
-    x = bz / np.sqrt(az)
-    p_pos = norm.cdf(+x)
-    p_neg = norm.cdf(-x)
-    u0 = p_pos * np.exp(+bx) + p_neg * np.exp(-bx)
-    u1 = p_pos * np.exp(+bx) - p_neg * np.exp(-bx)
-    phi = u1 / u0
-    v = 1 - phi**2
-    rx = phi
-    vx = np.mean(v)
-    return rx, vx
-
-def compute_sng_backward_posterior(az, bz, ax, bx):
-    # estimate z from x = sng(z)
-    x = bz / np.sqrt(az)
-    p_pos = norm.cdf(+x)
-    p_neg = norm.cdf(-x)
-    u0 = p_pos * np.exp(+bx) + p_neg * np.exp(-bx)
-    u1 = 2 * norm.pdf(x) * np.sinh(bx) / np.sqrt(az)
-    phi = u1 / u0
-    v = 1 / az + phi * (- bz / az - phi) #check TODO
-    rz = bz / az + phi
-    vz = np.mean(v)
-    return rz, vz
-
 def compute_sng_proba_beliefs(az, bz, ax, bx, tau):
     # p(bz,bx|az,ax,tau) for x=sng(z)
     x = bz / np.sqrt(az)
@@ -55,17 +29,38 @@ class SngChannel(Channel):
     def second_moment(self, tau):
         return 1.
 
-    def forward_posterior(self, message):
-        az, bz, ax, bx = self._parse_message_ab(message)
-        rx, vx = compute_sng_forward_posterior(az, bz, ax, bx)
-        return [(rx, vx)]
+    def compute_forward_posterior(self, az, bz, ax, bx):
+        # estimate x from x = sng(z)
+        x = bz / np.sqrt(az)
+        p_pos = norm.cdf(+x)
+        p_neg = norm.cdf(-x)
+        u0 = p_pos * np.exp(+bx) + p_neg * np.exp(-bx)
+        u1 = p_pos * np.exp(+bx) - p_neg * np.exp(-bx)
+        phi = u1 / u0
+        v = 1 - phi**2
+        rx = phi
+        vx = np.mean(v)
+        return rx, vx
 
-    def backward_posterior(self, message):
-        az, bz, ax, bx = self._parse_message_ab(message)
-        rz, vz = compute_sng_backward_posterior(az, bz, ax, bx)
-        return [(rz, vz)]
+    def compute_backward_posterior(az, bz, ax, bx):
+        # estimate z from x = sng(z)
+        x = bz / np.sqrt(az)
+        p_pos = norm.cdf(+x)
+        p_neg = norm.cdf(-x)
+        u0 = p_pos * np.exp(+bx) + p_neg * np.exp(-bx)
+        u1 = 2 * norm.pdf(x) * np.sinh(bx) / np.sqrt(az)
+        phi = u1 / u0
+        v = 1 / az + phi * (- bz / az - phi) #check TODO
+        rz = bz / az + phi
+        vz = np.mean(v)
+        return rz, vz
 
-    def proba_beliefs(self, message):
-        az, bz, ax, bx, tau = self._parse_message_ab_tau(message)
-        proba  = compute_sng_proba_beliefs(az, bz, ax, bx, tau)
-        return proba
+    def beliefs_measure(self, az, ax, tau, f):
+        def f_pos(bz, bx):
+            return norm.cdf(+bz / np.sqrt(az)) * f(bz, bx)
+        def f_neg(bz, bx):
+            return norm.cdf(-bz / np.sqrt(az)) * f(bz, bx)
+        s_eff = np.sqrt(az * (az * tau - 1))
+        mu_pos = gaussian_measure_2d(0, s_eff, +ax, np.sqrt(ax), f_pos)
+        mu_neg = gaussian_measure_2d(0, s_eff, -ax, np.sqrt(ax), f_neg)
+        return mu_pos + mu_neg
