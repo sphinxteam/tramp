@@ -27,7 +27,8 @@ class BinaryPrior(Prior):
     def compute_forward_posterior(self, ax, bx):
         eta = bx + 0.5 * self.log_odds
         rx = np.tanh(eta)
-        v = 1 / (np.cosh(eta)**2)
+        # 1 / cosh(eta)**2 leads to overflow
+        v = 1 - np.tanh(eta)**2
         vx = np.mean(v)
         return rx, vx
 

@@ -142,6 +142,10 @@ class FinalVariable(Variable):
     n_next = 0
     n_prev = 1
 
+def inv(v):
+    """Numerically safe inverse"""
+    #return 1. / v
+    return 1 / np.maximum(v, 1e-11)
 
 class Factor(ReprMixin):
 
@@ -168,27 +172,44 @@ class Factor(ReprMixin):
             raise ValueError(
                 f"number of prev variables : expected {self.n_prev} got {n_prev}")
 
-    @staticmethod
-    def get_full_message(b_values, message):
-        def update(data, **kwargs):
-            new_data = data.copy()
-            new_data.update(**kwargs)
-            return new_data
-        full_message = [
-            (source, target, update(data, b=b_value))
-            for b_value, (source, target, data) in zip(b_values, message)
-        ]
-        return full_message
+    def check_message_a(self, message):
+        for source, target, data in message:
+            if np.isnan(data["a"]):
+                logging.warn(f"a nan in {self} source={source}")
+            if data["a"] < 0:
+                logging.warn(f"a < 0 in {self} source={source} a={data['a']}")
+            if data["a"] > 1e15:
+                logging.warn(f"a > 1e15 in {self} source={source} a={data['a']}")
+
+    def check_error_v(self, error):
+        for i, v in enumerate(error):
+            if np.isnan(v):
+                logging.warn(f"v nan in {self} i={i}")
+            if v < 1e-11:
+                logging.warn(f"v = {v} < 1e-11 in {self} i={i}")
+            if v > 1e15:
+                logging.warn(f"v = {v} > 1e15 in {self} i={i}")
+
+    def check_posterior_v(self, posterior):
+        for i, (r, v) in enumerate(posterior):
+            if np.isnan(v):
+                logging.warn(f"v nan in {self} i={i}")
+            if v < 1e-11:
+                logging.warn(f"v = {v} < 1e-11 in {self} i={i}")
+            if v > 1e15:
+                logging.warn(f"v = {v} > 1e15 in {self} i={i}")
 
     def forward_message(self, message):
         if self.n_next == 0:
             return []
+        self.check_message_a(message)
         fwd_posterior = self.forward_posterior(message)
+        self.check_posterior_v(fwd_posterior)
         bwd_message = filter_message(message, "bwd")
         assert len(fwd_posterior) == len(bwd_message)
         new_message = [
             (target, source,
-             dict(a=1. / v - data["a"], b=r / v - data["b"], direction="fwd"))
+             dict(a=inv(v) - data["a"], b=r*inv(v) - data["b"], direction="fwd"))
             for (r, v), (source, target, data) in zip(fwd_posterior, bwd_message)
         ]
         return new_message
@@ -196,12 +217,14 @@ class Factor(ReprMixin):
     def backward_message(self, message):
         if self.n_prev == 0:
             return []
+        self.check_message_a(message)
         bwd_posterior = self.backward_posterior(message)
+        self.check_posterior_v(bwd_posterior)
         fwd_message = filter_message(message, "fwd")
         assert len(bwd_posterior) == len(fwd_message)
         new_message = [
             (target, source,
-             dict(a=1. / v - data["a"], b=r / v - data["b"], direction="bwd"))
+             dict(a=inv(v) - data["a"], b=r*inv(v) - data["b"], direction="bwd"))
             for (r, v), (source, target, data) in zip(bwd_posterior, fwd_message)
         ]
         return new_message
@@ -209,12 +232,14 @@ class Factor(ReprMixin):
     def forward_state_evolution(self, message):
         if self.n_next == 0:
             return []
+        self.check_message_a(message)
         fwd_error = self.forward_error(message)
+        self.check_error_v(fwd_error)
         bwd_message = filter_message(message, "bwd")
         assert len(fwd_error) == len(bwd_message)
         new_message = [
             (target, source,
-             dict(a=1. / v - data["a"], direction="fwd"))
+             dict(a=inv(v) - data["a"], direction="fwd"))
             for v, (source, target, data) in zip(fwd_error, bwd_message)
         ]
         return new_message
@@ -222,12 +247,14 @@ class Factor(ReprMixin):
     def backward_state_evolution(self, message):
         if self.n_prev == 0:
             return []
+        self.check_message_a(message)
         bwd_error = self.backward_error(message)
+        self.check_error_v(bwd_error)
         fwd_message = filter_message(message, "fwd")
         assert len(bwd_error) == len(fwd_message)
         new_message = [
             (target, source,
-             dict(a=1. / v - data["a"], direction="bwd"))
+             dict(a=inv(v) - data["a"], direction="bwd"))
             for v, (source, target, data) in zip(bwd_error, fwd_message)
         ]
         return new_message
