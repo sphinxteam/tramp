@@ -7,6 +7,7 @@ will be renamed supertramp.
 
 ## FIXME
 
+- [ ] a > 1/tau initial conditions
 - [ ] (tests) modulus measure not normalized
 - [ ] (tests) modulus posterior : why numerical integration less precise ?
 - [ ] numerical instability: zerodivision error, nan, overflow
@@ -22,8 +23,6 @@ will be renamed supertramp.
   - [ ] sparse regression
   - [ ] perceptron
   - [ ] probit classification
-- initial conditions in EP and SE:
-  - [ ] a > 1/tau
 - tests
   - [x] channel posterior
   - [x] proba belief normalized

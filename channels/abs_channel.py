@@ -42,21 +42,10 @@ class AbsChannel(Channel):
         if tau and (az < 1 / tau):
             logging.warn(f"in AbsChannel az={az}<1/tau={1/tau}")
             az = 1 / tau + 1e-11
-        return ax, ax, tau
-
-    def forward_posterior(self, message):
-        # estimate x from x = abs(z)
-        az, bz, ax, bx = self._parse_message_ab(message)
-        if (ax <= 0):
-            logging.warn(f"in AbsChannel.forward_posterior negative ax={ax}")
-            ax = 1e-11
-        if (az <= 0):
-            logging.warn(f"in AbsChannel.forward_posterior negative az={az}")
-            az = 1e-11
-        rx, vx = compute_abs_forward_posterior(az, bz, ax, bx)
-        return [(rx, vx)]
+        return ax, az
 
     def compute_forward_posterior(self, az, bz, ax, bx):
+        ax, az = self.check_params(ax, az)
         # estimate x from x = abs(z)
         a = ax + az
         x_pos = (bx + bz) / np.sqrt(a)
@@ -70,6 +59,7 @@ class AbsChannel(Channel):
         return rx, vx
 
     def compute_backward_posterior(self, az, bz, ax, bx):
+        ax, az = self.check_params(ax, az)
         # estimate z from x = abs(z)
         a = ax + az
         x_pos = (bx + bz) / np.sqrt(a)
@@ -83,6 +73,7 @@ class AbsChannel(Channel):
         return rz, vz
 
     def beliefs_measure(self, az, ax, tau, f):
+        ax, az = self.check_params(ax, az, tau)
         raise NotImplementedError
 
     def measure(self, f, zmin, zmax):
