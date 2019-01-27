@@ -39,9 +39,8 @@ class LinearChannel(Channel):
     def second_moment(self, tau):
         return tau * self.spectrum.sum() / self.Nx
 
-    def backward_posterior(self, message):
+    def compute_backward_posterior(self, az, bz, ax, bx):
         # estimate z from x = Wz
-        az, bz, ax, bx = self._parse_message_ab(message)
         resolvent = 1 / (az + ax * self.spectrum)
         if self.precompute_svd:
             bx_svd = self.U.T @ bx
@@ -53,26 +52,23 @@ class LinearChannel(Channel):
             b = (bz + self.W.T @ bx)
             rz = np.linalg.solve(a, b)
         vz = resolvent.mean()
-        return [(rz, vz)]
+        return rz, vz
 
-    def forward_posterior(self, message):
+    def compute_forward_posterior(self, az, bz, ax, bx):
         # estimate x from x = Wz
-        az, bz, ax, bx = self._parse_message_ab(message)
-        rz, vz = self.backward_posterior(message)[0]
+        rz, vz = self.compute_backward_posterior(az, bz, ax, bx)
         # rx = W rz and Nx ax vx + Nz az vz = Nz
         rx = self.W @ rz
         vx = (self.Nz / self.Nx) * (1 - az * vz) / ax
-        return [(rx, vx)]
+        return rx, vx
 
-    def backward_error(self, message):
-        az, ax = self._parse_message_a(message)
+    def compute_backward_error(self, az, ax, tau):
         resolvent = 1 / (az + ax * self.spectrum)
         vz = resolvent.mean()
-        return [vz]
+        return vz
 
-    def forward_error(self, message):
-        az, ax = self._parse_message_a(message)
+    def compute_forward_error(self, az, ax, tau):
         resolvent = 1 / (az + ax * self.spectrum)
         vz = resolvent.mean()
         vx = (self.Nz / self.Nx) * (1 - az * vz) / ax
-        return [vx]
+        return vx

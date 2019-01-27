@@ -22,8 +22,9 @@ class GaussianChannel(Channel):
 
     def forward_message(self, message):
         # x = z + noise, x source variable of bwd message
-        az, bz, ax, bx = self._parse_message_ab(message)
         source, target = self._parse_endpoints(message, "bwd")
+        zdata, xdata = self._parse_message(message)
+        az, bz = zdata["a"], zdata["b"]
         kz = self.a / (self.a + az)
         new_data = dict(a=kz * az, b=kz * bz, direction="fwd")
         new_message = [(target, source, new_data)]
@@ -31,8 +32,9 @@ class GaussianChannel(Channel):
 
     def backward_message(self, message):
         # z = x - noise, z source variable of fwd message
-        az, bz, ax, bx = self._parse_message_ab(message)
         source, target = self._parse_endpoints(message, "fwd")
+        zdata, xdata = self._parse_message(message)
+        ax, bx = xdata["a"], xdata["b"]
         kx = self.a / (self.a + ax)
         new_data = dict(a=kx * ax, b=kx * bx, direction="bwd")
         new_message = [(target, source, new_data)]
@@ -40,8 +42,9 @@ class GaussianChannel(Channel):
 
     def forward_state_evolution(self, message):
         # x = z + noise, x source variable of bwd message
-        az, ax = self._parse_message_a(message)
         source, target = self._parse_endpoints(message, "bwd")
+        zdata, xdata = self._parse_message(message)
+        az = zdata["a"]
         kz = self.a / (self.a + az)
         new_data = dict(a=kz * az, direction="fwd")
         new_message = [(target, source, new_data)]
@@ -49,8 +52,9 @@ class GaussianChannel(Channel):
 
     def backward_state_evolution(self, message):
         # z = x - noise, z source variable of fwd message
-        az, ax = self._parse_message_a(message)
         source, target = self._parse_endpoints(message, "fwd")
+        zdata, xdata = self._parse_message(message)
+        ax = xdata["a"]
         kx = self.a / (self.a + ax)
         new_data = dict(a=kx * ax, direction="bwd")
         new_message = [(target, source, new_data)]

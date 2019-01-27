@@ -29,32 +29,36 @@ class RotationChannel(Channel):
 
     def forward_message(self, message):
         # x = R z, x source variable of bwd message
-        az, bz, ax, bx = self._parse_message_ab(message)
         source, target = self._parse_endpoints(message, "bwd")
+        zdata, xdata = self._parse_message(message)
+        az, bz = zdata["a"], zdata["b"]
         new_data = dict(a=az, b=self.R @ bz, direction="fwd")
         new_message = [(target, source, new_data)]
         return new_message
 
     def backward_message(self, message):
         # z = R.T x, z source variable of fwd message
-        az, bz, ax, bx = self._parse_message_ab(message)
         source, target = self._parse_endpoints(message, "fwd")
+        zdata, xdata = self._parse_message(message)
+        ax, bx = xdata["a"], xdata["b"]
         new_data = dict(a=ax, b=self.R.T @ bx, direction="bwd")
         new_message = [(target, source, new_data)]
         return new_message
 
     def forward_state_evolution(self, message):
         # x = R z, x source variable of bwd message
-        az, ax = self._parse_message_a(message)
         source, target = self._parse_endpoints(message, "bwd")
+        zdata, xdata = self._parse_message(message)
+        az = zdata["a"]
         new_data = dict(a=az, direction="fwd")
         new_message = [(target, source, new_data)]
         return new_message
 
     def backward_state_evolution(self, message):
         # z = R.T x, z source variable of fwd message
-        az, ax = self._parse_message_a(message)
         source, target = self._parse_endpoints(message, "fwd")
+        zdata, xdata = self._parse_message(message)
+        ax = xdata["a"]
         new_data = dict(a=ax, direction="bwd")
         new_message = [(target, source, new_data)]
         return new_message

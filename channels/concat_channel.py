@@ -14,9 +14,13 @@ class ConcatChannel(Factor):
 
     def sample(self, Z1, Z2):
         if (Z1.shape[self.axis] != self.N1):
-            raise ValueError(f"Expected Z1 array of size {self.N1} along axis {self.axis}")
+            raise ValueError(
+                f"Expected Z1 array of size {self.N1} along axis {self.axis}"
+            )
         if (Z2.shape[self.axis] != self.N2):
-            raise ValueError(f"Expected Z2 array of size {self.N2} along axis {self.axis}")
+            raise ValueError(
+                f"Expected Z2 array of size {self.N2} along axis {self.axis}"
+            )
         X = np.concatenate((Z1, Z2), axis=self.axis)
         assert X.shape[self.axis] == self.N
         return X
@@ -34,25 +38,12 @@ class ConcatChannel(Factor):
         bwd_message = filter_message(message, "bwd")
         assert len(fwd_message) == 2 and len(bwd_message) == 1
         _, _, z1data = fwd_message[0] # prev variable z1 send fwd message
-        az1, bz1 = z1data["a"], z1data["b"]
         assert bz1.shape[self.axis]==self.N1
         _, _, z2data = fwd_message[1] # prev variable z2 send fwd message
-        az2, bz2 = z2data["a"], z2data["b"]
         assert bz2.shape[self.axis]==self.N2
         _, _, xdata = bwd_message[0]  # next variable x  send bwd message
-        ax, bx = xdata["a"], xdata["b"]
         assert bx.shape[self.axis]==self.N
-        return az1, bz1, az2, bz2, ax, bx
-
-    def _parse_message_a(self, message):
-        # for x=[z1, z2]
-        fwd_message = filter_message(message, "fwd")
-        bwd_message = filter_message(message, "bwd")
-        assert len(fwd_message) == 2 and len(bwd_message) == 1
-        _, _, z1data = fwd_message[0] # prev variable z1 send fwd message
-        _, _, z2data = fwd_message[1] # prev variable z2 send fwd message
-        _, _, xdata = bwd_message[0]  # next variable x  send bwd message
-        return z1data["a"], z2data["a"], xdata["a"]
+        return z1data, z2data, xdata
 
     def forward_posterior(self, message):
         # estimate x from x = [z1, z2]
@@ -63,7 +54,10 @@ class ConcatChannel(Factor):
 
     def backward_posterior(self, message):
         # estimate z1, z2 from x = [z1, z2]
-        az1, bz1, az2, bz2, ax, bx = self._parse_message(message)
+        z1data, z2data, xdata = self._parse_message(message)
+        az1, bz1 = z1data["a"], z1data["b"]
+        az2, bz2 = z2data["a"], z2data["b"]
+        ax, bx = xdata["a"], xdata["b"]
         bx1 = np.take(bx, range(self.N1), axis=self.axis)
         bx2 = np.take(bx, range(self.N1, self.N), axis=self.axis)
         r1 = (bz1 + bx1) / (az1 + ax)
@@ -78,7 +72,8 @@ class ConcatChannel(Factor):
         return [vx]
 
     def backward_error(self, message):
-        az1, az2, ax = self._parse_message_a(message)
+        z1data, z2data, xdata = self._parse_message(message)
+        az1, az2, ax = z1data["a"], z2data["a"], xdata["a"]
         v1 = 1 / (az1 + ax)
         v2 = 1 / (az2 + ax)
         return [v1, v2]

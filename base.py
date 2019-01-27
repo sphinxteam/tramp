@@ -272,19 +272,7 @@ class Channel(Factor):
         _, _, zdata = fwd_message[0]  # prev variable z send fwd message
         _, _, xdata = bwd_message[0]  # next variable x send bwd message
         return zdata, xdata
-
-    def _parse_message_ab_tau(self, message):
-        zdata, xdata = self._parse_message(message)
-        return zdata["a"], zdata["b"], xdata["a"], xdata["b"], zdata["tau"]
-
-    def _parse_message_ab(self, message):
-        zdata, xdata = self._parse_message(message)
-        return zdata["a"], zdata["b"], xdata["a"], xdata["b"]
-
-    def _parse_message_a(self, message):
-        zdata, xdata = self._parse_message(message)
-        return zdata["a"], xdata["a"]
-
+    
     def _parse_endpoints(self, message, direction):
         dir_message = filter_message(message, direction)
         assert len(dir_message) == 1
@@ -294,7 +282,7 @@ class Channel(Factor):
     def forward_posterior(self, message):
         zdata, xdata = self._parse_message(message)
         az, bz, ax, bx = zdata["a"], zdata["b"], xdata["a"], xdata["b"]
-        rx, vx = self.compute_forward_posterior(az, bz, ax, bx )
+        rx, vx = self.compute_forward_posterior(az, bz, ax, bx)
         return [(rx, vx)]
 
     def backward_posterior(self, message):
@@ -303,22 +291,30 @@ class Channel(Factor):
         rz, vz = self.compute_backward_posterior(az, bz, ax, bx)
         return [(rz, vz)]
 
-    def forward_error(self, message):
-        zdata, xdata = self._parse_message(message)
-        az, ax = zdata["a"], xdata["a"]
+    def compute_forward_error(self, az, ax, tau):
         def variance(bz, bx):
             rx, vx = self.compute_forward_posterior(az, bz, ax, bx)
             return vx
         error = self.beliefs_measure(az, ax, tau, f=variance)
-        return [error]
+        return error
 
-    def backward_error(self, message):
-        zdata, xdata = self._parse_message(message)
-        az, ax = zdata["a"], xdata["a"]
+    def compute_backward_error(self, az, ax, tau):
         def variance(bz, bx):
             rz, vz = self.compute_backward_posterior(az, bz, ax, bx)
             return vz
         error = self.beliefs_measure(az, ax, tau, f=variance)
+        return error
+
+    def forward_error(self, message):
+        zdata, xdata = self._parse_message(message)
+        az, ax, tau = zdata["a"], xdata["a"], zdata["tau"]
+        error = self.compute_forward_error(az, ax, tau)
+        return [error]
+
+    def backward_error(self, message):
+        zdata, xdata = self._parse_message(message)
+        az, ax, tau = zdata["a"], xdata["a"], zdata["tau"]
+        error = self.compute_backward_error(az, ax, tau)
         return [error]
 
 
@@ -342,13 +338,17 @@ class Likelihood(Factor):
         rz, vz = self.compute_backward_posterior(az, bz, self.y)
         return [(rz, vz)]
 
-    def backward_error(self, message):
-        data = self._parse_message(message)
-        az, tau = data["a"], data["tau"]
+    def compute_backward_error(self, az, tau):
         def variance(bz, y):
             rz, vz = self.compute_backward_posterior(az, bz, y)
             return vz
         error = self.beliefs_measure(az, tau, f=variance)
+        return error
+
+    def backward_error(self, message):
+        data = self._parse_message(message)
+        az, tau = data["a"], data["tau"]
+        error = self.compute_backward_error(az, tau)
         return [error]
 
 
@@ -372,13 +372,17 @@ class Prior(Factor):
         rx, vx = self.compute_forward_posterior(ax, bx)
         return [(rx, vx)]
 
-    def forward_error(self, message):
-        data = self._parse_message(message)
-        ax = data["a"]
+    def compute_forward_error(self, ax):
         def variance(bx):
             rx, vx = self.compute_forward_posterior(ax, bx)
             return vx
         error = self.beliefs_measure(ax, f=variance)
+        return error
+
+    def forward_error(self, message):
+        data = self._parse_message(message)
+        ax = data["a"]
+        error = self.compute_forward_error(ax)
         return [error]
 
 
