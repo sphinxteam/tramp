@@ -18,7 +18,8 @@ class AbsLikelihood(Likelihood):
 
     def compute_backward_posterior(self, az, bz, y):
         rz = y * np.tanh(bz * y)
-        v = (y / np.cosh(bz * y))**2
+        # 1 / cosh**2 leads to overflow
+        v = (y**2) * (1 - np.tanh(bz * y)**2)
         vz = np.mean(v)
         return rz, vz
 
