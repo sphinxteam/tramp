@@ -96,7 +96,7 @@ class TrackErrors(Callback):
 
 
 class EarlyStopping(Callback):
-    def __init__(self, tol=1e-13, min_variance=0):
+    def __init__(self, tol=1e-10, min_variance=1e-10):
         self.tol = tol
         self.min_variance = min_variance
         self.repr_init()

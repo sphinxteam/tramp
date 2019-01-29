@@ -5,20 +5,22 @@ from ..base import Likelihood
 from ..utils.integration import gaussian_measure
 from scipy.integrate import quad
 import logging
-
+import warnings
 
 def phi_0(x):
-    return 0.5 * erfcx(-x / np.sqrt(2))
-
+    "Computes N(x)/Phi(x)"
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        d = np.sqrt(2 * np.pi) * 0.5 * erfcx(-x / np.sqrt(2))
+    return 1./d
 
 def psi(x):
-    phi = np.sqrt(2 * np.pi) * phi_0(x)
-    return x + 1 / phi
-
+    phi = phi_0(x)
+    return x + phi
 
 def psi_prime(x):
-    phi = np.sqrt(2 * np.pi) * phi_0(x)
-    return 1 - (1 / phi) * (x + 1 / phi)
+    phi = phi_0(x)
+    return 1 - phi * (x + phi)
 
 
 class SngLikelihood(Likelihood):
