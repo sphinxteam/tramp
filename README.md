@@ -7,21 +7,19 @@ will be renamed supertramp.
 
 ## FIXME
 
-- [ ] a > 1/tau initial conditions
 - [ ] (tests) modulus measure not normalized
 - [ ] (tests) modulus posterior : why numerical integration less precise ?
-- [ ] numerical instability: zerodivision error, nan, overflow
 - [ ] implement AbsChannel.beliefs_measure
 
 ## TODO
 
 - notebooks
   - [ ] channels
-  - [ ] priors
-  - [ ] likelihoods
-  - [ ] ridge regression
-  - [ ] sparse regression
-  - [ ] perceptron
+  - [x] priors
+  - [x] likelihoods
+  - [x] ridge regression
+  - [x] sparse regression
+  - [x] perceptron
   - [ ] probit classification
 - tests
   - [x] channel posterior
@@ -51,7 +49,7 @@ will be renamed supertramp.
   - [ ] ReLU
   - [ ] pow(x, 2)
 - likelihood
-  - [ ] modulus
+  - [x] modulus
 - nodes
   - [x] leaf unobserved variable
 - state evolution
@@ -61,7 +59,7 @@ will be renamed supertramp.
   - [x] EP algo
 - ensemble
   - [ ] Haar measure
-  - [ ] gaussian iid
+  - [x] gaussian iid
   - [ ] features generator
 - GPs
   - [ ] GP prior
