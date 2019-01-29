@@ -46,10 +46,10 @@ class LinearChannel(Channel):
     def compute_n_eff(self, az, ax):
         "Effective number of parameters = overlap in z"
         if ax == 0:
-            logging.warn(f"ax=0 in {self} compute_n_eff")
+            logging.info(f"ax=0 in {self} compute_n_eff")
             return 0.
         if az / ax == 0:
-            logging.warn(f"az/ax=0 in {self} compute_n_eff")
+            logging.info(f"az/ax=0 in {self} compute_n_eff")
             return self.rank / self.Nz
         n_eff_trace = np.sum(self.singular / (az / ax + self.singular))
         return n_eff_trace / self.Nz

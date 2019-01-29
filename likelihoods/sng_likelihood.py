@@ -42,7 +42,7 @@ class SngLikelihood(Likelihood):
 
     def beliefs_measure(self, az, tau, f):
         if (az <= 1 / tau):
-            logging.warn(f"az={az} <= 1/tau={1/tau} in {self}.beliefs_measure")
+            logging.info(f"az={az} <= 1/tau={1/tau} in {self}.beliefs_measure")
         a_eff = az * (az * tau - 1)
         s_eff = 0 if a_eff<=0 else np.sqrt(a_eff)
         def f_pos(bz):
