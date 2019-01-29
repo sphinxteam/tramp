@@ -4,6 +4,7 @@ from scipy.stats import norm
 from ..base import Likelihood
 from ..utils.integration import gaussian_measure
 from scipy.integrate import quad
+import logging
 
 
 def phi_0(x):
@@ -40,13 +41,16 @@ class SngLikelihood(Likelihood):
         return rz, vz
 
     def beliefs_measure(self, az, tau, f):
+        if (az <= 1 / tau):
+            logging.warn(f"az={az} <= 1/tau={1/tau} in {self}.beliefs_measure")
+        a_eff = az * (az * tau - 1)
+        s_eff = 0 if a_eff<=0 else np.sqrt(a_eff)
         def f_pos(bz):
             return norm.cdf(+bz / np.sqrt(az)) * f(bz, +1)
         def f_neg(bz):
             return norm.cdf(-bz / np.sqrt(az)) * f(bz, -1)
-        s = np.sqrt(az * (az * tau - 1))
-        mu_pos = gaussian_measure(0, s, f_pos)
-        mu_neg = gaussian_measure(0, s, f_neg)
+        mu_pos = gaussian_measure(0, s_eff, f_pos)
+        mu_neg = gaussian_measure(0, s_eff, f_neg)
         return mu_pos + mu_neg
 
     def measure(self, y, f, max = 10):

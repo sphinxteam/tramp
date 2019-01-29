@@ -8,7 +8,7 @@ from .callbacks import PassCallback
 
 
 class MessagePassing():
-    _default_initializer = ConstantInit()
+    _default_initializer = ConstantInit(a=0, b=0)
     _default_callback = PassCallback()
 
     def __init__(self, model, message_keys, forward, backward, update):

@@ -4,6 +4,7 @@ from scipy.special import ive
 from scipy.integrate import quad
 from ..base import Likelihood
 from ..utils.integration import gaussian_measure_2d
+import logging
 
 
 def _factor(x):
@@ -30,9 +31,12 @@ class ModulusLikelihood(Likelihood):
         return rz, vz
 
     def beliefs_measure(self, az, tau, f):
+        if (az <= 1 / tau):
+            logging.warn(f"az={az} <= 1/tau={1/tau} in {self}.beliefs_measure")
         a_eff = az * (az * tau - 1)
+        s_eff = 0 if a_eff<=0 else np.sqrt(a_eff)
         def f_scaled(xi_b, xi_y):
-            b = np.sqrt(a_eff) * xi_b
+            b = s_eff * xi_b
             y = b / az + xi_y / np.sqrt(az)
             return _factor(b) * _factor(y) * ive(0, b * y) * f(b, y)
         mu = gaussian_measure_2d(0, 1, 0, 1, f_scaled)
