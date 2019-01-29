@@ -76,7 +76,7 @@ class LinearChannel(Channel):
 
     def compute_backward_variance(self, az, ax):
         if az == 0:
-            logging.warn(f"az=0 in {self} compute_backward_variance")
+            logging.info(f"az=0 in {self} compute_backward_variance")
             i_mean = np.mean(1 / self.singular)
             return np.inf if self.rank < self.Nz else i_mean / ax
         n_eff = self.compute_n_eff(az, ax)
@@ -85,7 +85,7 @@ class LinearChannel(Channel):
 
     def compute_forward_variance(self, az, ax):
         if ax == 0:
-            logging.warn(f"ax=0 in {self} compute_forward_variance")
+            logging.info(f"ax=0 in {self} compute_forward_variance")
             s_mean = np.mean(self.singular)
             return s_mean * self.rank / (self.Nx * az)
         n_eff = self.compute_n_eff(az, ax)
