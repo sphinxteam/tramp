@@ -15,3 +15,11 @@ CHANNEL_CLASSES = {
     "sng": SngChannel,
     "abs": AbsChannel
 }
+
+
+def get_channel(channel_type, **kwargs):
+    channel_kwargs = {}
+    if channel_type == "gaussian":
+        channel_kwargs["var"] = kwargs["var_noise"]
+    channel = CHANNEL_CLASSES[channel_type](**channel_kwargs)
+    return channel
