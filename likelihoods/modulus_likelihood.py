@@ -20,7 +20,7 @@ class ModulusLikelihood(Likelihood):
         return np.absolute(X)
 
     def math(self):
-        return r"$|.|$"
+        return r"$|\cdot|$"
 
     def compute_backward_posterior(self, az, bz, y):
         b = np.absolute(bz)
