@@ -21,12 +21,13 @@ class MessagePassing():
     def __init__(self, model, message_keys, forward, backward, update):
         if not isinstance(model, DAGModel):
             raise ValueError(f"model {model} is not a DAGModel")
+        model.init_shapes()
         model.second_moment()
         self.message_keys = message_keys
         self.forward = forward
         self.backward = backward
         self.update = update
-        self.model_dag = model.model_dag
+        self.model_dag = model.dag
         self.forward_ordering = model.forward_ordering
         self.backward_ordering = model.backward_ordering
         self.variables = model.variables
@@ -46,7 +47,8 @@ class MessagePassing():
                 data["tau"] = self.model_dag.node[source]["tau"]
             variable = source if isinstance(source, Variable) else target
             for message_key in self.message_keys:
-                data[message_key] = initializer.init(message_key, variable.shape)
+                shape = self.model_dag.node[variable]["shape"]
+                data[message_key] = initializer.init(message_key, shape)
         self.message_dag = message_dag
         nx.freeze(self.message_dag)
 

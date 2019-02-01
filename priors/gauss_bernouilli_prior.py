@@ -28,7 +28,7 @@ class GaussBernouilliPrior(Prior):
         return X
 
     def math(self):
-        return r"$\rho\mathcal{N}$"
+        return r"$\rho$"
 
     def second_moment(self):
         return self.rho * (self.mean**2 + self.var)

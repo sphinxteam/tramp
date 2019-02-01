@@ -1,8 +1,7 @@
-from ..base import Variable, BridgeVariable, FinalVariable
-from ..base import Factor, Prior, Likelihood, Channel, Model
-from .dag_layout import Layout
+from ..base import Variable, Factor, Model
+from .dag_algebra import ModelDAG
+import numpy as np
 import networkx as nx
-import logging
 
 
 def to_list(X):
@@ -11,53 +10,46 @@ def to_list(X):
     return list(X)
 
 
-def check_model_dag(model_dag):
-    if not nx.is_directed_acyclic_graph(model_dag):
-        raise ValueError(f"model_dag {model_dag} not a DAG")
-    for node in model_dag.nodes():
-        if not (isinstance(node, Factor) or isinstance(node, Variable)):
-            raise ValueError(f"node {node} should be Factor or Variable")
-        predecessors = model_dag.predecessors(node)
-        successors = model_dag.successors(node)
-        n_prev = len(predecessors)
-        n_next = len(successors)
-        if n_prev != node.n_prev:
-            raise ValueError(f"node {node} has {n_prev} predecessors but should have {node.n_prev}")
-        if n_next != node.n_next:
-            raise ValueError(f"node {node} has {n_prev} successors but should have {node.n_prev}")
-        opposite_class = Factor if isinstance(node, Variable) else Variable
-        for predecessor in predecessors:
-            if not isinstance(predecessor, opposite_class):
-                raise ValueError(f"predecessor {predecessor} of {node} not a {opposite_class}")
-        for successor in successors:
-            if not isinstance(successor, opposite_class):
-                raise ValueError(f"successor {successor} of {node} not a {opposite_class}")
+def check_variable_ids(variables):
+    for i, variable in enumerate(variables):
+        if variable.id is None:
+            raise ValueError("missing id for the i={i} {variable} ")
+    n_unique = len(set(variables))
+    n_variables = len(variables)
+    if n_unique != n_variables:
+        raise ValueError(f"having {n_unique} ids but {n_variables} variables")
 
 
 class DAGModel(Model):
     def __init__(self, model_dag):
-        check_model_dag(model_dag)
+        if not isinstance(model_dag, ModelDAG):
+            raise TypeError(f"model_dag {model_dag} is not a ModelDAG")
         self.model_dag = model_dag
-        self.forward_ordering = nx.topological_sort(model_dag)
+        self.dag = model_dag.dag.copy()
+        self.forward_ordering = nx.topological_sort(self.dag)
         self.backward_ordering = list(reversed(self.forward_ordering))
         self.variables = [
             node for node in self.forward_ordering
             if isinstance(node, Variable)
         ]
+        check_variable_ids(self.variables)
         self.n_variables = len(self.variables)
         self.factors = [
             node for node in self.forward_ordering
             if isinstance(node, Factor)
         ]
         self.n_factors = len(self.factors)
-        nx.freeze(self.model_dag)
+        self.init_shapes()
+        self.second_moment()
+        nx.freeze(self.dag)
 
-    def __repr__(self):
-        return f"DAGModel(n_factors={self.n_factors}, n_variables={self.n_variables})"
+    def daft(self, layout=None):
+        self.model_dag.daft(layout)
 
     def sample(self):
+        "Forward sampling of the model"
         sample_dag = nx.DiGraph()
-        sample_dag.add_edges_from(self.model_dag.edges())
+        sample_dag.add_edges_from(self.dag.edges())
         for factor in self.factors:
             prev_variables = sample_dag.predecessors(factor)
             next_variables = sample_dag.successors(factor)
@@ -68,53 +60,37 @@ class DAGModel(Model):
             X_next = factor.sample(*X_prev)
             X_next = to_list(X_next)
             for X, variable in zip(X_next, next_variables):
-                sample_dag.node[variable].update(X=X)
-        Xs = [
-            dict(
-                id=variable.id, variable=variable,
-                X=sample_dag.node[variable]["X"]
-            )
-            for variable in self.variables
-        ]
+                sample_dag.node[variable].update(
+                    X=X, shape=X.shape, id=variable.id
+                )
+        Xs = [sample_dag.node[variable] for variable in self.variables]
         return Xs
+
+    def init_shapes(self):
+        "Compute variable shapes inplace (shape attribute of variable node)"
+        for factor in self.factors:
+            prev_variables = self.dag.predecessors(factor)
+            next_variables = self.dag.successors(factor)
+            X_prev = [
+                np.ones(self.dag.node[variable]["shape"])
+                for variable in prev_variables
+            ]
+            X_next = factor.sample(*X_prev)
+            X_next = to_list(X_next)
+            for X, variable in zip(X_next, next_variables):
+                self.dag.node[variable].update(shape=X.shape)
 
     def second_moment(self):
         "Compute second_moment inplace (tau attribute of variable node)"
         for factor in self.factors:
             if factor.n_next:
-                prev_variables = self.model_dag.predecessors(factor)
-                next_variables = self.model_dag.successors(factor)
+                prev_variables = self.dag.predecessors(factor)
+                next_variables = self.dag.successors(factor)
                 tau_prev = [
-                    self.model_dag.node[variable]["tau"]
+                    self.dag.node[variable]["tau"]
                     for variable in prev_variables
                 ]
                 tau_next = factor.second_moment(*tau_prev)
                 tau_next = to_list(tau_next)
                 for tau, variable in zip(tau_next, next_variables):
-                    self.model_dag.node[variable].update(tau=tau)
-
-    def daft(self, layout=None):
-        layout = layout or Layout()
-        layout.compute_dag(self.model_dag)
-        from matplotlib import rc
-        rc("font", family="serif", size=12)
-        rc("text", usetex=True)
-        import daft
-        pgm = daft.PGM([layout.Lx, layout.Ly], origin=[0, 0])
-        idx_Y = 0
-        N = len(self.forward_ordering)
-        for l, node in enumerate(self.forward_ordering):
-            x = layout.dag.node[node]["x"]
-            y = layout.dag.node[node]["y"]
-            fixed = isinstance(node, Factor)
-            pgm.add_node(daft.Node(l, node.math(), x, y, fixed=fixed))
-            if isinstance(node, Likelihood):
-                label = r"$Y_{}$".format(idx_Y)
-                pgm.add_node(daft.Node(N + idx_Y, label, x + layout.dx, y, observed=True))
-                pgm.add_edge(l, N + idx_Y)
-                idx_Y += 1
-        for source, target in self.model_dag.edges():
-            l_source = self.forward_ordering.index(source)
-            l_target = self.forward_ordering.index(target)
-            pgm.add_edge(l_source, l_target)
-        pgm.render()
+                    self.dag.node[variable].update(tau=tau)

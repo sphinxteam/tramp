@@ -33,7 +33,9 @@ class MultiLayerModel(FactorModel):
         return f"MultiLayer({inner})"
 
     def _build_factor_dag(self, layers):
+        # factor_dag = layers[0] @ ... @ layers[n-1]
         factor_dag = layers[0]
         for layer in layers[1:]:
             factor_dag = factor_dag @ layer
+        factor_dag = factor_dag.to_factor_dag()
         return factor_dag

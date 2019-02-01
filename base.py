@@ -38,16 +38,28 @@ def filter_message(message, direction):
 
 
 class Variable(ReprMixin):
-    def __init__(self, shape, dtype=float, id=None):
+
+    def __init__(self, dtype=float, id=None):
         self.id = id
-        self.size = shape[0] if len(shape) == 1 else shape
         self.repr_init()
-        self.shape = shape
         self.dtype = dtype
 
+    def __add__(self, other):
+        from .models.dag_algebra import DAG
+        return DAG(self) + other
+
+    def __matmul__(self, other):
+        from .models.dag_algebra import DAG
+        return DAG(self) @ other
+
     def math(self):
-        str_id = "?" if self.id is None else str(self.id)
-        return r"$X_{" + str_id + r"}$"
+        if isinstance(self.id, str):
+            math_name = r"$" + self.id + r"$"
+        elif isinstance(self.id, int):
+            math_name = r"$X_{" + str(self.id) + r"}$"
+        else:
+            math_name = r"$?$"
+        return math_name
 
     def check_message(self, message):
         for source, target, data in message:
@@ -150,12 +162,12 @@ def inv(v):
 class Factor(ReprMixin):
 
     def __add__(self, other):
-        from .models.factor_algebra import FactorDAG
-        return FactorDAG(self) + other
+        from .models.dag_algebra import DAG
+        return DAG(self) + other
 
     def __matmul__(self, other):
-        from .models.factor_algebra import FactorDAG
-        return FactorDAG(self) @ other
+        from .models.dag_algebra import DAG
+        return DAG(self) @ other
 
     def check_message(self, message):
         for source, target, data in message:

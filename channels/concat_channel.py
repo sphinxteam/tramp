@@ -38,11 +38,8 @@ class ConcatChannel(Factor):
         bwd_message = filter_message(message, "bwd")
         assert len(fwd_message) == 2 and len(bwd_message) == 1
         _, _, z1data = fwd_message[0] # prev variable z1 send fwd message
-        assert bz1.shape[self.axis]==self.N1
         _, _, z2data = fwd_message[1] # prev variable z2 send fwd message
-        assert bz2.shape[self.axis]==self.N2
         _, _, xdata = bwd_message[0]  # next variable x  send bwd message
-        assert bx.shape[self.axis]==self.N
         return z1data, z2data, xdata
 
     def forward_posterior(self, message):
@@ -58,6 +55,9 @@ class ConcatChannel(Factor):
         az1, bz1 = z1data["a"], z1data["b"]
         az2, bz2 = z2data["a"], z2data["b"]
         ax, bx = xdata["a"], xdata["b"]
+        assert bz1.shape[self.axis]==self.N1
+        assert bz2.shape[self.axis]==self.N2
+        assert bx.shape[self.axis]==self.N
         bx1 = np.take(bx, range(self.N1), axis=self.axis)
         bx2 = np.take(bx, range(self.N1, self.N), axis=self.axis)
         r1 = (bz1 + bx1) / (az1 + ax)
