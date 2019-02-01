@@ -238,7 +238,7 @@ class Channel(Factor):
         _, _, zdata = fwd_message[0]  # prev variable z send fwd message
         _, _, xdata = bwd_message[0]  # next variable x send bwd message
         return zdata, xdata
-    
+
     def _parse_endpoints(self, message, direction):
         dir_message = filter_message(message, direction)
         assert len(dir_message) == 1
@@ -353,17 +353,6 @@ class Prior(Factor):
 
 
 class Ensemble(ReprMixin):
-    pass
-
-
-class Input(ReprMixin):
-    pass
-
-class Student(ReprMixin):
-    pass
-
-
-class Teacher(ReprMixin):
     pass
 
 
