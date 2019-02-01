@@ -14,16 +14,13 @@ def format_latex_message(message, comment):
         target for source, target, data in message
     ]
     m = r"\mathrm{" + comment + r"}\;"
-    for source in set(bwd_sources):
-        m += source.math()[1:-1]
+    m += ",".join(source.math()[1:-1] for source in set(bwd_sources))
     if bwd_sources:
         m += r" \rightarrow "
-    for target in set(targets):
-        m += target.math()[1:-1]
+    m += ",".join(target.math()[1:-1] for target in set(targets))
     if fwd_sources:
         m += r" \leftarrow "
-    for source in set(fwd_sources):
-        m += source.math()[1:-1]
+    m += ",".join(source.math()[1:-1] for source in set(fwd_sources))
     return m
 
 
