@@ -13,20 +13,19 @@ def info_message(message, keys=["a", "n_iter"]):
         return "[]"
 
     def info(source, target, data):
-        m = f"{source}->{target}" if data["direction"] == "fwd" else f"{target}<-{source}"
+        if data["direction"] == "fwd":
+            m = f"{source}->{target}"
+        else:
+            m = f"{target}<-{source}"
         if "a" in keys:
             m += f" a={data['a']:.3f}"
-
         if "n_iter" in keys and "n_iter" in data:
             m += f" n_iter={data['n_iter']}"
-
         if "b" in keys and "b" in data:
             m += f" b={data['b']}"
-
         if "b_size" in keys and "b" in data:
             b_size = get_size(data['b'])
             m += f" b_size={b_size}"
-
         return m
 
     infos = [info(source, target, data) for source, target, data in message]
@@ -34,21 +33,26 @@ def info_message(message, keys=["a", "n_iter"]):
 
 
 class ExplainMessagePassing(MessagePassing):
-    def __init__(self, model, keys=[]):
+    def __init__(self, model, keys=[],
+                 print_incoming=True, print_outcoming=True):
         def forward(node, message):
-            print(f"{node}: incoming message")
-            print(info_message(message, keys))
+            if print_incoming:
+                print(f"{node}: incoming message")
+                print(info_message(message, keys))
             new_message = node.forward_message(message)
-            print(f"{node}: outgoing message")
-            print(info_message(new_message, keys))
+            if print_outcoming:
+                print(f"{node}: outgoing message")
+                print(info_message(new_message, keys))
             return new_message
 
         def backward(node, message):
-            print(f"{node}: incoming message")
-            print(info_message(message, keys))
+            if print_incoming:
+                print(f"{node}: incoming message")
+                print(info_message(message, keys))
             new_message = node.backward_message(message)
-            print(f"{node}: outgoing message")
-            print(info_message(new_message, keys))
+            if print_outcoming:
+                print(f"{node}: outgoing message")
+                print(info_message(new_message, keys))
             return new_message
 
         def update(variable, message):
