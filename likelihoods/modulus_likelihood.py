@@ -3,12 +3,13 @@ from scipy.stats import norm
 from scipy.special import ive
 from scipy.integrate import quad
 from ..base import Likelihood
-from ..utils.integration import gaussian_measure_2d
+from ..utils.integration import gaussian_measure_2d, gaussian_measure
 import logging
 
 
-def _factor(x):
-    return 2 * np.pi * x * (x>0)
+def relu(x):
+    return np.maximum(0, x)
+
 
 class ModulusLikelihood(Likelihood):
     def __init__(self, y):
@@ -25,7 +26,8 @@ class ModulusLikelihood(Likelihood):
     def compute_backward_posterior(self, az, bz, y):
         b = np.absolute(bz)
         I = ive(1, b * y) / ive(0, b * y)
-        rz = bz * (y / b) * I
+        b_normed = 0 + 0j if b == 0 else bz / b
+        rz = b_normed * y * I
         v = 0.5 * (y**2) * (1 - I**2)
         vz = np.mean(v)
         return rz, vz
@@ -34,15 +36,22 @@ class ModulusLikelihood(Likelihood):
         if (az <= 1 / tau):
             logging.info(f"az={az} <= 1/tau={1/tau} in {self}.beliefs_measure")
         a_eff = az * (az * tau - 1)
-        s_eff = 0 if a_eff<=0 else np.sqrt(a_eff)
+        # handling special case a_eff=0 (no integration over b)
+        if a_eff <= 0:
+            def f_scaled_y(xi_y):
+                y = xi_y / np.sqrt(az)
+                coef_y = np.sqrt(2 * np.pi * az)
+                return coef_y * relu(y) * f(0, y)
+            return gaussian_measure(0, 1, f_scaled_y)
+
         def f_scaled(xi_b, xi_y):
-            b = s_eff * xi_b
+            b = np.sqrt(a_eff) * xi_b
             y = b / az + xi_y / np.sqrt(az)
-            return _factor(b) * _factor(y) * ive(0, b * y) * f(b, y)
-        mu = gaussian_measure_2d(0, 1, 0, 1, f_scaled)
-        return mu
+            coef = 2 * np.pi / np.sqrt(az * tau - 1)
+            return coef * relu(y) * relu(b) * ive(0, b * y) * f(b, y)
+        return gaussian_measure_2d(0, 1, 0, 1, f_scaled)
 
     def measure(self, y, f):
         def polar_f(theta):
             return y * f(y * np.exp(theta * 1j))
-        return quad(polar_f, 0, 2*np.pi)[0]
+        return quad(polar_f, 0, 2 * np.pi)[0]

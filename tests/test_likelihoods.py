@@ -136,7 +136,7 @@ class likelihoodsTest(unittest.TestCase):
             ModulusLikelihood(y = np.array([1.3]))
         ]
         for likelihood in likelihoods:
-            self._test_function_proba(likelihood, self.records)
+            self._test_function_proba(likelihood, self.records, places=6)
 
 if __name__ == "__main__":
     unittest.main()
