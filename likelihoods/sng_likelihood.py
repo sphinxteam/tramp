@@ -1,26 +1,9 @@
 import numpy as np
-from scipy.special import erfcx
-from scipy.stats import norm
 from ..base import Likelihood
 from ..utils.integration import gaussian_measure
+from ..utils.misc import phi_1, phi_2, norm_cdf
 from scipy.integrate import quad
 import logging
-import warnings
-
-def phi_0(x):
-    "Computes N(x)/Phi(x)"
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        d = np.sqrt(2 * np.pi) * 0.5 * erfcx(-x / np.sqrt(2))
-    return 1./d
-
-def psi(x):
-    phi = phi_0(x)
-    return x + phi
-
-def psi_prime(x):
-    phi = phi_0(x)
-    return 1 - phi * (x + phi)
 
 
 class SngLikelihood(Likelihood):
@@ -37,8 +20,8 @@ class SngLikelihood(Likelihood):
 
     def compute_backward_posterior(self, az, bz, y):
         x = y * bz / np.sqrt(az)
-        rz = psi(x) * y / np.sqrt(az)
-        v = psi_prime(x) / az
+        rz = phi_1(x) * y / np.sqrt(az)
+        v = phi_2(x) / az
         vz = np.mean(v)
         return rz, vz
 
@@ -48,9 +31,9 @@ class SngLikelihood(Likelihood):
         a_eff = az * (az * tau - 1)
         s_eff = 0 if a_eff<=0 else np.sqrt(a_eff)
         def f_pos(bz):
-            return norm.cdf(+bz / np.sqrt(az)) * f(bz, +1)
+            return norm_cdf(+bz / np.sqrt(az)) * f(bz, +1)
         def f_neg(bz):
-            return norm.cdf(-bz / np.sqrt(az)) * f(bz, -1)
+            return norm_cdf(-bz / np.sqrt(az)) * f(bz, -1)
         mu_pos = gaussian_measure(0, s_eff, f_pos)
         mu_neg = gaussian_measure(0, s_eff, f_neg)
         return mu_pos + mu_neg
