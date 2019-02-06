@@ -21,9 +21,9 @@ class SngChannel(Channel):
 
     def compute_forward_posterior(self, az, bz, ax, bx):
         # estimate x from x = sng(z)
-        x = bz / np.sqrt(az)
-        p_pos = norm_cdf(+x)
-        p_neg = norm_cdf(-x)
+        xz = bz / np.sqrt(az)
+        p_pos = norm_cdf(+xz)
+        p_neg = norm_cdf(-xz)
         eta = bx + 0.5 * np.log(p_pos / p_neg)
         rx = np.tanh(eta)
         v = 1 - rx**2
