@@ -3,7 +3,6 @@ from ..base import Likelihood
 from ..utils.integration import gaussian_measure
 from ..utils.misc import phi_1, phi_2, norm_cdf
 from scipy.integrate import quad
-import logging
 
 
 class SngLikelihood(Likelihood):
@@ -26,10 +25,8 @@ class SngLikelihood(Likelihood):
         return rz, vz
 
     def beliefs_measure(self, az, tau, f):
-        if (az <= 1 / tau):
-            logging.info(f"az={az} <= 1/tau={1/tau} in {self}.beliefs_measure")
-        a_eff = az * (az * tau - 1)
-        s_eff = 0 if a_eff<=0 else np.sqrt(a_eff)
+        u_eff = np.maximum(0, az * tau - 1)
+        s_eff = np.sqrt(az * u_eff)
         def f_pos(bz):
             return norm_cdf(+bz / np.sqrt(az)) * f(bz, +1)
         def f_neg(bz):

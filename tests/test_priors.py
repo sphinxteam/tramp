@@ -92,7 +92,7 @@ class PriorsTest(unittest.TestCase):
     def test_gaussian_second_moment(self):
         priors = [
             GaussianPrior(size=1, mean=0.5, var = 1.0),
-            GaussianPrior(size=1, mean=-2.5, var = 10.0)
+            GaussianPrior(size=1, mean=-0.3, var = 0.5)
         ]
         for prior in priors:
             self._test_function_second_moment(prior)

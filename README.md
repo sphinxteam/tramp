@@ -7,12 +7,13 @@ will be renamed supertramp.
 
 ## FIXME
 
-- [ ] (tests) modulus measure not normalized
 - [ ] (tests) modulus posterior : why numerical integration less precise ?
-- [ ] implement AbsChannel.beliefs_measure
+- [ ] y in daft factor_dag missing
 
 ## TODO
 
+- BrideVariable
+  - [ ] message and state evo
 - notebooks
   - [ ] channels
   - [x] priors
@@ -42,12 +43,13 @@ will be renamed supertramp.
   - [x] glm
   - [x] model algebra (compose/concat/duplicate)
   - [ ] committee
+  - [ ] regression with TV
 - priors
   - [ ] TV prior (using MAP)
 - channels
-  - [ ] modulus
-  - [ ] ReLU
-  - [ ] pow(x, 2)
+  - [x] modulus
+  - [x] ReLU
+  - [ ] pow(x, n)
 - likelihood
   - [x] modulus
 - nodes

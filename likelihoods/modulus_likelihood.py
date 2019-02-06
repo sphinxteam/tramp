@@ -4,11 +4,8 @@ from scipy.special import ive
 from scipy.integrate import quad
 from ..base import Likelihood
 from ..utils.integration import gaussian_measure_2d, gaussian_measure
+from ..utils.misc import relu
 import logging
-
-
-def relu(x):
-    return np.maximum(0, x)
 
 
 class ModulusLikelihood(Likelihood):
@@ -33,22 +30,21 @@ class ModulusLikelihood(Likelihood):
         return rz, vz
 
     def beliefs_measure(self, az, tau, f):
-        if (az <= 1 / tau):
-            logging.info(f"az={az} <= 1/tau={1/tau} in {self}.beliefs_measure")
-        a_eff = az * (az * tau - 1)
-        # handling special case a_eff=0 (no integration over b)
-        if a_eff <= 0:
+        u_eff = np.maximum(0, az * tau - 1)
+        # handling special case az * tau = 1 (no integration over b)
+        if u_eff == 0:
             def f_scaled_y(xi_y):
                 y = xi_y / np.sqrt(az)
                 coef_y = np.sqrt(2 * np.pi * az)
                 return coef_y * relu(y) * f(0, y)
             return gaussian_measure(0, 1, f_scaled_y)
-
+        # typical case u_eff > 0
+        s_eff = np.sqrt(az * u_eff)
         def f_scaled(xi_b, xi_y):
-            b = np.sqrt(a_eff) * xi_b
+            b = s_eff * xi_b
             y = b / az + xi_y / np.sqrt(az)
-            coef = 2 * np.pi / np.sqrt(az * tau - 1)
-            return coef * relu(y) * relu(b) * ive(0, b * y) * f(b, y)
+            coef = 2 * np.pi / np.sqrt(u_eff)
+            return coef * relu(b) * relu(y) * ive(0, b * y) * f(b, y)
         return gaussian_measure_2d(0, 1, 0, 1, f_scaled)
 
     def measure(self, y, f):

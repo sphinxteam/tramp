@@ -5,6 +5,7 @@ from .rotation_channel import RotationChannel
 from .linear_channel import LinearChannel
 from .sng_channel import SngChannel
 from .abs_channel import AbsChannel
+from .relu_channel import ReluChannel
 
 CHANNEL_CLASSES = {
     "concat": ConcatChannel,
@@ -13,7 +14,8 @@ CHANNEL_CLASSES = {
     "rotation": RotationChannel,
     "linear": LinearChannel,
     "sng": SngChannel,
-    "abs": AbsChannel
+    "abs": AbsChannel,
+    "relu": ReluChannel
 }
 
 

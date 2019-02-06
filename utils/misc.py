@@ -3,6 +3,9 @@ from scipy.special import erf, erfcx
 import warnings
 
 
+def relu(x):
+    return np.maximum(0, x)
+
 def norm_cdf(x):
     "Computes Phi(x)"
     return 0.5*(1 + erf(x / np.sqrt(2)))

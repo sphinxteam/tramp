@@ -21,9 +21,10 @@ class SngChannel(Channel):
 
     def compute_forward_posterior(self, az, bz, ax, bx):
         # estimate x from x = sng(z)
-        xz = bz / np.sqrt(az)
-        p_pos = norm_cdf(+xz)
-        p_neg = norm_cdf(-xz)
+        x_pos = + bz / np.sqrt(az)
+        x_neg = - bz / np.sqrt(az)
+        p_pos = norm_cdf(x_pos)
+        p_neg = norm_cdf(x_neg)
         eta = bx + 0.5 * np.log(p_pos / p_neg)
         rx = np.tanh(eta)
         v = 1 - rx**2
@@ -32,30 +33,35 @@ class SngChannel(Channel):
 
     def compute_backward_posterior(self, az, bz, ax, bx):
         # estimate z from x = sng(z)
-        xz = bz / np.sqrt(az)
-        p_pos = norm_cdf(+xz)
-        p_neg = norm_cdf(-xz)
+        x_pos = + bz / np.sqrt(az)
+        x_neg = - bz / np.sqrt(az)
+        p_pos = norm_cdf(x_pos)
+        p_neg = norm_cdf(x_neg)
         delta = 2 * bx + np.log(p_pos / p_neg)
         sigma_pos = sigmoid(+delta)
         sigma_neg = sigmoid(-delta)
-        rz_pos = +phi_1(+xz) / np.sqrt(az)
-        rz_neg = -phi_1(-xz) / np.sqrt(az)
-        vz_pos = phi_2(+xz) / az
-        vz_neg = phi_2(-xz) / az
-        rz = sigma_pos * rz_pos + sigma_neg * rz_neg
-        Dz = (rz_pos - rz_neg)**2
-        v = sigma_pos * sigma_neg * Dz + sigma_pos * vz_pos + sigma_neg * vz_neg
+        r_pos = + phi_1(x_pos) / np.sqrt(az) # NB: + phi'(x_pos)
+        r_neg = - phi_1(x_neg) / np.sqrt(az) # NB: + phi'(x_pos)
+        v_pos = phi_2(x_pos) / az
+        v_neg = phi_2(x_neg) / az
+        rz = sigma_pos * r_pos + sigma_neg * r_neg
+        Dz = (r_pos - r_neg)**2
+        v = sigma_pos * sigma_neg * Dz + sigma_pos * v_pos + sigma_neg * v_neg
         vz = np.mean(v)
         return rz, vz
 
     def beliefs_measure(self, az, ax, tau, f):
+        u_eff = np.maximum(0, az * tau - 1)
+        s_eff = np.sqrt(az * u_eff)
+
         def f_pos(bz, bx):
-            return norm_cdf(+bz / np.sqrt(az)) * f(bz, bx)
+            x_pos = + bz / np.sqrt(az)
+            return norm_cdf(x_pos) * f(bz, bx)
 
         def f_neg(bz, bx):
-            return norm_cdf(-bz / np.sqrt(az)) * f(bz, bx)
-        a_eff = az * (az * tau - 1)
-        s_eff = 0 if a_eff<=0 else np.sqrt(a_eff)
+            x_neg = - bz / np.sqrt(az)
+            return norm_cdf(x_neg) * f(bz, bx)
+
         mu_pos = gaussian_measure_2d(0, s_eff, +ax, np.sqrt(ax), f_pos)
         mu_neg = gaussian_measure_2d(0, s_eff, -ax, np.sqrt(ax), f_neg)
         return mu_pos + mu_neg

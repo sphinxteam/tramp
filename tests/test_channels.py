@@ -1,5 +1,5 @@
 import unittest
-from tramp.channels import AbsChannel, SngChannel
+from tramp.channels import AbsChannel, SngChannel, ReluChannel
 import numpy as np
 
 
@@ -47,7 +47,7 @@ def explicit_integral(az, bz, ax, bx, channel):
 class ChannelsTest(unittest.TestCase):
     def setUp(self):
         self.second_moment_records = [
-            dict(mean=-3.2, sigma=1.7),
+            dict(mean=3.2, sigma=1.7),
             dict(mean=0., sigma=2.0),
         ]
         self.records = [
@@ -64,7 +64,10 @@ class ChannelsTest(unittest.TestCase):
             tau_Z, tau_X = empirical_second_moment(
                 record["mean"], record["sigma"], channel
             )
-            tau_X_hat = channel.second_moment(tau_Z)
+            if isinstance(channel, ReluChannel):
+                tau_X_hat = channel.second_moment(tau_Z, record["mean"])
+            else:
+                tau_X_hat = channel.second_moment(tau_Z)
             msg = f"record={record}"
             self.assertAlmostEqual(tau_X_hat, tau_X, places=places, msg=msg)
 
@@ -96,6 +99,10 @@ class ChannelsTest(unittest.TestCase):
         channel = SngChannel()
         self._test_function_posterior(channel, self.records, places=6)
 
+    def test_relu_posterior(self):
+        channel = ReluChannel()
+        self._test_function_posterior(channel, self.records, places=6)
+
     def test_abs_second_moment(self):
         channel = AbsChannel()
         self._test_function_second_moment(channel, self.second_moment_records)
@@ -104,12 +111,22 @@ class ChannelsTest(unittest.TestCase):
         channel = SngChannel()
         self._test_function_second_moment(channel, self.second_moment_records)
 
+    def test_relu_second_moment(self):
+        channel = ReluChannel()
+        self._test_function_second_moment(
+            channel, self.second_moment_records, places=2
+        )
+
     def test_abs_proba(self):
         channel = AbsChannel()
         self._test_function_proba(channel, self.records)
 
     def test_sng_proba(self):
         channel = SngChannel()
+        self._test_function_proba(channel, self.records)
+
+    def test_relu_proba(self):
+        channel = ReluChannel()
         self._test_function_proba(channel, self.records)
 
 if __name__ == "__main__":

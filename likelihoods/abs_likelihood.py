@@ -2,7 +2,6 @@ import numpy as np
 from scipy.stats import norm
 from ..base import Likelihood
 from ..utils.integration import gaussian_measure_2d
-import logging
 
 
 class AbsLikelihood(Likelihood):
@@ -26,10 +25,8 @@ class AbsLikelihood(Likelihood):
 
     def beliefs_measure(self, az, tau, f):
         "NB: Assumes that f(bz, y) pair in y."
-        if (az <= 1 / tau):
-            logging.info(f"az={az} <= 1/tau={1/tau} in {self}.beliefs_measure")
-        a_eff = az * (az * tau - 1)
-        s_eff = 0 if a_eff<=0 else np.sqrt(a_eff)
+        u_eff = np.maximum(0, az * tau - 1)
+        s_eff = np.sqrt(az * u_eff)
         def f_scaled(xi_b, xi_y):
             bz = s_eff * xi_b
             y = bz / az + xi_y / np.sqrt(az)
