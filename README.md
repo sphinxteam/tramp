@@ -12,6 +12,8 @@ will be renamed supertramp.
 
 ## TODO
 
+- first moment
+  - needed for ReluChannel and SumChannel
 - BrideVariable
   - [ ] message and state evo
 - notebooks
