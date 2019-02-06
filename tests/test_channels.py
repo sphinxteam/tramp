@@ -14,24 +14,6 @@ def empirical_second_moment(mean, sigma, channel):
     tau_X = (X**2).mean()
     return tau_Z, tau_X
 
-def explicit_integral(ax, bx, prior):
-    """
-    Compute rx, vx for prior p(x) by integration.
-    """
-    def belief(x):
-        L = -0.5 * ax * (x**2) + bx * x
-        return np.exp(L)
-    def x_belief(x):
-        return x*belief(x)
-    def x2_belief(x):
-        return (x**2)*belief(x)
-
-    Z = prior.measure(belief)
-    rx = prior.measure(x_belief) / Z
-    x2 = prior.measure(x2_belief) / Z
-    vx = x2 - rx**2
-    return rx, vx
-
 
 def explicit_integral(az, bz, ax, bx, channel):
     """
