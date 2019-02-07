@@ -4,7 +4,7 @@ from ..base import Prior
 
 def soft_threshold(x, gamma):
     x_abs = np.abs(x)
-    return np.where(x_abs <= gamma, 0 * x, x * (1 - gamma / x_abs))
+    return np.maximum(0, 1 - gamma / x_abs) * x
 
 
 def v_soft_threshold(x, gamma):

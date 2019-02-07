@@ -3,8 +3,8 @@ from ..base import Prior
 
 
 def group_soft_threshold(x, gamma, axis):
-    x_norm = np.linalg.norm(x, axis=axis, keepdims=True)
-    return np.where(x_norm <= gamma, 0 * x, x * (1 - gamma / x_norm))
+    x_norm = np.linalg.norm(x, axis=axis, keepdims=True) # broadcast against x
+    return np.maximum(0, 1 - gamma / x_norm) * x
 
 def v_group_soft_threshold(x, gamma, axis):
     d = x.shape[axis]
