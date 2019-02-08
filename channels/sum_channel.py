@@ -1,8 +1,10 @@
 import numpy as np
-from ..base import Channel, inv
+from ..base import Factor, inv
 
 
-class SumChannel(Channel):
+class SumChannel(Factor):
+    n_next = 1
+
     def __init__(self, n_prev):
         self.n_prev = n_prev
         self.repr_init()
@@ -17,8 +19,6 @@ class SumChannel(Channel):
         return r"$\sum$"
 
     def second_moment(self, *taus):
-        # FIXME : need to take mean into account
-        # Here only true if all Zs are zero mean
         if len(taus) != self.n_prev:
             raise ValueError(f"expect {self.n_prev} arrays")
         tau = sum(taus)

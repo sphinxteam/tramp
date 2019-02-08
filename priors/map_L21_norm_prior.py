@@ -13,7 +13,7 @@ def v_group_soft_threshold(x, gamma, axis):
     return np.mean(v)
 
 class MAP_L21NormPrior(Prior):
-    def __init__(self, size, scale, axis = -1):
+    def __init__(self, size, scale, axis = 0):
         self.size = size
         self.scale = scale
         self.axis = axis

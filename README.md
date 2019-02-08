@@ -12,8 +12,8 @@ will be renamed supertramp.
 
 ## TODO
 
-- first moment
-  - needed for ReluChannel and SumChannel
+- check second moment computation for non zero mean signal
+- model.sample() for variable with n_prev > 1 factors (eg TV/sparse gradient)
 - BrideVariable
   - [ ] message and state evo
 - notebooks
