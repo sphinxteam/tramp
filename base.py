@@ -8,9 +8,13 @@ import logging
 
 
 class ReprMixin():
-    def repr_init(self, pad=None):
-        self._repr_kwargs = self.__dict__.copy()
-        self._repr_pad = pad
+    _repr_initialized = False
+
+    def repr_init(self, pad=None, reinit=False):
+        if reinit or not self._repr_initialized:
+            self._repr_kwargs = self.__dict__.copy()
+            self._repr_pad = pad
+            self._repr_initialized = True
 
     def __repr__(self):
         if self._repr_pad:
