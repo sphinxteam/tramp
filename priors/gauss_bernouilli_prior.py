@@ -1,6 +1,4 @@
 import numpy as np
-from scipy.integrate import quad
-from scipy.stats import norm
 from ..base import Prior
 from ..utils.integration import gaussian_measure
 
