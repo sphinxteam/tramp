@@ -1,11 +1,7 @@
 from ..base import ReprMixin
 import logging
 import numpy as np
-from sklearn.metrics import mean_squared_error
-
-METRICS = {
-    "mse": mean_squared_error
-}
+from .metrics import METRICS
 
 
 class Callback(ReprMixin):
@@ -34,20 +30,22 @@ class JoinCallback(Callback):
 
 
 class LogProgress(Callback):
-    def __init__(self, every=1):
+    def __init__(self, ids="all", every=1):
+        self.ids = ids
         self.every = every
         self.repr_init()
 
     def __call__(self, algo,  i, max_iter):
         if (i % self.every == 0):
-            variables_data = algo.get_variables_data()
+            variables_data = algo.get_variables_data(self.ids)
             logging.info(f"iteration={i+1}/{max_iter}")
-            for data in variables_data:
-                logging.info(f"variable={data['variable']} v={data['v']:.3f}")
+            for variable_id, data in variables_data.items():
+                logging.info(f"id={variable_id} v={data['v']:.3f}")
 
 
 class TrackEvolution(Callback):
-    def __init__(self, every=1):
+    def __init__(self, ids="all", every=1):
+        self.ids = ids
         self.every = every
         self.repr_init()
         self.records = []
@@ -57,20 +55,19 @@ class TrackEvolution(Callback):
         if (i == 0):
             self.records = []
         if (i % self.every == 0):
-            variables_data = algo.get_variables_data()
-            for data in variables_data:
-                record = dict(id=data["id"], v=data["v"], iter=i)
+            variables_data = algo.get_variables_data(self.ids)
+            for variable_id, data in variables_data.items():
+                record = dict(id=variable_id, v=data["v"], iter=i)
                 self.records.append(record)
 
 
 class TrackErrors(Callback):
     def __init__(self, true_values, metric="mse", every=1):
+        self.ids = true_values.keys()
         self.metric = metric
         self.every = every
         self.repr_init()
-        self.X_true = {
-            data["id"]: data["X"] for data in true_values
-        }
+        self.X_true = true_values
         self.compute_metric = METRICS.get(metric)
         self.errors = []
 
@@ -78,25 +75,22 @@ class TrackErrors(Callback):
         if (i == 0):
             self.errors = []
         if (i % self.every == 0):
-            variables_data = algo.get_variables_data()
+            variables_data = algo.get_variables_data(self.ids)
             X_pred = {
-                data["id"]: data["r"] for data in variables_data
+                variable_id: data["r"]
+                for variable_id, data in variables_data.items()
             }
-            errors = [
-                {
-                    "id": id,
-                    self.metric: self.compute_metric(
-                        X_pred[id], self.X_true[id]
-                    ),
-                    "iter": i
-                }
-                for id in self.X_true.keys()
-            ]
+            errors = [{
+                "id": id,
+                self.metric: self.compute_metric(X_pred[id], self.X_true[id]),
+                "iter": i
+            } for id in self.ids]
             self.errors += errors
 
 
 class EarlyStopping(Callback):
-    def __init__(self, tol=1e-10, min_variance=1e-10):
+    def __init__(self, ids="all", tol=1e-10, min_variance=1e-10):
+        self.ids = ids
         self.tol = tol
         self.min_variance = min_variance
         self.repr_init()
@@ -105,8 +99,8 @@ class EarlyStopping(Callback):
     def __call__(self, algo,  i, max_iter):
         if (i == 0):
             self.old_vs = None
-        variables_data = algo.get_variables_data()
-        new_vs = [data["v"] for data in variables_data]
+        variables_data = algo.get_variables_data(self.ids)
+        new_vs = [data["v"] for variable_id, data in variables_data.items()]
         if any(v<self.min_variance for v in new_vs):
             logging.info(f"early stopping: min variance {min(new_vs)}")
             return True
@@ -115,7 +109,7 @@ class EarlyStopping(Callback):
             return True
         if self.old_vs:
             tols = [
-                np.mean((old_v - new_v) ** 2)
+                np.abs(old_v - new_v)
                 for old_v, new_v in zip(self.old_vs, new_vs)
             ]
             logging.debug(f"tolerances max={max(tols):.2e} min={min(tols):.2e}")

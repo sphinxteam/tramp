@@ -29,7 +29,7 @@ class MessagePassing():
         self.update = update
         self.model_dag = model.dag
         self.forward_ordering = model.forward_ordering
-        self.backward_ordering = model.backward_ordering
+        self.backward_ordering = list(reversed(model.forward_ordering))
         self.variables = model.variables
         self.n_iter = 0
 
@@ -58,10 +58,6 @@ class MessagePassing():
             node for node in message_dag.nodes()
             if isinstance(node, Variable)
         ]
-        self.factors = [
-            node for node in message_dag.nodes()
-            if isinstance(node, Factor)
-        ]
 
     def update_message(self, new_message):
         for source, target, new_data in new_message:
@@ -87,13 +83,18 @@ class MessagePassing():
             new_data = self.update(variable, message)
             self.message_dag.node[variable].update(new_data)
 
-    def get_variables_data(self):
-        variables_data = []
+    def get_variables_data(self, ids="all"):
+        data = {}
         for variable in self.variables:
-            data = dict(id=variable.id, variable=variable)
-            data.update(self.message_dag.node[variable])
-            variables_data.append(data)
-        return variables_data
+            if ids=="all" or variable.id in ids:
+                data[variable.id] = self.message_dag.node[variable].copy()
+        return data
+
+    def get_variable_data(self, id):
+        for variable in self.variables:
+            if variable.id==id:
+                return self.message_dag.node[variable].copy()
+        raise ValueError(f"id={id} not in variables")
 
     def check_any_small(self):
         "Returns True if any v is below epsilon."
