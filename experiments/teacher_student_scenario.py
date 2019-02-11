@@ -54,7 +54,7 @@ class TeacherStudentScenario():
             max_iter=250, callback=callback, initializer=initializer,
             check_decreasing=check_decreasing
         )
-        se_x_data = ep.get_variables_data(self.x_ids)
+        se_x_data = se.get_variables_data(self.x_ids)
         self.mse_se = {x_id: data["v"] for x_id, data in se_x_data.items()}
         self.n_iter_se = se.n_iter
         # actual mse and overlap
