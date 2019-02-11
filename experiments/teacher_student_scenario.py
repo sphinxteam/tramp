@@ -36,18 +36,24 @@ class TeacherStudentScenario():
         # pass it to the student
         self.student = self.teacher.to_observed(self.observations)
 
-    def infer(self, callback=None, initializer=None):
+    def infer(self, callback=None, initializer=None, check_decreasing=True):
         callback = callback or EarlyStopping(tol=1e-6, min_variance=1e-12)
         # run EP
         ep = ExpectationPropagation(self.student)
-        ep.iterate(max_iter=250, callback=callback, initializer=initializer)
+        ep.iterate(
+            max_iter=250, callback=callback, initializer=initializer,
+            check_decreasing=check_decreasing
+        )
         ep_x_data = ep.get_variables_data(self.x_ids)
         self.x_pred = {x_id: data["r"] for x_id, data in ep_x_data.items()}
         self.mse_ep = {x_id: data["v"] for x_id, data in ep_x_data.items()}
         self.n_iter_ep = ep.n_iter
         # run SE
         se = StateEvolution(self.student)
-        se.iterate(max_iter=250, callback=callback, initializer=initializer)
+        se.iterate(
+            max_iter=250, callback=callback, initializer=initializer,
+            check_decreasing=check_decreasing
+        )
         se_x_data = ep.get_variables_data(self.x_ids)
         self.mse_se = {x_id: data["v"] for x_id, data in se_x_data.items()}
         self.n_iter_se = se.n_iter
