@@ -1,8 +1,20 @@
 from ..base import (
-    Variable, BridgeVariable, FinalVariable, Factor, Likelihood, ReprMixin
+    Variable, SISOVariable, SILeafVariable, Factor, Likelihood, ReprMixin
 )
+from ..channels import GaussianChannel, AbsChannel, SngChannel
+from ..likelihoods import GaussianLikelihood, AbsLikelihood, SngLikelihood
 from .dag_layout import Layout
 import networkx as nx
+
+
+def channel2likelihood(channel, y, y_name):
+    if isinstance(channel, GaussianChannel):
+        return GaussianLikelihood(var=channel.var, y=y, y_name=y_name)
+    if isinstance(channel, AbsChannel):
+        return AbsLikelihood(y=y, y_name=y_name)
+    if isinstance(channel, SngChannel):
+        return SngLikelihood(y=y, y_name=y_name)
+    raise NotImplementedError(f"cannot convert {channel} to likelihood")
 
 
 class PlaceHolder(ReprMixin):
@@ -111,26 +123,26 @@ class DAG():
         import daft
         pgm = daft.PGM([layout.Lx, layout.Ly], origin=[0, 0])
         nodes = nx.topological_sort(self.dag)
-        for l, node in enumerate(nodes):
+        n_nodes = len(nodes)
+        id_obs = 0
+        for l_node, node in enumerate(nodes):
             x = layout.dag.node[node]["x"]
             y = layout.dag.node[node]["y"]
             fixed = isinstance(node, Factor) or isinstance(node, PlaceHolder)
-            pgm.add_node(daft.Node(l, node.math(), x, y, fixed=fixed))
+            pgm.add_node(daft.Node(
+                l_node, node.math(), x, y, fixed=fixed
+            ))
+            if isinstance(node, Likelihood):
+                l_obs = n_nodes + id_obs
+                pgm.add_node(daft.Node(
+                    l_obs, node.y_name, x + layout.dx, y, observed=True
+                ))
+                pgm.add_edge(l_node, l_obs)
+                id_obs += 1
         for source, target in self.dag.edges():
             l_source = nodes.index(source)
             l_target = nodes.index(target)
             pgm.add_edge(l_source, l_target)
-        if show_observed:
-            n_nodes = len(nodes)
-            likelihoods = [
-                node for node in nodes if isinstance(node, Likelihood)
-            ]
-            for id_y, node in enumerate(likelihoods):
-                label = r"$Y_{}$".format(id_y)
-                pgm.add_node(daft.Node(
-                    n_nodes + id_y, label, x + layout.dx, y, observed=True
-                ))
-                pgm.add_edge(l, n_nodes + id_y)
         pgm.render()
 
 
@@ -151,9 +163,6 @@ class FactorDAG(DAG):
         check_factor_dag(dag)
         super().__init__(dag)
 
-    def daft(self, layout=None):
-        super().daft(layout=layout, show_observed=False)
-
     def to_model_dag(self):
         if self._roots_ph:
             raise ValueError(
@@ -161,14 +170,15 @@ class FactorDAG(DAG):
                 f"there are {len(self._roots_ph)} RootPlaceHolders"
             )
         dag = nx.DiGraph()
-        id = 0
+        id_x = id_y = 0
         for source, target in self.dag.edges():
             assert isinstance(source, Factor)
             if isinstance(target, PlaceHolder):
-                variable = FinalVariable(id=id)
+                variable = SILeafVariable(id=f"y_{id_y}")
+                id_y += 1
             else:
-                variable = BridgeVariable(id=id)
-            id += 1
+                variable = SISOVariable(id=f"x_{id_x}")
+                id_x += 1
             dag.add_edge(source, variable, type="factor_to_variable")
             if not isinstance(target, PlaceHolder):
                 dag.add_edge(variable, target, type="variable_to_factor")
@@ -203,5 +213,52 @@ class ModelDAG(DAG):
         check_model_dag(dag)
         super().__init__(dag)
 
-    def daft(self, layout=None):
-        super().daft(layout=layout, show_observed=True)
+    def to_observed(self, observations):
+        """ModelDAG with observed variables.
+
+        Parameters
+        ----------
+        observations: dict of arrays
+            observations = {id: observation}
+        """
+        observed_ids = observations.keys()
+
+        def is_observed(node):
+            if not isinstance(node, Variable):
+                return False
+            return (node.id in observed_ids)
+
+        def is_likelihood(node):
+            if not isinstance(node, Factor):
+                return False
+            successors = self.dag.successors(node)
+            return any(variable.id in observed_ids for variable in successors)
+
+        def get_observation_ids(node):
+            if not isinstance(node, Factor):
+                raise ValueError(f"{node} not a Factor")
+            successors = self.dag.successors(node)
+            return [
+                variable.id
+                for variable in successors if variable.id in observed_ids
+            ]
+
+        dag = nx.DiGraph()
+        for source, target in self.dag.edges():
+            if is_observed(target):
+                if target.n_next != 0:
+                    raise ValueError("{target} not a leaf")
+                pass
+            elif is_likelihood(target):
+                observation_ids = get_observation_ids(target)
+                if len(observation_ids)!=1:
+                    raise ValueError(f"cannot convert {target} to likelihood")
+                observation_id = observation_ids[0]
+                observation = observations[observation_id]
+                likelihood = channel2likelihood(
+                    target, y=observation, y_name=observation_id
+                )
+                dag.add_edge(source, likelihood)
+            else:
+                dag.add_edge(source, target)
+        return ModelDAG(dag)

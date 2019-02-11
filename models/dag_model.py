@@ -24,13 +24,16 @@ class DAGModel(Model):
     def __init__(self, model_dag):
         if not isinstance(model_dag, ModelDAG):
             raise TypeError(f"model_dag {model_dag} is not a ModelDAG")
+        self.repr_init()
         self.model_dag = model_dag
         self.dag = model_dag.dag.copy()
         self.forward_ordering = nx.topological_sort(self.dag)
-        self.backward_ordering = list(reversed(self.forward_ordering))
         self.variables = [
             node for node in self.forward_ordering
             if isinstance(node, Variable)
+        ]
+        self.variable_ids = [
+            variable.id for variable in self.variables
         ]
         check_variable_ids(self.variables)
         self.n_variables = len(self.variables)
@@ -45,6 +48,18 @@ class DAGModel(Model):
 
     def daft(self, layout=None):
         self.model_dag.daft(layout)
+
+    def to_observed(self, observations):
+        """ModelDAG with observed variables.
+
+        Parameters
+        ----------
+        observations: dict of arrays
+            observations = {id: observation}
+        """
+        observed_dag = self.model_dag.to_observed(observations)
+        return DAGModel(observed_dag)
+
 
     def sample(self):
         "Forward sampling of the model"
@@ -63,7 +78,10 @@ class DAGModel(Model):
                 sample_dag.node[variable].update(
                     X=X, shape=X.shape, id=variable.id
                 )
-        Xs = [sample_dag.node[variable] for variable in self.variables]
+        Xs = {
+            variable.id: sample_dag.node[variable]["X"]
+            for variable in self.variables
+        }
         return Xs
 
     def init_shapes(self):
