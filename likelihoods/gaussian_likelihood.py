@@ -4,7 +4,8 @@ from ..utils.integration import gaussian_measure
 
 
 class GaussianLikelihood(Likelihood):
-    def __init__(self, y, var=1):
+    def __init__(self, y, var=1, y_name="y"):
+        self.y_name = y_name
         self.size = y.shape[0] if len(y.shape) == 1 else y.shape
         self.var = var
         self.repr_init()
@@ -27,17 +28,14 @@ class GaussianLikelihood(Likelihood):
         vz = 1 / a
         return rz, vz
 
-    def backward_message(self, message):
-        source, target = self._parse_endpoints(message)
-        new_data = dict(a=self.a, b=self.b, direction="bwd")
-        new_message = [(target, source, new_data)]
-        return new_message
+    def compute_backward_message(self, az, bz):
+        az_new = self.a
+        bz_new = self.b
+        return az_new, bz_new
 
-    def backward_state_evolution(self, message):
-        source, target = self._parse_endpoints(message)
-        new_data = dict(a=self.a, direction="bwd")
-        new_message = [(target, source, new_data)]
-        return new_message
+    def compute_backward_state_evolution(self, az, tau):
+        az_new = self.a
+        return az_new
 
     def measure(self, y, f):
         return gaussian_measure(y, self.sigma, f)

@@ -20,42 +20,24 @@ class GaussianChannel(Channel):
     def second_moment(self, tau):
         return tau + self.var
 
-    def forward_message(self, message):
-        # x = z + noise, x source variable of bwd message
-        source, target = self._parse_endpoints(message, "bwd")
-        zdata, xdata = self._parse_message(message)
-        az, bz = zdata["a"], zdata["b"]
+    def compute_forward_message(self, az, bz, ax, bx):
         kz = self.a / (self.a + az)
-        new_data = dict(a=kz * az, b=kz * bz, direction="fwd")
-        new_message = [(target, source, new_data)]
-        return new_message
+        ax_new = kz * az
+        bx_new = kz * bz
+        return ax_new, bx_new
 
-    def backward_message(self, message):
-        # z = x - noise, z source variable of fwd message
-        source, target = self._parse_endpoints(message, "fwd")
-        zdata, xdata = self._parse_message(message)
-        ax, bx = xdata["a"], xdata["b"]
+    def compute_backward_message(self, az, bz, ax, bx):
         kx = self.a / (self.a + ax)
-        new_data = dict(a=kx * ax, b=kx * bx, direction="bwd")
-        new_message = [(target, source, new_data)]
-        return new_message
+        az_new = kx * ax
+        bz_new = kx * bx
+        return az_new, bz_new
 
-    def forward_state_evolution(self, message):
-        # x = z + noise, x source variable of bwd message
-        source, target = self._parse_endpoints(message, "bwd")
-        zdata, xdata = self._parse_message(message)
-        az = zdata["a"]
+    def compute_forward_state_evolution(self, az, ax, tau):
         kz = self.a / (self.a + az)
-        new_data = dict(a=kz * az, direction="fwd")
-        new_message = [(target, source, new_data)]
-        return new_message
+        ax_new = kz * az
+        return ax_new
 
-    def backward_state_evolution(self, message):
-        # z = x - noise, z source variable of fwd message
-        source, target = self._parse_endpoints(message, "fwd")
-        zdata, xdata = self._parse_message(message)
-        ax = xdata["a"]
+    def compute_backward_state_evolution(self, az, ax, tau):
         kx = self.a / (self.a + ax)
-        new_data = dict(a=kx * ax, direction="bwd")
-        new_message = [(target, source, new_data)]
-        return new_message
+        az_new = kx * ax
+        return az_new

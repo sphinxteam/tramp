@@ -29,17 +29,14 @@ class GaussianPrior(Prior):
         vx = 1 / a
         return rx, vx
 
-    def forward_message(self, message):
-        source, target = self._parse_endpoints(message)
-        new_data = dict(a=self.a, b=self.b, direction="fwd")
-        new_message = [(target, source, new_data)]
-        return new_message
+    def compute_forward_message(self, ax, bx):
+        ax_new = self.a
+        bx_new = self.b
+        return ax_new, bx_new
 
-    def forward_state_evolution(self, message):
-        source, target = self._parse_endpoints(message)
-        new_data = dict(a=self.a, direction="fwd")
-        new_message = [(target, source, new_data)]
-        return new_message
+    def compute_forward_state_evolution(self, ax):
+        ax_new = self.a
+        return ax_new
 
     def measure(self, f):
         return gaussian_measure(self.mean, self.sigma, f)

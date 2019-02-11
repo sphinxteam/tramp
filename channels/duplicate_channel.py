@@ -2,43 +2,42 @@ from ..base import Factor
 
 
 class DuplicateChannel(Factor):
-    n_next = 2
     n_prev = 1
 
-    def __init__(self):
+    def __init__(self, n_next):
+        self.n_next = n_next
         self.repr_init()
 
     def sample(self, Z):
-        return Z, Z
+        return (Z,) * self.n_next
 
     def math(self):
         return r"$\delta$"
 
     def second_moment(self, tau):
-        return tau, tau
+        return (tau,) * self.n_next
 
-    def forward_posterior(self, message):
-        # estimate x, y from x = y = z
-        a = sum(data["a"] for source, target, data in message)
-        b = sum(data["b"] for source, target, data in message)
-        r = b / a
-        v = 1. / a
-        return [(r, v), (r, v)]
+    def compute_forward_posterior(self, az, bz, ax, bx):
+        "estimate x = {xk} from (xk = z for all k)"
+        rz, vz = self.compute_backward_posterior(az, bz, ax, bx)
+        rx = [rz] * self.n_next
+        vx = [vz] * self.n_next
+        return rx, vx
 
-    def backward_posterior(self, message):
-        # estimate z from x = y = z
-        a = sum(data["a"] for source, target, data in message)
-        b = sum(data["b"] for source, target, data in message)
-        r = b / a
-        v = 1. / a
-        return [(r, v)]
+    def compute_backward_posterior(self, az, bz, ax, bx):
+        "estimate z from (xk = z for all k)"
+        a = ax + sum(az)
+        b = bx + sum(bz)
+        rz = b / a
+        vz = 1. / a
+        return rz, vz
 
-    def forward_error(self, message):
-        a = sum(data["a"] for source, target, data in message)
-        v = 1. / a
-        return [v, v]
+    def compute_forward_error(self, az, ax, tau):
+        vz = self.compute_backward_error(az, ax, tau)
+        vx = [vz] * self.n_next
+        return vx
 
-    def backward_error(self, message):
-        a = sum(data["a"] for source, target, data in message)
-        v = 1. / a
-        return [v]
+    def compute_backward_error(self, az, ax, tau):
+        a = ax + sum(az)
+        vz = 1. / a
+        return vz

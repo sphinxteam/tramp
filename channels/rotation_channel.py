@@ -27,38 +27,22 @@ class RotationChannel(Channel):
     def second_moment(self, tau):
         return tau
 
-    def forward_message(self, message):
-        # x = R z, x source variable of bwd message
-        source, target = self._parse_endpoints(message, "bwd")
-        zdata, xdata = self._parse_message(message)
-        az, bz = zdata["a"], zdata["b"]
-        new_data = dict(a=az, b=self.R @ bz, direction="fwd")
-        new_message = [(target, source, new_data)]
-        return new_message
+    def compute_forward_message(self, az, bz, ax, bx):
+        # x = R z
+        ax_new = az,
+        bx_new = self.R @ bz
+        return ax_new, bx_new
 
-    def backward_message(self, message):
-        # z = R.T x, z source variable of fwd message
-        source, target = self._parse_endpoints(message, "fwd")
-        zdata, xdata = self._parse_message(message)
-        ax, bx = xdata["a"], xdata["b"]
-        new_data = dict(a=ax, b=self.R.T @ bx, direction="bwd")
-        new_message = [(target, source, new_data)]
-        return new_message
+    def compute_backward_message(self, az, bz, ax, bx):
+        # z = R.T x
+        az_new = ax
+        bz_new = self.R.T @ bx
+        return az_new, bz_new
 
-    def forward_state_evolution(self, message):
-        # x = R z, x source variable of bwd message
-        source, target = self._parse_endpoints(message, "bwd")
-        zdata, xdata = self._parse_message(message)
-        az = zdata["a"]
-        new_data = dict(a=az, direction="fwd")
-        new_message = [(target, source, new_data)]
-        return new_message
+    def compute_forward_state_evolution(self, az, ax, tau):
+        ax_new = az
+        return ax_new
 
-    def backward_state_evolution(self, message):
-        # z = R.T x, z source variable of fwd message
-        source, target = self._parse_endpoints(message, "fwd")
-        zdata, xdata = self._parse_message(message)
-        ax = xdata["a"]
-        new_data = dict(a=ax, direction="bwd")
-        new_message = [(target, source, new_data)]
-        return new_message
+    def compute_backward_state_evolution(self, az, ax, tau):
+        az_new = ax
+        return az_new

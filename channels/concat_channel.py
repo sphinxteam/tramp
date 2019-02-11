@@ -3,77 +3,66 @@ import numpy as np
 
 class ConcatChannel(Factor):
     n_next = 1
-    n_prev = 2
 
-    def __init__(self, N1, N2, axis=0):
-        self.N1 = N1
-        self.N2 = N2
-        self.N = self.N1 + self.N2
+    def __init__(self, Ns, axis=0):
+        self.Ns = Ns
         self.axis = axis
         self.repr_init()
+        self.n_prev = len(Ns)
+        self.N = sum(Ns)
 
-    def sample(self, Z1, Z2):
-        if (Z1.shape[self.axis] != self.N1):
-            raise ValueError(
-                f"Expected Z1 array of size {self.N1} along axis {self.axis}"
-            )
-        if (Z2.shape[self.axis] != self.N2):
-            raise ValueError(
-                f"Expected Z2 array of size {self.N2} along axis {self.axis}"
-            )
-        X = np.concatenate((Z1, Z2), axis=self.axis)
+    def sample(self, *Zs):
+        if len(Zs) != self.n_prev:
+            raise ValueError(f"expect {self.n_prev} arrays")
+        for k, Z in enumerate(Zs):
+            if (Z.shape[self.axis] != self.Ns[k]):
+                raise ValueError(
+                    f"expect Z k={k} array of dimension {self.Ns[k]} "
+                    f"along axis {self.axis} "
+                    f"but got array of dimension {Z.shape[self.axis]}"
+                )
+        X = np.concatenate(Zs, axis=self.axis)
         assert X.shape[self.axis] == self.N
         return X
 
     def math(self):
         return r"$\oplus$"
 
-    def second_moment(self, tau1, tau2):
-        tau = (self.N1 * tau1 + self.N2 * tau2) / self.N
-        return tau
+    def second_moment(self, *taus):
+        if len(taus) != self.n_prev:
+            raise ValueError(f"expect {self.n_prev} taus")
+        tau_x = sum(N * tau for N, tau in zip(self.Ns, taus)) / self.N
+        return tau_x
 
-    def _parse_message(self, message):
-        # for x=[z1, z2]
-        fwd_message = filter_message(message, "fwd")
-        bwd_message = filter_message(message, "bwd")
-        assert len(fwd_message) == 2 and len(bwd_message) == 1
-        _, _, z1data = fwd_message[0] # prev variable z1 send fwd message
-        _, _, z2data = fwd_message[1] # prev variable z2 send fwd message
-        _, _, xdata = bwd_message[0]  # next variable x  send bwd message
-        return z1data, z2data, xdata
+    def compute_forward_posterior(self, az, bz, ax, bx):
+        "estimate x = [zk] from z={zk}"
+        rz, vz = self.compute_backward_posterior(az, bz, ax, bx)
+        rx = np.concatenate(rz, axis=self.axis)
+        vx = sum(N * v for N, v in zip(self.Ns, vz)) / self.N
+        return rx, vx
 
-    def forward_posterior(self, message):
-        # estimate x from x = [z1, z2]
-        [(r1, v1), (r2, v2)] = self.backward_posterior(message)
-        rx = np.concatenate((r1, r2), axis=self.axis)
-        vx = (self.N1 * v1 + self.N2 * v2) / self.N
-        return [(rx, vx)]
-
-    def backward_posterior(self, message):
-        # estimate z1, z2 from x = [z1, z2]
-        z1data, z2data, xdata = self._parse_message(message)
-        az1, bz1 = z1data["a"], z1data["b"]
-        az2, bz2 = z2data["a"], z2data["b"]
-        ax, bx = xdata["a"], xdata["b"]
-        assert bz1.shape[self.axis]==self.N1
-        assert bz2.shape[self.axis]==self.N2
+    def compute_backward_posterior(self, az, bz, ax, bx):
+        "estimate z={zk} from x = [zk]"
+        for N, Z in zip(self.Ns, bz):
+            assert bz.shape[self.axis]==N
         assert bx.shape[self.axis]==self.N
-        bx1 = np.take(bx, range(self.N1), axis=self.axis)
-        bx2 = np.take(bx, range(self.N1, self.N), axis=self.axis)
-        r1 = (bz1 + bx1) / (az1 + ax)
-        r2 = (bz2 + bx2) / (az2 + ax)
-        v1 = 1 / (az1 + ax)
-        v2 = 1 / (az2 + ax)
-        return [(r1, v1), (r2, v2)]
+        idx = [0]+list(np.cumsum(self.Ns))
+        bx_subs = [
+            np.take(bx, range(idx_min, idx_max), axis=self.axis)
+            for idx_min, idx_max in zip(idx[:-1], idx[1:])
+        ]
+        ak = [a + ax for a in az]
+        bk = [b + bx_sub for b, bx_sub in zip(bz, bx_subs)]
+        vz = [1 / a for a in ak]
+        rz = [b / a for a, b in zip(ak, bk)]
+        return rz, vz
 
-    def forward_error(self, message):
-        [v1, v2] = self.backward_error(message)
-        vx = (self.N1 * v1 + self.N2 * v2) / self.N
-        return [vx]
+    def compute_forward_error(self, az, ax, tau):
+        vz = self.compute_backward_error(az, ax, tau)
+        vx = sum(N * v for N, v in zip(self.Ns, vz)) / self.N
+        return vx
 
-    def backward_error(self, message):
-        z1data, z2data, xdata = self._parse_message(message)
-        az1, az2, ax = z1data["a"], z2data["a"], xdata["a"]
-        v1 = 1 / (az1 + ax)
-        v2 = 1 / (az2 + ax)
-        return [v1, v2]
+    def compute_backward_error(self, az, ax, tau):
+        ak = [a + ax for a in az]
+        vz = [1 / ak for a in ak]
+        return vz
