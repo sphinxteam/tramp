@@ -10,16 +10,13 @@ class Layout():
         self.dag = None
 
     def compute_dag(self, dag):
-        self._check_dag(dag)
         self._init_dag(dag)
         self.forward_message()
         self._fix_limits()
 
-    def _check_dag(self, dag):
+    def _init_dag(self, dag):
         if not nx.is_directed_acyclic_graph(dag):
             raise ValueError(f"dag {dag} not a DAG")
-
-    def _init_dag(self, dag):
         self.dag = nx.DiGraph()
         self.dag.add_edges_from(dag.edges())
         self.forward_ordering = nx.topological_sort(dag)
