@@ -1,5 +1,5 @@
-from ..base import Prior, Channel, Likelihood
-from .factor_model import FactorModel
+from ..base import Prior, Channel, Likelihood, SISOVariable, SILeafVariable
+from .dag_model import DAGModel
 import networkx as nx
 
 
@@ -16,26 +16,31 @@ def check_layers(layers):
         raise ValueError("last layer must be a Channel or a Likelihood")
 
 
-class MultiLayerModel(FactorModel):
-    def __init__(self, layers):
+def default_ids(n_layers):
+    "Return x, t_1, ..., t_{L-1}, y"
+    ids = [f"t_{l}" for l in range(n_layers)]
+    ids[0] = "x"
+    if n_layers > 1:
+        ids[-1] = "y"
+    return ids
+
+
+class MultiLayerModel(DAGModel):
+    def __init__(self, layers, ids=None):
         check_layers(layers)
-        self.observed = isinstance(layers[-1], Likelihood)
+        n_layers = len(layers)
+        ids = ids or default_ids(n_layers)
+        if len(ids) != n_layers:
+            raise ValueError(f"ids should be of length {n_layers}")
+        self.n_layers = n_layers
         self.layers = layers
-        factor_dag = self._build_factor_dag(layers)
-        FactorModel.__init__(self, factor_dag)
-
-    def __repr__(self):
-        pad = "  "
-        padded = "\n".join([
-            f"{pad}{layer}," for layer in self.layers
-        ])
-        inner = f"\n{padded}\n{pad}observed={self.observed}\n"
-        return f"MultiLayer({inner})"
-
-    def _build_factor_dag(self, layers):
-        # factor_dag = layers[0] @ ... @ layers[n-1]
-        factor_dag = layers[0]
-        for layer in layers[1:]:
-            factor_dag = factor_dag @ layer
-        factor_dag = factor_dag.to_factor_dag()
-        return factor_dag
+        self.ids = ids
+        self.repr_init(pad="  ")
+        def get_variable(l):
+            V = SILeafVariable if l==n_layers-1 else SISOVariable
+            return V(id=ids[l])
+        dag = layers[0] @ get_variable(0)
+        for l in range(1, n_layers):
+            dag = dag @ layers[l] @ get_variable(l)
+        model_dag = dag.to_model_dag()
+        DAGModel.__init__(self, model_dag)
