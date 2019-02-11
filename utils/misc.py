@@ -10,6 +10,10 @@ def norm_cdf(x):
     "Computes Phi(x)"
     return 0.5*(1 + erf(x / np.sqrt(2)))
 
+def norm_pdf(x):
+    "Computes N(x)"
+    return np.exp(-0.5*x**2) / np.sqrt(2*np.pi)
+
 def log_norm_cdf_prime(x):
     "Computes (log Phi)'(x) = N(x)/Phi(x)"
     with warnings.catch_warnings():
