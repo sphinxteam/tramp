@@ -3,17 +3,19 @@ from ..base import Ensemble
 
 
 class GaussianEnsemble(Ensemble):
-    def __init__(self):
+    def __init__(self, M, N):
+        self.M = M
+        self.N = N
         self.repr_init()
 
-    def generate(self, n_samples, n_features):
+    def generate(self):
         """Generate gaussian iid matrix.
 
         Returns
         -------
-        - X : array of shape (n_samples, n_features)
-            X ~ iid N(0, 1/n_features)
+        - X : array of shape (M, N)
+            X ~ iid N(var = 1/N)
         """
-        sigma_x = 1 / np.sqrt(n_features)
-        X = sigma_x * np.random.randn(n_samples, n_features)
+        sigma_x = 1 / np.sqrt(self.N)
+        X = sigma_x * np.random.randn(self.M, self.N)
         return X
