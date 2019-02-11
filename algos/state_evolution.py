@@ -16,5 +16,3 @@ class StateEvolution(MessagePassing):
             model, message_keys=["a"],
             forward=forward, backward=backward, update=update
         )
-    def get_posterior(self):
-        return self.get_variables_data()
