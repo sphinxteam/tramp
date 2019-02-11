@@ -8,14 +8,16 @@ will be renamed supertramp.
 ## FIXME
 
 - [ ] (tests) modulus posterior : why numerical integration less precise ?
-- [ ] y in daft factor_dag missing
+- [ ] check complex and n-array variables
+- [ ] check second moment computation for non zero mean signal
+
 
 ## TODO
 
-- check second moment computation for non zero mean signal
+- test if init with a=espilon is better than zero to avoid warnings
 - model.sample() for variable with n_prev > 1 factors (eg TV/sparse gradient)
 - BrideVariable
-  - [ ] message and state evo
+  - [x] message and state evo
 - notebooks
   - [ ] channels
   - [x] priors
@@ -44,8 +46,8 @@ will be renamed supertramp.
   - [x] mutlilayer
   - [x] glm
   - [x] model algebra (compose/concat/duplicate)
-  - [ ] committee
-  - [ ] regression with TV
+  - [x] committee
+  - [X] regression with TV
 - priors
   - [ ] TV prior (using MAP)
 - channels
