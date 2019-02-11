@@ -408,12 +408,14 @@ class Channel(Factor):
 
     def compute_forward_message(self, az, bz, ax, bx):
         rx, vx = self.compute_forward_posterior(az, bz, ax, bx)
-        ax_new, bx_new = inv(vx) - ax, rx * inv(vx) - bx
+        ax_new = inv(vx) - ax
+        bx_new = rx * inv(vx) - bx
         return ax_new, bx_new
 
     def compute_backward_message(self, az, bz, ax, bx):
         rz, vz = self.compute_backward_posterior(az, bz, ax, bx)
-        az_new, bz_new = inv(vz) - az, rz * inv(vz) - bz
+        az_new = inv(vz) - az
+        bz_new = rz * inv(vz) - bz
         return az_new, bz_new
 
     def compute_forward_state_evolution(self, az, ax, tau):
@@ -447,7 +449,8 @@ class Likelihood(Factor):
 
     def compute_backward_message(self, az, bz):
         rz, vz = self.compute_backward_posterior(az, bz, self.y)
-        az_new, bz_new = inv(vz) - az, rz * inv(vz) - bz
+        az_new = inv(vz) - az
+        bz_new = rz * inv(vz) - bz
         return az_new, bz_new
 
     def compute_backward_state_evolution(self, az, tau):
@@ -469,7 +472,8 @@ class Prior(Factor):
 
     def compute_forward_message(self, ax, bx):
         rx, vx = self.compute_forward_posterior(ax, bx)
-        ax_new, bx_new = inv(vx) - ax, rx * inv(vx) - bx
+        ax_new = inv(vx) - ax
+        bx_new = rx * inv(vx) - bx
         return ax_new, bx_new
 
     def compute_forward_state_evolution(self, ax):
