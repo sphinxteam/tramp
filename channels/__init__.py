@@ -4,7 +4,10 @@ from .duplicate_channel import DuplicateChannel
 from .gaussian_channel import GaussianChannel
 from .rotation_channel import RotationChannel
 from .linear_channel import LinearChannel
-from .conv_channel import ConvChannel
+from .conv_channel import (
+    ConvChannel, Blur1DChannel, Blur2DChannel,
+    DifferentialChannel, LaplacianChannel
+)
 from .gradient_channel import GradientChannel
 from .sng_channel import SngChannel
 from .abs_channel import AbsChannel
@@ -18,6 +21,10 @@ CHANNEL_CLASSES = {
     "rotation": RotationChannel,
     "linear": LinearChannel,
     "conv": ConvChannel,
+    "blur_1d": Blur1DChannel,
+    "blur_2d": Blur2DChannel,
+    "diff": DifferentialChannel,
+    "laplacian": LaplacianChannel,
     "gradient": GradientChannel,
     "sng": SngChannel,
     "abs": AbsChannel,
