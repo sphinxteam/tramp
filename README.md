@@ -49,7 +49,7 @@ will be renamed supertramp.
   - [x] committee
   - [X] regression with TV
 - priors
-  - [ ] TV prior (using MAP)
+  - [x] TV prior (using MAP)
 - channels
   - [x] modulus
   - [x] ReLU
