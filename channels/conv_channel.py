@@ -5,22 +5,44 @@ from ..utils.conv_filters import (
     gaussian_filter, differential_filter, laplacian_filter
 )
 import logging
-
+from .complex_linear_channel import complex2array, array2complex
 
 class ConvChannel(Channel):
-    "Conv channel x = w * z"
+    """Conv (complex or real) channel x = w * z.
+
+    Parameters
+    ----------
+    - filter: real or complex array
+        Filter weights. The conv weights w are given by w[u] = f*[-u].
+        The conv and filter weights ffts are conjugate.
+    - real: bool
+        if True assume x, w, z real
+        if False assume x, w, z complex
+
+    Notes
+    -----
+    For message passing it is more convenient to represent a complex array x
+    as a real array X where X[0] = x.real and X[1] = x.imag
+
+    In particular when real=False:
+    - input  of sample(): Z real array of shape (2, z.shape)
+    - output of sample(): X real array of shape (2, x.shape)
+    - message bz, posterior rz: real arrays of shape (2, z.shape)
+    - message bx, posterior rx: real arrays of shape (2, x.shape)
+    """
 
     def __init__(self, filter, real=True):
         self.shape = filter.shape
         self.real = real
         self.repr_init()
         self.filter = filter
-        # conv weights = time reversed filter; their ffts are conjugate
+        # conv weights and filter ffts are conjugate
         self.w_fft_bar = fftn(filter)
         self.w_fft = np.conjugate(self.w_fft_bar)
         self.spectrum = np.absolute(self.w_fft)**2
 
     def convolve(self, z):
+        "We assume x,z,w complex for complex fft or x,w,z real for real fft"
         z_fft = fftn(z)
         x_fft = self.w_fft * z_fft
         x = ifftn(x_fft)
@@ -29,7 +51,13 @@ class ConvChannel(Channel):
         return x
 
     def sample(self, Z):
-        return self.convolve(Z)
+        "When real=False we assume Z[0] = Z.real and Z[1] = Z.imag"
+        if not self.real:
+            Z = array2complex(Z)
+        X = self.convolve(Z)
+        if not self.real:
+            X = complex2array(X)
+        return X
 
     def math(self):
         return r"$\ast$"
@@ -50,6 +78,9 @@ class ConvChannel(Channel):
 
     def compute_backward_mean(self, az, bz, ax, bx, return_fft=False):
         # estimate z from x = Wz
+        if not self.real:
+            bz = array2complex(bz)
+            bx = array2complex(bx)
         bx_fft = fftn(bx)
         bz_fft = fftn(bz)
         resolvent = 1 / (az + ax * self.spectrum)
@@ -59,6 +90,8 @@ class ConvChannel(Channel):
         rz = ifftn(rz_fft)
         if self.real:
             rz = np.real(rz)
+        else:
+            rz = complex2array(rz)
         return rz
 
     def compute_forward_mean(self, az, bz, ax, bx):
@@ -68,6 +101,8 @@ class ConvChannel(Channel):
         rx = ifftn(rx_fft)
         if self.real:
             rx = np.real(rx)
+        else:
+            rx = complex2array(rx)
         return rx
 
     def compute_backward_variance(self, az, ax):
