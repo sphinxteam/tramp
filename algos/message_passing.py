@@ -21,8 +21,6 @@ class MessagePassing():
     def __init__(self, model, message_keys, forward, backward, update):
         if not isinstance(model, DAGModel):
             raise ValueError(f"model {model} is not a DAGModel")
-        model.init_shapes()
-        model.second_moment()
         self.message_keys = message_keys
         self.forward = forward
         self.backward = backward

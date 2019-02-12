@@ -43,7 +43,7 @@ class DAGModel(Model):
         ]
         self.n_factors = len(self.factors)
         self.init_shapes()
-        self.second_moment()
+        self.init_second_moments()
         nx.freeze(self.dag)
 
     def daft(self, layout=None):
@@ -59,7 +59,6 @@ class DAGModel(Model):
         """
         observed_dag = self.model_dag.to_observed(observations)
         return DAGModel(observed_dag)
-
 
     def sample(self):
         "Forward sampling of the model"
@@ -98,7 +97,7 @@ class DAGModel(Model):
             for X, variable in zip(X_next, next_variables):
                 self.dag.node[variable].update(shape=X.shape)
 
-    def second_moment(self):
+    def init_second_moments(self):
         "Compute second_moment inplace (tau attribute of variable node)"
         for factor in self.factors:
             if factor.n_next:
@@ -112,3 +111,19 @@ class DAGModel(Model):
                 tau_next = to_list(tau_next)
                 for tau, variable in zip(tau_next, next_variables):
                     self.dag.node[variable].update(tau=tau)
+
+    def get_second_moments(self):
+        "Return second moments"
+        taus = {
+            variable.id: self.dag.node[variable]["tau"]
+            for variable in self.variables
+        }
+        return taus
+
+    def get_shapes(self):
+        "Return shapes"
+        shapes = {
+            variable.id: self.dag.node[variable]["shape"]
+            for variable in self.variables
+        }
+        return shapes
