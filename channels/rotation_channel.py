@@ -11,8 +11,9 @@ def check_rotation(R):
 
 
 class RotationChannel(Channel):
-    def __init__(self, R):
+    def __init__(self, R, R_name="R"):
         check_rotation(R)
+        self.R_name = R_name
         self.N = R.shape[0]
         self.repr_init()
         self.R = R
@@ -22,7 +23,7 @@ class RotationChannel(Channel):
         return X
 
     def math(self):
-        return r"$R$"
+        return r"$"+self.R_name+"$"
 
     def second_moment(self, tau):
         return tau
