@@ -3,6 +3,7 @@ from .concat_channel import ConcatChannel
 from .duplicate_channel import DuplicateChannel
 from .gaussian_channel import GaussianChannel
 from .rotation_channel import RotationChannel
+from .unitary_channel import UnitaryChannel
 from .linear_channel import LinearChannel
 from .conv_channel import (
     ConvChannel, Blur1DChannel, Blur2DChannel,
@@ -19,6 +20,7 @@ CHANNEL_CLASSES = {
     "duplicate": DuplicateChannel,
     "gaussian": GaussianChannel,
     "rotation": RotationChannel,
+    "unitary": UnitaryChannel,
     "linear": LinearChannel,
     "conv": ConvChannel,
     "blur_1d": Blur1DChannel,
