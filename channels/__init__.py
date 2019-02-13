@@ -1,10 +1,12 @@
 from .sum_channel import SumChannel
+from .dft_channel import DFTChannel
 from .concat_channel import ConcatChannel
 from .duplicate_channel import DuplicateChannel
 from .gaussian_channel import GaussianChannel
 from .rotation_channel import RotationChannel
 from .unitary_channel import UnitaryChannel
 from .linear_channel import LinearChannel
+from .complex_linear_channel import ComplexLinearChannel
 from .conv_channel import (
     ConvChannel, Blur1DChannel, Blur2DChannel,
     DifferentialChannel, LaplacianChannel
@@ -16,12 +18,14 @@ from .relu_channel import ReluChannel
 
 CHANNEL_CLASSES = {
     "sum": SumChannel,
+    "dft": DFTChannel,
     "concat": ConcatChannel,
     "duplicate": DuplicateChannel,
     "gaussian": GaussianChannel,
     "rotation": RotationChannel,
     "unitary": UnitaryChannel,
     "linear": LinearChannel,
+    "complex_linear": ComplexLinearChannel,
     "conv": ConvChannel,
     "blur_1d": Blur1DChannel,
     "blur_2d": Blur2DChannel,
