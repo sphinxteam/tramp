@@ -20,10 +20,14 @@ will be renamed supertramp.
 - model.sample() for variable with n_prev > 1 factors (eg TV/sparse gradient)
 - channels
   - [ ] matrix factorization using MAP ?
-  - [ ] low matrix factorization (eg learn weights of conv channel) ?
+  - [ ] low rank matrix factorization (eg learn weights of conv channel) ?
   - [ ] pow(x, n)
 - likelihoods
   - [ ] Poisson (eg for photon limited imaging)
+- models (depend on matrix factoriation module)
+  - [ ] sparse coding
+  - [ ] NMF
+  - [ ] conv net
 - ensembles
   - [ ] features generator
 - parameters estimation : view prior as a channel P(sample | parameters)
