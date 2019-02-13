@@ -64,7 +64,7 @@ will be renamed supertramp.
   - [x] likelihood
   - [x] EP algo
 - ensemble
-  - [ ] Haar measure
+  - [x] Haar measure
   - [x] gaussian iid
   - [ ] features generator
 - GPs

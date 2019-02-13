@@ -24,7 +24,7 @@ class ConvChannel(Channel):
     For message passing it is more convenient to represent a complex array x
     as a real array X where X[0] = x.real and X[1] = x.imag
 
-    In particular when real=False:
+    In particular when real=False (x, w, z complex):
     - input  of sample(): Z real array of shape (2, z.shape)
     - output of sample(): X real array of shape (2, x.shape)
     - message bz, posterior rz: real arrays of shape (2, z.shape)
