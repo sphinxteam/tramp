@@ -2,6 +2,7 @@ import numpy as np
 from ..base import Channel
 from .complex_linear_channel import complex2array, array2complex
 
+
 def check_unitary(U):
     if (U.shape[0] != U.shape[1]):
         raise ValueError(f"U.shape = {U.shape}")
@@ -11,25 +12,25 @@ def check_unitary(U):
 
 
 class UnitaryChannel(Channel):
-        """Complex linear channel x = U z.
+    """Unitary channel x = U z.
 
-        Parameters
-        ----------
-        - U: unitary matrix
-        - U_name: str
-            name of unitary matrix U for display
+    Parameters
+    ----------
+    - U: unitary matrix
+    - U_name: str
+        name of unitary matrix U for display
 
-        Notes
-        -----
-        For message passing it is more convenient to represent a complex array x
-        as a real array X where X[0] = x.real and X[1] = x.imag
+    Notes
+    -----
+    For message passing it is more convenient to represent a complex array x
+    as a real array X where X[0] = x.real and X[1] = x.imag
 
-        In particular:
-        - input  of sample(): Z array of shape (2, z.shape)
-        - output of sample(): X array of shape (2, x.shape)
-        - message bz, posterior rz: real arrays of shape (2, z.shape)
-        - message bx, posterior rx: real arrays of shape (2, x.shape)
-        """
+    In particular:
+    - input  of sample(): Z array of shape (2, z.shape)
+    - output of sample(): X array of shape (2, x.shape)
+    - message bz, posterior rz: real arrays of shape (2, z.shape)
+    - message bx, posterior rx: real arrays of shape (2, x.shape)
+    """
 
     def __init__(self, U, U_name="U"):
         U = np.matrix(U)

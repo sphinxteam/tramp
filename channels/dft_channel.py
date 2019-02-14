@@ -5,28 +5,28 @@ from .complex_linear_channel import complex2array, array2complex
 
 
 class DFTChannel(Channel):
-        """Discrete fourier transform x = FFT z.
+    """Discrete fourier transform x = FFT z.
 
-        Parameters
-        ----------
-        - real: bool
-          If z supposed to be real
+    Parameters
+    ----------
+    - real: bool
+      If z supposed to be real
 
-        Notes
-        -----
-        The fft and ifft are scaled by sqrt(N) so that both are unitary.
+    Notes
+    -----
+    The fft and ifft are scaled by sqrt(N) so that both are unitary.
 
-        For message passing it is more convenient to represent a complex array x
-        as a real array X where X[0] = x.real and X[1] = x.imag
+    For message passing it is more convenient to represent a complex array x
+    as a real array X where X[0] = x.real and X[1] = x.imag
 
-        In particular:
-        - output of sample(): X array of shape (2, x.shape)
-        - message bx, posterior rx: real arrays of shape (2, x.shape)
+    In particular:
+    - output of sample(): X array of shape (2, x.shape)
+    - message bx, posterior rx: real arrays of shape (2, x.shape)
 
-        And if real=False (z complex):
-          - input  of sample(): Z array of shape (2, z.shape)
-          - message bz, posterior rz: real arrays of shape (2, z.shape)
-        """
+    And if real=False (z complex):
+      - input  of sample(): Z array of shape (2, z.shape)
+      - message bz, posterior rz: real arrays of shape (2, z.shape)
+    """
 
     def __init__(self, real=True):
         self.real = real
