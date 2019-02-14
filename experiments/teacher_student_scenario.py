@@ -10,7 +10,7 @@ class TeacherStudentScenario():
     ----------
     - model : DAGModel instance
         Generative model
-    - x_ids : ids of the variable to infer (signal)
+    - x_ids : ids of the variables to infer (signals)
     - y_ids : ids of the observed variables (measurements)
     """
 

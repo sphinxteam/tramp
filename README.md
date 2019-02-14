@@ -24,7 +24,7 @@ will be renamed supertramp.
   - [ ] pow(x, n)
 - likelihoods
   - [ ] Poisson (eg for photon limited imaging)
-- models (depend on matrix factoriation module)
+- models (depend on matrix factorization module)
   - [ ] sparse coding
   - [ ] NMF
   - [ ] conv net

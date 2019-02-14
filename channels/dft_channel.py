@@ -19,7 +19,7 @@ class DFTChannel(Channel):
         For message passing it is more convenient to represent a complex array x
         as a real array X where X[0] = x.real and X[1] = x.imag
 
-        In particular (real=False):
+        In particular:
         - output of sample(): X array of shape (2, x.shape)
         - message bx, posterior rx: real arrays of shape (2, x.shape)
 
