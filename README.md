@@ -18,6 +18,7 @@ will be renamed supertramp.
   - [ ] check complex and n-array variables
   - [ ] check second moment computation for non zero mean signal
 - model.sample() for variable with n_prev > 1 factors (eg TV/sparse gradient)
+- compute_output_shape for each module
 - channels
   - [ ] matrix factorization using MAP ?
   - [ ] low rank matrix factorization (eg learn weights of conv channel) ?

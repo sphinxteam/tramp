@@ -7,28 +7,30 @@ def get_size(x):
     return np.size(x) if len(np.shape(x)) <= 1 else np.shape(x)
 
 
-def info_message(message, keys=["a", "n_iter"]):
+def info_arrow(source, target, data, keys):
+    if data["direction"] == "fwd":
+        m = f"{source}->{target}"
+    else:
+        m = f"{target}<-{source}"
+    if "a" in keys:
+        m += f" a={data['a']:.3f}"
+    if "n_iter" in keys and "n_iter" in data:
+        m += f" n_iter={data['n_iter']}"
+    if "b" in keys and "b" in data:
+        m += f" b={data['b']}"
+    if "b_size" in keys and "b" in data:
+        b_size = get_size(data['b'])
+        m += f" b_size={b_size}"
+    return m
 
+
+def info_message(message, keys=["a", "n_iter"]):
     if len(message) == 0:
         return "[]"
-
-    def info(source, target, data):
-        if data["direction"] == "fwd":
-            m = f"{source}->{target}"
-        else:
-            m = f"{target}<-{source}"
-        if "a" in keys:
-            m += f" a={data['a']:.3f}"
-        if "n_iter" in keys and "n_iter" in data:
-            m += f" n_iter={data['n_iter']}"
-        if "b" in keys and "b" in data:
-            m += f" b={data['b']}"
-        if "b_size" in keys and "b" in data:
-            b_size = get_size(data['b'])
-            m += f" b_size={b_size}"
-        return m
-
-    infos = [info(source, target, data) for source, target, data in message]
+    infos = [
+        info_arrow(source, target, data, keys)
+        for source, target, data in message
+    ]
     return "\n".join(infos)
 
 
@@ -65,11 +67,9 @@ class ExplainMessagePassing(MessagePassing):
         )
 
     def run(self):
-
         initializer = self._default_initializer
         logging.info(f"init message dag with {initializer}")
         self.init_message_dag(initializer)
-
         print("FORWARD PASS")
         print("-" * len("FORWARD PASS"))
         self.forward_message()
