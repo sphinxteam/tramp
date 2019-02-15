@@ -15,6 +15,8 @@ from .gradient_channel import GradientChannel
 from .sng_channel import SngChannel
 from .abs_channel import AbsChannel
 from .relu_channel import ReluChannel
+from .modulus_channel import ModulusChannel
+
 
 CHANNEL_CLASSES = {
     "sum": SumChannel,
