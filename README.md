@@ -8,7 +8,7 @@ will be renamed supertramp.
 ## FIXME
 
 - [ ] modulus posterior : why numerical integration less precise ?
-
+- [ ] update test modulus with repr of complex as real 2 arrays
 
 ## TODO
 
