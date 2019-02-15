@@ -3,12 +3,12 @@ from tramp.channels import AbsChannel, SngChannel, ReluChannel
 import numpy as np
 
 
-def empirical_second_moment(mean, sigma, channel):
+def empirical_second_moment(tau, channel):
     """
     Estimate second_moment by sampling.
     """
     noise = np.random.standard_normal(size=1000 * 1000)
-    Z = mean + sigma * noise
+    Z = np.sqrt(tau) * noise
     tau_Z = (Z**2).mean()
     X = channel.sample(Z)
     tau_X = (X**2).mean()
@@ -46,14 +46,10 @@ def explicit_integral(az, bz, ax, bx, channel):
 
 class ChannelsTest(unittest.TestCase):
     def setUp(self):
-        self.second_moment_records = [
-            dict(mean=3.2, sigma=1.7),
-            dict(mean=0., sigma=2.0),
-        ]
         self.records = [
-            dict(az=2.0, bz=2.0, ax=2.0, bx=2.0, tau=1.3),
-            dict(az=0.9, bz=1.6, ax=1.5, bx=1.3, tau=2.),
-            dict(az=0.9, bz=-1.6, ax=1.5, bx=1.3, tau=2.)
+            dict(az=2.1, bz=2.0, ax=2.0, bx=2.0, tau=2.0),
+            dict(az=2.0, bz=+1.6, ax=1.5, bx=1.3, tau=1.5),
+            dict(az=2.0, bz=-1.6, ax=1.5, bx=1.3, tau=1.0)
         ]
 
     def tearDown(self):
@@ -61,13 +57,8 @@ class ChannelsTest(unittest.TestCase):
 
     def _test_function_second_moment(self, channel, records, places=6):
         for record in records:
-            tau_Z, tau_X = empirical_second_moment(
-                record["mean"], record["sigma"], channel
-            )
-            if isinstance(channel, ReluChannel):
-                tau_X_hat = channel.second_moment(tau_Z, record["mean"])
-            else:
-                tau_X_hat = channel.second_moment(tau_Z)
+            tau_Z, tau_X = empirical_second_moment(record["tau"], channel)
+            tau_X_hat = channel.second_moment(tau_Z)
             msg = f"record={record}"
             self.assertAlmostEqual(tau_X_hat, tau_X, places=places, msg=msg)
 
@@ -97,7 +88,7 @@ class ChannelsTest(unittest.TestCase):
 
     def test_sng_posterior(self):
         channel = SngChannel()
-        self._test_function_posterior(channel, self.records, places=6)
+        self._test_function_posterior(channel, self.records, places=4)
 
     def test_relu_posterior(self):
         channel = ReluChannel()
@@ -105,17 +96,15 @@ class ChannelsTest(unittest.TestCase):
 
     def test_abs_second_moment(self):
         channel = AbsChannel()
-        self._test_function_second_moment(channel, self.second_moment_records)
+        self._test_function_second_moment(channel, self.records)
 
     def test_sng_second_moment(self):
         channel = SngChannel()
-        self._test_function_second_moment(channel, self.second_moment_records)
+        self._test_function_second_moment(channel, self.records)
 
     def test_relu_second_moment(self):
         channel = ReluChannel()
-        self._test_function_second_moment(
-            channel, self.second_moment_records, places=2
-        )
+        self._test_function_second_moment(channel, self.records, places=2)
 
     def test_abs_proba(self):
         channel = AbsChannel()

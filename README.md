@@ -7,16 +7,12 @@ will be renamed supertramp.
 
 ## FIXME
 
-- [ ] modulus posterior : why numerical integration less precise ?
-- [ ] update test modulus with repr of complex as real 2 arrays
-
 ## TODO
 
 - tests
   - [ ] linear channels (linear, conv, dft, sum, ...)
   - [ ] concat_channel, duplicate_channel
   - [ ] check complex and n-array variables
-  - [ ] check second moment computation for non zero mean signal
 - model.sample() for variable with n_prev > 1 factors (eg TV/sparse gradient)
 - compute_output_shape for each module
 - channels

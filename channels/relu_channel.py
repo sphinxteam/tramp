@@ -20,14 +20,8 @@ class ReluChannel(Channel):
     def math(self):
         return r"$\mathrm{relu}$"
 
-    def second_moment(self, tau, mean=0):
-        "NB : for Relu we need the mean to estimate the second moment"
-        v = tau - mean**2
-        if (v <= 0):
-            raise ValueError(f"negative v={v} mean**2={mean**2} > tau={tau}")
-        p_pos = norm_cdf(mean/ np.sqrt(v))
-        tau_x = tau * p_pos + mean * v * norm_pdf(mean, v)
-        return tau_x
+    def second_moment(self, tau):
+        return 0.5 * tau
 
     def check_params(self, ax, az):
         if (ax <= 0):

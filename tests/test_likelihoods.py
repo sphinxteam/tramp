@@ -2,6 +2,7 @@ import unittest
 from tramp.likelihoods import (
     GaussianLikelihood, SngLikelihood, AbsLikelihood, ModulusLikelihood
 )
+from tramp.utils.misc import complex2array, array2complex
 import numpy as np
 
 
@@ -63,12 +64,15 @@ class likelihoodsTest(unittest.TestCase):
             az, bz = record["az"], record["bz"]
             y = float(likelihood.y)
             if isinstance(likelihood, ModulusLikelihood):
-                explicit_integral = explicit_complex_integral
+                rz, vz = explicit_complex_integral(az, bz, y, likelihood)
+                bz = complex2array(np.array(bz))
+                rz_hat, vz_hat = likelihood.compute_backward_posterior(az, bz, y)
+                rz_hat = array2complex(rz_hat)
+                rz_hat = complex(rz_hat)
             else:
-                explicit_integral = explicit_real_integral
-            rz, vz = explicit_integral(az, bz, y, likelihood)
-            rz_hat, vz_hat = likelihood.compute_backward_posterior(az, bz, y)
-            rz_hat = float(rz_hat)
+                rz, vz  = explicit_real_integral(az, bz, y, likelihood)
+                rz_hat, vz_hat = likelihood.compute_backward_posterior(az, bz, y)
+                rz_hat = float(rz_hat)
             msg = f"record={record} likelihood={likelihood}"
             self.assertAlmostEqual(rz, rz_hat, places=places, msg=msg)
             self.assertAlmostEqual(vz, vz_hat, places=places, msg=msg)
@@ -107,12 +111,16 @@ class likelihoodsTest(unittest.TestCase):
 
     def test_modulus_posterior(self):
         likelihoods = [
-            ModulusLikelihood(y = np.array([10.4])),
+            ModulusLikelihood(y = np.array([3.4])),
             ModulusLikelihood(y = np.array([1.3]))
         ]
+        records = [
+            dict(az=2.0, bz=2.0, tau = 1.0),
+            dict(az=2.0, bz=2.0-1j, tau = 1.0),
+            dict(az=3.5, bz=1.3+2j, tau = 0.5)
+        ]
         for likelihood in likelihoods:
-            # less precise, why ?
-            self._test_function_posterior(likelihood, self.records, places=3)
+            self._test_function_posterior(likelihood, records)
 
     def test_sng_proba(self):
         likelihoods = [
@@ -124,7 +132,7 @@ class likelihoodsTest(unittest.TestCase):
 
     def test_abs_proba(self):
         likelihoods = [
-            AbsLikelihood(y = np.array([10.4])),
+            AbsLikelihood(y = np.array([3.4])),
             AbsLikelihood(y = np.array([1.3]))
         ]
         for likelihood in likelihoods:
@@ -132,7 +140,7 @@ class likelihoodsTest(unittest.TestCase):
 
     def test_modulus_proba(self):
         likelihoods = [
-            ModulusLikelihood(y = np.array([10.4])),
+            ModulusLikelihood(y = np.array([3.4])),
             ModulusLikelihood(y = np.array([1.3]))
         ]
         for likelihood in likelihoods:

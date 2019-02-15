@@ -30,7 +30,7 @@ class ModulusChannel(Channel):
         return r"$|\cdot|$"
 
     def second_moment(self, tau):
-        return tau
+        return 2 * tau
 
     def compute_forward_posterior(self, az, bz, ax, bx):
         bz = array2complex(bz)
