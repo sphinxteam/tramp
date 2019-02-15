@@ -1,33 +1,53 @@
 import numpy as np
-from scipy.stats import norm
 from scipy.special import ive
 from scipy.integrate import quad
 from ..base import Likelihood
 from ..utils.integration import gaussian_measure_2d, gaussian_measure
-from ..utils.misc import relu
-import logging
+from ..utils.misc import relu, complex2array, array2complex
 
 
 class ModulusLikelihood(Likelihood):
+    """Modulus likelihood y = |z|.
+
+    Parameters
+    ----------
+    - y: array
+        observed modulus
+    - y_name: str
+        name of y for display
+
+    Notes
+    -----
+    For message passing it is more convenient to represent a complex array x
+    as a real array X where X[0] = x.real and X[1] = x.imag
+
+    In particular:
+    - input  of sample(): Z array of shape (2, z.shape)
+    - message bz, posterior rz: real arrays of shape (2, z.shape)
+    """
     def __init__(self, y, y_name="y"):
         self.y_name = y_name
         self.size = y.shape[0] if len(y.shape) == 1 else y.shape
         self.repr_init()
         self.y = y
 
-    def sample(self, X):
-        return np.absolute(X)
+    def sample(self, Z):
+        "We assume Z[0] = Z.real and Z[1] = Z.imag"
+        Z = array2complex(Z)
+        return np.absolute(Z)
 
     def math(self):
         return r"$|\cdot|$"
 
     def compute_backward_posterior(self, az, bz, y):
+        bz = array2complex(bz)
         b = np.absolute(bz)
         I = ive(1, b * y) / ive(0, b * y)
-        b_normed = 0 + 0j if b == 0 else bz / b
+        b_normed = np.where(b==0, np.zeros_like(bz), bz/b)
         rz = b_normed * y * I
         v = 0.5 * (y**2) * (1 - I**2)
         vz = np.mean(v)
+        rz = complex2array(rz)
         return rz, vz
 
     def beliefs_measure(self, az, tau, f):
@@ -37,7 +57,8 @@ class ModulusLikelihood(Likelihood):
             def f_scaled_y(xi_y):
                 y = xi_y / np.sqrt(az)
                 coef_y = np.sqrt(2 * np.pi * az)
-                return coef_y * relu(y) * f(0, y)
+                bz = complex2array(np.array(0))
+                return coef_y * relu(y) * f(bz, y)
             return gaussian_measure(0, 1, f_scaled_y)
         # typical case u_eff > 0
         s_eff = np.sqrt(az * u_eff)
@@ -45,7 +66,8 @@ class ModulusLikelihood(Likelihood):
             b = s_eff * xi_b
             y = b / az + xi_y / np.sqrt(az)
             coef = 2 * np.pi / np.sqrt(u_eff)
-            return coef * relu(b) * relu(y) * ive(0, b * y) * f(b, y)
+            bz = complex2array(np.array(b))
+            return coef * relu(b) * relu(y) * ive(0, b * y) * f(bz, y)
         return gaussian_measure_2d(0, 1, 0, 1, f_scaled)
 
     def measure(self, y, f):
