@@ -7,6 +7,6 @@ from .total_variation_model import (
     SparseGradientRegression, SparseGradientClassification,
     TVRegression, TVClassification
 )
-from .committee_model import Committee
+from .committee_model import Committee, SngCommittee, SoftCommittee
 from .factor_model import FactorModel
 from .dag_model import DAGModel
