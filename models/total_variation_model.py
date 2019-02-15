@@ -1,5 +1,5 @@
 import numpy as np
-from ..base import SISOVariable, SIMOVariable, MISOVariable, MILeafVariable
+from ..base import SISOVariable, SIMOVariable, MILeafVariable
 from .dag_model import DAGModel
 from ..channels import LinearChannel, GaussianChannel, GradientChannel
 from ..priors import GaussianPrior, GaussBernouilliPrior, MAP_L21NormPrior

@@ -1,4 +1,4 @@
-from ..base import SISOVariable, SIMOVariable, MISOVariable, SILeafVariable
+from ..base import SISOVariable, SILeafVariable
 from .dag_model import DAGModel
 from ..priors import get_prior
 from ..channels import get_channel, SumChannel, LinearChannel, GaussianChannel
