@@ -1,5 +1,8 @@
 from .multi_layer_model import MultiLayerModel
-from ..channels import get_channel, GaussianChannel, LinearChannel
+from ..channels import (
+    get_channel, GaussianChannel, LinearChannel,
+    ComplexLinearChannel, ModulusChannel
+)
 from ..priors import get_prior
 from ..ensembles import get_ensemble
 
@@ -22,6 +25,23 @@ class GeneralizedLinearModel(MultiLayerModel):
         self.prior = get_prior(N, prior_type, **kwargs)
         self.linear = LinearChannel(F, W_name="F")
         self.output = get_channel(output_type, **kwargs)
+        self.repr_init(pad="  ")
+        super().__init__(
+            layers=[self.prior, self.linear, self.output],
+            ids=["x", "z", "y"]
+        )
+
+class PhaseRetrieval(MultiLayerModel):
+    def __init__(self, N, alpha, ensemble_type, prior_type, **kwargs):
+        # sensing matrix
+        M = int(alpha * N)
+        self.ensemble = get_ensemble(ensemble_type, M=M, N=N)
+        F = self.ensemble.generate()
+        # model
+        x_size = (2, N) # complex signal x
+        self.prior = get_prior(x_size, prior_type, **kwargs)
+        self.linear = ComplexLinearChannel(F, W_name="F")
+        self.output = ModulusChannel()
         self.repr_init(pad="  ")
         super().__init__(
             layers=[self.prior, self.linear, self.output],
