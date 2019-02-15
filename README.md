@@ -20,8 +20,8 @@ will be renamed supertramp.
   - [ ] low rank matrix factorization (eg learn weights of conv channel) ?
   - [ ] x = pow(z, n)
   - [ ] x = exp(alpha z) to model scale variables, eg XRay imaging:
-    - signal is density = 10^z = exp(ln10 z)
-    - measurements is intensity = exp(- l) where l = ray integral of density
+    - signal s is log-density, ie density = 10^s = exp(ln10 s)
+    - measurements is intensity = exp(- R) where R = ray integral of density
 - likelihoods
   - [ ] Poisson (eg for photon limited imaging)
 - models (depend on matrix factorization module)
