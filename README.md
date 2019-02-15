@@ -22,7 +22,10 @@ will be renamed supertramp.
 - channels
   - [ ] matrix factorization using MAP ?
   - [ ] low rank matrix factorization (eg learn weights of conv channel) ?
-  - [ ] pow(x, n)
+  - [ ] x = pow(z, n)
+  - [ ] x = exp(alpha z) to model scale variables, eg XRay imaging:
+    - signal is density = 10^z = exp(ln10 z)
+    - measurements is intensity = exp(- l) where l = ray integral of density
 - likelihoods
   - [ ] Poisson (eg for photon limited imaging)
 - models (depend on matrix factorization module)
