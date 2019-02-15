@@ -1,42 +1,18 @@
 import numpy as np
 from ..base import Channel
+from ..utils.misc import complex2array, array2complex
 import logging
 
 
 def complex_svd(X):
-    "Compute SVD of X = U S V.H"
+    "Compute SVD of X = U S V.conj().T"
     U, s, VH = np.linalg.svd(X, full_matrices=True)
-    V = VH.H
+    V = VH.conj().T
     S = np.zeros((U.shape[0], V.shape[0]))
     S[:len(s), :len(s)] = np.diag(s)
     svd_X = (U, S, V)
     return svd_X
 
-
-def complex2array(z):
-    """Transform complex z into real array Z where:
-    - Z[0] = z.real
-    - Z[1] = z.imag
-    """
-    Z_shape = (2,) + z.shape
-    Z = np.zeros(Z_shape)
-    Z[0] = z.real
-    Z[1] = z.imag
-    return Z
-
-
-def array2complex(Z):
-    """Transform real array Z into complex z where:
-    - z.real = Z[0]
-    - z.imag = Z[1]
-    """
-    if Z.shape[0] != 2:
-        raise ValueError(
-            "first axis of Z must be of length 2"
-            "where Z[0] = Z.real and Z[1] = Z.imag"
-        )
-    z = Z[0] + 1j * Z[1]
-    return z
 
 class ComplexLinearChannel(Channel):
     """Complex linear channel x = W z.
@@ -45,7 +21,7 @@ class ComplexLinearChannel(Channel):
     ----------
     - W: real or complex array of shape (Nx, Nz)
     - precompute_svd: bool
-        if True precompute SVD of W = U S V.H
+        if True precompute SVD of W = U S V.conj().T
     - ravel: bool
         if True  x = W @ z.ravel()
         if False x = W @ z
@@ -65,7 +41,6 @@ class ComplexLinearChannel(Channel):
     """
 
     def __init__(self, W, ravel=False, precompute_svd=True, W_name="W"):
-        W = np.matrix(W)
         self.W_name = W_name
         self.Nx = W.shape[0]
         # TODO check Nz when ravel = False and z matrix
@@ -78,9 +53,9 @@ class ComplexLinearChannel(Channel):
         self.alpha = self.Nx / self.Nz
         if precompute_svd:
             self.U, self.S, self.V = complex_svd(W)
-            self.spectrum = np.diag(self.S.H @ self.S)
+            self.spectrum = np.diag(self.S.conj().T @ self.S)
         else:
-            self.C = W.H @ W
+            self.C = W.conj().T @ W
             self.spectrum = np.linalg.eigvalsh(self.C)
         assert self.spectrum.shape == (self.Nz,)
         self.singular = self.spectrum[:self.rank]
@@ -90,7 +65,7 @@ class ComplexLinearChannel(Channel):
         Z = array2complex(Z)
         if self.ravel:
             Z = Z.ravel()
-        X = self.W @ Z
+        X = self.W.dot(Z)
         X = complex2array(X)
         assert X.shape == (2, self.Nx)
         return X
@@ -120,14 +95,14 @@ class ComplexLinearChannel(Channel):
             z_shape = bz.shape
             bz = bz.ravel()
         if self.precompute_svd:
-            bx_svd = self.U.H @ bx
-            bz_svd = self.V.H @ bz
+            bx_svd = self.U.conj().T @ bx
+            bz_svd = self.V.conj().T @ bz
             resolvent = 1 / (az + ax * self.spectrum)
-            rz_svd = resolvent * (bz_svd + self.S.H @ bx_svd)
+            rz_svd = resolvent * (bz_svd + self.S.conj().T @ bx_svd)
             rz = self.V @ rz_svd
         else:
             a = az * np.identity(self.Nz) + ax * self.C
-            b = (bz + self.W.H @ bx)
+            b = (bz + self.W.conj().T @ bx)
             rz = np.linalg.solve(a, b)
         if self.ravel:
             rz = rz.reshape(z_shape)

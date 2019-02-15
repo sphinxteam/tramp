@@ -4,8 +4,9 @@ from ..base import Channel
 from ..utils.conv_filters import (
     gaussian_filter, differential_filter, laplacian_filter
 )
+from ..utils.misc import complex2array, array2complex
 import logging
-from .complex_linear_channel import complex2array, array2complex
+
 
 class ConvChannel(Channel):
     """Conv (complex or real) channel x = w * z.

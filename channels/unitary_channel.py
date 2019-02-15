@@ -1,13 +1,13 @@
 import numpy as np
 from ..base import Channel
-from .complex_linear_channel import complex2array, array2complex
+from ..utils.misc import complex2array, array2complex
 
 
 def check_unitary(U):
     if (U.shape[0] != U.shape[1]):
         raise ValueError(f"U.shape = {U.shape}")
     N = U.shape[0]
-    if not np.allclose(U @ U.H, np.identity(N)):
+    if not np.allclose(U @ U.conj().T, np.identity(N)):
         raise ValueError("U not unitary")
 
 
@@ -33,7 +33,6 @@ class UnitaryChannel(Channel):
     """
 
     def __init__(self, U, U_name="U"):
-        U = np.matrix(U)
         check_unitary(U)
         self.U_name = U_name
         self.N = U.shape[0]
@@ -63,10 +62,10 @@ class UnitaryChannel(Channel):
         return ax_new, bx_new
 
     def compute_backward_message(self, az, bz, ax, bx):
-        # z = U.H x
+        # z = U.conj().T x
         az_new = ax
         bx = array2complex(bx)
-        bz_new = self.U.H @ bx
+        bz_new = self.U.conj().T @ bx
         bz_new = complex2array(bz_new)
         return az_new, bz_new
 

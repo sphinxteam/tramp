@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.fft import fftn, ifftn
 from ..base import Channel
-from .complex_linear_channel import complex2array, array2complex
+from ..utils.misc import complex2array, array2complex
 
 
 class DFTChannel(Channel):
@@ -47,7 +47,7 @@ class DFTChannel(Channel):
         return tau
 
     def compute_forward_message(self, az, bz, ax, bx):
-        # x = U z
+        # x = FFT z
         ax_new = az
         if not self.real:
             bz = array2complex(bz)
@@ -56,7 +56,7 @@ class DFTChannel(Channel):
         return ax_new, bx_new
 
     def compute_backward_message(self, az, bz, ax, bx):
-        # z = U.H x
+        # z = IFFT x
         az_new = ax
         bx = array2complex(bx)
         bz_new = ifftn(bx, norm="ortho")
