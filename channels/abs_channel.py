@@ -61,7 +61,7 @@ class AbsChannel(Channel):
 
     def beliefs_measure(self, az, ax, tau, f):
         u_eff = np.maximum(0, az * tau - 1)
-        s_eff = np.sqrt(az * u_eff)
+        sz_eff = np.sqrt(az * u_eff)
 
         def f_pos(bz, bx):
             a = ax + az
@@ -75,7 +75,7 @@ class AbsChannel(Channel):
 
         if ax==0 or u_eff==0:
             sx_eff = np.sqrt(ax * (ax * tau + 1))
-            mu_pos = mu_neg = gaussian_measure_2d(0, s_eff, 0, sx_eff, f_pos)
+            mu_pos = mu_neg = gaussian_measure_2d(0, sz_eff, 0, sx_eff, f_pos)
         else:
             cov_pos = np.array([
                 [ax * (ax * tau + 1), +ax * u_eff],

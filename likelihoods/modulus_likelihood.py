@@ -61,9 +61,9 @@ class ModulusLikelihood(Likelihood):
                 return coef_y * relu(y) * f(bz, y)
             return gaussian_measure(0, 1, f_scaled_y)
         # typical case u_eff > 0
-        s_eff = np.sqrt(az * u_eff)
+        sz_eff = np.sqrt(az * u_eff)
         def f_scaled(xi_b, xi_y):
-            b = s_eff * xi_b
+            b = sz_eff * xi_b
             y = b / az + xi_y / np.sqrt(az)
             coef = 2 * np.pi / np.sqrt(u_eff)
             bz = complex2array(np.array(b))

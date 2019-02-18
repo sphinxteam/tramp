@@ -68,7 +68,7 @@ class ReluChannel(Channel):
 
     def beliefs_measure(self, az, ax, tau, f):
         u_eff = np.maximum(0, az * tau - 1)
-        s_eff = np.sqrt(az * u_eff)
+        sz_eff = np.sqrt(az * u_eff)
 
         def f_pos(bz, bx):
             a = ax + az
@@ -81,14 +81,14 @@ class ReluChannel(Channel):
 
         if ax==0 or u_eff==0:
             sx_eff = np.sqrt(ax * (ax * tau + 1))
-            mu_pos = gaussian_measure_2d(0, s_eff, 0, sx_eff, f_pos)
+            mu_pos = gaussian_measure_2d(0, sz_eff, 0, sx_eff, f_pos)
         else:
             cov_pos = np.array([
                 [ax * (ax * tau + 1), +ax * u_eff],
                 [+ax * u_eff, az * u_eff]
             ])
             mu_pos = gaussian_measure_2d_full(cov_pos, 0, f_pos)
-        mu_neg = gaussian_measure_2d(0, s_eff, 0, np.sqrt(ax), f_neg)
+        mu_neg = gaussian_measure_2d(0, sz_eff, 0, np.sqrt(ax), f_neg)
         return mu_pos + mu_neg
 
     def measure(self, f, zmin, zmax):

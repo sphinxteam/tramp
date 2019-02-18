@@ -27,13 +27,13 @@ class SngLikelihood(Likelihood):
 
     def beliefs_measure(self, az, tau, f):
         u_eff = np.maximum(0, az * tau - 1)
-        s_eff = np.sqrt(az * u_eff)
+        sz_eff = np.sqrt(az * u_eff)
         def f_pos(bz):
             return norm_cdf(+bz / np.sqrt(az)) * f(bz, +1)
         def f_neg(bz):
             return norm_cdf(-bz / np.sqrt(az)) * f(bz, -1)
-        mu_pos = gaussian_measure(0, s_eff, f_pos)
-        mu_neg = gaussian_measure(0, s_eff, f_neg)
+        mu_pos = gaussian_measure(0, sz_eff, f_pos)
+        mu_neg = gaussian_measure(0, sz_eff, f_neg)
         return mu_pos + mu_neg
 
     def measure(self, y, f, max = 10):

@@ -50,7 +50,7 @@ class SngChannel(Channel):
 
     def beliefs_measure(self, az, ax, tau, f):
         u_eff = np.maximum(0, az * tau - 1)
-        s_eff = np.sqrt(az * u_eff)
+        sz_eff = np.sqrt(az * u_eff)
 
         def f_pos(bz, bx):
             x_pos = + bz / np.sqrt(az)
@@ -60,8 +60,8 @@ class SngChannel(Channel):
             x_neg = - bz / np.sqrt(az)
             return norm_cdf(x_neg) * f(bz, bx)
 
-        mu_pos = gaussian_measure_2d(0, s_eff, +ax, np.sqrt(ax), f_pos)
-        mu_neg = gaussian_measure_2d(0, s_eff, -ax, np.sqrt(ax), f_neg)
+        mu_pos = gaussian_measure_2d(0, sz_eff, +ax, np.sqrt(ax), f_pos)
+        mu_neg = gaussian_measure_2d(0, sz_eff, -ax, np.sqrt(ax), f_neg)
         return mu_pos + mu_neg
 
     def measure(self, f, zmin, zmax):
