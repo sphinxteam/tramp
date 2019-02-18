@@ -36,8 +36,8 @@ class SumChannel(Factor):
         "bwd message to z = {zk}; for x = sum(z)"
         v_bar = sum(1 / a for a in az)
         r_bar = sum(b / a for a, b in zip(az, bz))
-        vx = inv(ax)
-        rx = bx * inv(ax)
+        vx = 1 / ax
+        rx = bx / ax
         vk = [vx + v_bar - 1 / a for a in az]
         rk = [rx - r_bar + b / a for a, b in zip(az, bz)]
         az_new = [inv(v) for v in vk]
@@ -53,7 +53,7 @@ class SumChannel(Factor):
     def compute_backward_state_evolution(self, az, ax, tau):
         "bwd state evo to z = {zk}; for x = sum(z)"
         v_bar = sum(1 / a for a in az)
-        vx = inv(ax)
+        vx = 1 / ax
         vk = [vx + v_bar - 1 / a for a in az]
         az_new = [inv(v) for v in vk]
         return az_new

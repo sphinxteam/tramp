@@ -107,17 +107,13 @@ class ConvChannel(Channel):
         return rx
 
     def compute_backward_variance(self, az, ax):
-        if az == 0:
-            logging.info(f"az=0 in {self} compute_backward_variance")
-            i_mean = np.mean(1 / self.spectrum)
-            return i_mean / ax
+        assert az > 0
         n_eff = self.compute_n_eff(az, ax)
         vz = (1 - n_eff) / az
         return vz
 
     def compute_forward_variance(self, az, ax):
         if ax == 0:
-            logging.info(f"ax=0 in {self} compute_forward_variance")
             s_mean = np.mean(self.spectrum)
             return s_mean / az
         n_eff = self.compute_n_eff(az, ax)
