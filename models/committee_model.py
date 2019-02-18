@@ -43,10 +43,10 @@ class Committee(DAGModel):
             experts = expert if experts is None else experts + expert
         # committee of the K experts
         model_dag = experts @ SumChannel(n_prev=K)
-        if var_noise:
-            model_dag = model_dag @ GaussianChannel(var=var_noise)
         if activation2 in ["abs", "relu", "sng"]:
             model_dag = model_dag @ SISOVariable(id="a") @ get_channel(activation2)
+        if var_noise:
+            model_dag = model_dag @ SISOVariable(id="n") @ GaussianChannel(var=var_noise)
         model_dag = model_dag @ SILeafVariable(id="y")
         model_dag = model_dag.to_model_dag()
         DAGModel.__init__(self, model_dag)
