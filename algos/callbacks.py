@@ -1,6 +1,7 @@
 from ..base import ReprMixin
 import logging
 import numpy as np
+import pandas as pd
 from .metrics import METRICS
 
 
@@ -60,6 +61,9 @@ class TrackEvolution(Callback):
                 record = dict(id=variable_id, v=data["v"], iter=i)
                 self.records.append(record)
 
+    def get_dataframe(self):
+        return pd.DataFrame(self.records)
+
 
 class TrackErrors(Callback):
     def __init__(self, true_values, metric="mse", every=1):
@@ -87,6 +91,9 @@ class TrackErrors(Callback):
             } for id in self.ids]
             self.errors += errors
 
+    def get_dataframe(self):
+        return pd.DataFrame(self.errors)
+
 
 class EarlyStopping(Callback):
     def __init__(self, ids="all", tol=1e-10, min_variance=1e-10):
@@ -101,7 +108,7 @@ class EarlyStopping(Callback):
             self.old_vs = None
         variables_data = algo.get_variables_data(self.ids)
         new_vs = [data["v"] for variable_id, data in variables_data.items()]
-        if any(v<self.min_variance for v in new_vs):
+        if any(v < self.min_variance for v in new_vs):
             logging.info(f"early stopping: min variance {min(new_vs)}")
             return True
         if any(np.isnan(v) for v in new_vs):
