@@ -1,7 +1,7 @@
 import numpy as np
 from ..base import Channel
 from ..utils.integration import gaussian_measure_2d
-from ..utils.misc import norm_cdf, phi_1, phi_2, sigmoid
+from ..utils.misc import norm_cdf, phi_1, phi_2, sigmoid, compute_log_odds
 from scipy.integrate import quad
 
 
@@ -24,8 +24,7 @@ class SngChannel(Channel):
         x_pos = + bz / np.sqrt(az)
         x_neg = - bz / np.sqrt(az)
         p_pos = norm_cdf(x_pos)
-        p_neg = norm_cdf(x_neg)
-        eta = bx + 0.5 * np.log(p_pos / p_neg)
+        eta = bx + 0.5 * compute_log_odds(p_pos)
         rx = np.tanh(eta)
         v = 1 - rx**2
         vx = np.mean(v)
@@ -36,12 +35,11 @@ class SngChannel(Channel):
         x_pos = + bz / np.sqrt(az)
         x_neg = - bz / np.sqrt(az)
         p_pos = norm_cdf(x_pos)
-        p_neg = norm_cdf(x_neg)
-        delta = 2 * bx + np.log(p_pos / p_neg)
+        delta = 2 * bx + compute_log_odds(p_pos)
         sigma_pos = sigmoid(+delta)
         sigma_neg = sigmoid(-delta)
-        r_pos = + phi_1(x_pos) / np.sqrt(az) # NB: + phi'(x_pos)
-        r_neg = - phi_1(x_neg) / np.sqrt(az) # NB: + phi'(x_pos)
+        r_pos = + phi_1(x_pos) / np.sqrt(az)  # NB: + phi'(x_pos)
+        r_neg = - phi_1(x_neg) / np.sqrt(az)  # NB: + phi'(x_pos)
         v_pos = phi_2(x_pos) / az
         v_neg = phi_2(x_neg) / az
         rz = sigma_pos * r_pos + sigma_neg * r_neg

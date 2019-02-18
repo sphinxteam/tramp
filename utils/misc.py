@@ -33,6 +33,15 @@ def relu(x):
     return np.maximum(0, x)
 
 
+def compute_log_odds(p_pos):
+    "Compute ln(p_pos/p_neg)"
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        p_neg = 1 - p_pos
+        log_odds = np.log(p_pos / p_neg)
+    return log_odds
+
+
 def norm_cdf(x):
     "Computes Phi(x)"
     return 0.5 * (1 + erf(x / np.sqrt(2)))
