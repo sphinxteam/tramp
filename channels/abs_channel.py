@@ -3,7 +3,6 @@ from ..base import Channel
 from ..utils.integration import gaussian_measure_2d_full
 from ..utils.misc import norm_cdf, phi_1, phi_2, sigmoid
 from scipy.integrate import quad
-import logging
 
 
 class AbsChannel(Channel):
@@ -20,17 +19,7 @@ class AbsChannel(Channel):
     def second_moment(self, tau):
         return tau
 
-    def check_params(self, ax, az):
-        if (ax <= 0):
-            logging.warn(f"in AbsChannel negative ax={ax}")
-            ax = 1e-15
-        if (az <= 0):
-            logging.warn(f"in AbsChannel negative az={az}")
-            az = 1e-15
-        return ax, az
-
     def compute_forward_posterior(self, az, bz, ax, bx):
-        ax, az = self.check_params(ax, az)
         # estimate x from x = abs(z)
         a = ax + az
         x_pos = (bx + bz) / np.sqrt(a)
@@ -51,7 +40,6 @@ class AbsChannel(Channel):
         return rx, vx
 
     def compute_backward_posterior(self, az, bz, ax, bx):
-        ax, az = self.check_params(ax, az)
         # estimate z from x = abs(z)
         a = ax + az
         x_pos = (bx + bz) / np.sqrt(a)
@@ -72,7 +60,6 @@ class AbsChannel(Channel):
         return rz, vz
 
     def beliefs_measure(self, az, ax, tau, f):
-        ax, az = self.check_params(ax, az)
         u_eff = np.maximum(0, az * tau - 1)
         s_eff = np.sqrt(az * u_eff)
 
@@ -86,17 +73,20 @@ class AbsChannel(Channel):
             x_neg = (bx - bz) / np.sqrt(a)
             return norm_cdf(x_neg) * f(bz, bx)
 
-        cov_pos = np.array([
-            [ax * (ax * tau + 1), +ax * u_eff],
-            [+ax * u_eff, az * u_eff]
-        ])
-        cov_neg = np.array([
-            [ax * (ax * tau + 1), -ax * u_eff],
-            [-ax * u_eff, az * u_eff]
-        ])
-
-        mu_pos = gaussian_measure_2d_full(cov_pos, 0, f_pos)
-        mu_neg = gaussian_measure_2d_full(cov_neg, 0, f_neg)
+        if ax==0 or u_eff==0:
+            sx_eff = np.sqrt(ax * (ax * tau + 1))
+            mu_pos = mu_neg = gaussian_measure_2d(0, s_eff, 0, sx_eff, f_pos)
+        else:
+            cov_pos = np.array([
+                [ax * (ax * tau + 1), +ax * u_eff],
+                [+ax * u_eff, az * u_eff]
+            ])
+            cov_neg = np.array([
+                [ax * (ax * tau + 1), -ax * u_eff],
+                [-ax * u_eff, az * u_eff]
+            ])
+            mu_pos = gaussian_measure_2d_full(cov_pos, 0, f_pos)
+            mu_neg = gaussian_measure_2d_full(cov_neg, 0, f_neg)
         return mu_pos + mu_neg
 
     def measure(self, f, zmin, zmax):

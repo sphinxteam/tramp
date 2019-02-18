@@ -2,7 +2,10 @@ import numpy as np
 from scipy.integrate import quad, dblquad
 from numpy.linalg import cholesky
 from .misc import norm_pdf
+import logging
 
+def is_pos_def(x):
+    return np.all(np.linalg.eigvalsh(x) > 0)
 
 def gaussian_measure(m, s, f):
     """Computes one-dimensional gaussian integral.
@@ -55,6 +58,8 @@ def gaussian_measure_2d_full(cov, mean, f):
     -------
     - integral of N(x1, x2 | m, cov) f(x1, x2)
     """
+    if not is_pos_def(cov):
+        logging.warn(f"cov={cov} not pos def")
     L = cholesky(cov)
     def integrand(x2, x1):
         y1, y2 = L @ [x1, x2] + mean
