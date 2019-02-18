@@ -24,7 +24,8 @@ class SngChannel(Channel):
         x_pos = + bz / np.sqrt(az)
         x_neg = - bz / np.sqrt(az)
         p_pos = norm_cdf(x_pos)
-        eta = bx + 0.5 * compute_log_odds(p_pos)
+        p_neg = 1 - p_pos
+        eta = bx + 0.5 * compute_log_odds(p_pos, p_neg)
         rx = np.tanh(eta)
         v = 1 - rx**2
         vx = np.mean(v)
@@ -35,7 +36,8 @@ class SngChannel(Channel):
         x_pos = + bz / np.sqrt(az)
         x_neg = - bz / np.sqrt(az)
         p_pos = norm_cdf(x_pos)
-        delta = 2 * bx + compute_log_odds(p_pos)
+        p_neg = 1 - p_pos
+        delta = 2 * bx + compute_log_odds(p_pos, p_neg)
         sigma_pos = sigmoid(+delta)
         sigma_neg = sigmoid(-delta)
         r_pos = + phi_1(x_pos) / np.sqrt(az)  # NB: + phi'(x_pos)

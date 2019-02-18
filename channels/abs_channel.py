@@ -1,7 +1,7 @@
 import numpy as np
 from ..base import Channel
 from ..utils.integration import gaussian_measure_2d_full
-from ..utils.misc import norm_cdf, phi_1, phi_2, sigmoid
+from ..utils.misc import norm_cdf, phi_1, phi_2, sigmoid, compute_log_odds
 from scipy.integrate import quad
 
 
@@ -26,7 +26,7 @@ class AbsChannel(Channel):
         x_neg = (bx - bz) / np.sqrt(a)
         p_pos = norm_cdf(x_pos)
         p_neg = norm_cdf(x_neg)
-        delta = 2 * bx * bz / a + np.log(p_pos / p_neg)
+        delta = 2 * bx * bz / a + compute_log_odds(p_pos, p_neg)
         sigma_pos = sigmoid(+delta)
         sigma_neg = sigmoid(-delta)
         r_pos = phi_1(x_pos) / np.sqrt(a)
@@ -46,7 +46,7 @@ class AbsChannel(Channel):
         x_neg = (bx - bz) / np.sqrt(a)
         p_pos = norm_cdf(x_pos)
         p_neg = norm_cdf(x_neg)
-        delta = 2 * bx * bz / a + np.log(p_pos / p_neg)
+        delta = 2 * bx * bz / a + compute_log_odds(p_pos, p_neg)
         sigma_pos = sigmoid(+delta)
         sigma_neg = sigmoid(-delta)
         r_pos = + phi_1(x_pos) / np.sqrt(a) # NB: + phi'(x_pos)

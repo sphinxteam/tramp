@@ -1,7 +1,7 @@
 import numpy as np
 from ..base import Channel
 from ..utils.integration import gaussian_measure_2d_full, gaussian_measure_2d
-from ..utils.misc import norm_cdf, phi_1, phi_2, sigmoid, relu
+from ..utils.misc import norm_cdf, phi_1, phi_2, sigmoid, relu, compute_log_odds
 from scipy.integrate import quad
 
 
@@ -29,7 +29,7 @@ class ReluChannel(Channel):
         delta = (
             0.5 * (x_pos**2 - x_neg**2)
             + 0.5 * np.log(az / a)
-            + np.log(p_pos / p_neg)
+            + compute_log_odds(p_pos, p_neg)
         )
         sigma_pos = sigmoid(+delta)
         sigma_neg = sigmoid(-delta)
@@ -52,7 +52,7 @@ class ReluChannel(Channel):
         delta = (
             0.5 * (x_pos**2 - x_neg**2)
             + 0.5 * np.log(az / a)
-            + np.log(p_pos / p_neg)
+            + compute_log_odds(p_pos, p_neg)
         )
         sigma_pos = sigmoid(+delta)
         sigma_neg = sigmoid(-delta)

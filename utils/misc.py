@@ -33,11 +33,10 @@ def relu(x):
     return np.maximum(0, x)
 
 
-def compute_log_odds(p_pos):
+def compute_log_odds(p_pos, p_neg):
     "Compute ln(p_pos/p_neg)"
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        p_neg = 1 - p_pos
         log_odds = np.log(p_pos / p_neg)
     return log_odds
 
