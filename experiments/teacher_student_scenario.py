@@ -36,9 +36,32 @@ class TeacherStudentScenario():
         # pass it to the student
         self.student = self.teacher.to_observed(self.observations)
 
-    def infer(self, callback=None, initializer=None, check_decreasing=True):
+    def infer(self, max_iter=250, callback=None, initializer=None,
+              check_decreasing=True):
+        self.run_ep(
+            max_iter=max_iter, callback=callback, initializer=initializer,
+            check_decreasing=check_decreasing
+        )
+        self.run_se(
+            max_iter=max_iter, callback=callback, initializer=initializer,
+            check_decreasing=check_decreasing
+        )
+
+    def run_se(self, max_iter=250, callback=None, initializer=None,
+               check_decreasing=True):
         callback = callback or EarlyStopping(tol=1e-6, min_variance=1e-12)
-        # run EP
+        se = StateEvolution(self.student)
+        se.iterate(
+            max_iter=250, callback=callback, initializer=initializer,
+            check_decreasing=check_decreasing
+        )
+        se_x_data = se.get_variables_data(self.x_ids)
+        self.mse_se = {x_id: data["v"] for x_id, data in se_x_data.items()}
+        self.n_iter_se = se.n_iter
+
+    def run_ep(self, max_iter=250, callback=None, initializer=None,
+               check_decreasing=True):
+        callback = callback or EarlyStopping(tol=1e-6, min_variance=1e-12)
         ep = ExpectationPropagation(self.student)
         ep.iterate(
             max_iter=250, callback=callback, initializer=initializer,
@@ -48,15 +71,6 @@ class TeacherStudentScenario():
         self.x_pred = {x_id: data["r"] for x_id, data in ep_x_data.items()}
         self.mse_ep = {x_id: data["v"] for x_id, data in ep_x_data.items()}
         self.n_iter_ep = ep.n_iter
-        # run SE
-        se = StateEvolution(self.student)
-        se.iterate(
-            max_iter=250, callback=callback, initializer=initializer,
-            check_decreasing=check_decreasing
-        )
-        se_x_data = se.get_variables_data(self.x_ids)
-        self.mse_se = {x_id: data["v"] for x_id, data in se_x_data.items()}
-        self.n_iter_se = se.n_iter
         # actual mse and overlap
         self.mse = {
             x_id: mean_squared_error(self.x_true[x_id], self.x_pred[x_id])
