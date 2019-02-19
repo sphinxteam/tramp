@@ -23,7 +23,7 @@ class MAP_LaplacePrior(Prior):
         return X
 
     def math(self):
-        return r"$\mathcal{L}$"
+        return r"$\Vert . \Vert_1$"
 
     def second_moment(self):
         return 2 * self.scale**2
