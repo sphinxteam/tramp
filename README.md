@@ -11,6 +11,7 @@ will be renamed supertramp.
 - [ ] sng committee : EP diverges
 - [ ] mse_ep seems off for gradient channel and conv channels
 - [ ] deconv with sparse grad
+- [ ] migrate to networkx 2.x
 
 ## TODO
 
