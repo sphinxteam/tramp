@@ -52,7 +52,7 @@ class TeacherStudentScenario():
         callback = callback or EarlyStopping(tol=1e-6, min_variance=1e-12)
         se = StateEvolution(self.student)
         se.iterate(
-            max_iter=250, callback=callback, initializer=initializer,
+            max_iter=max_iter, callback=callback, initializer=initializer,
             check_decreasing=check_decreasing
         )
         se_x_data = se.get_variables_data(self.x_ids)
@@ -64,7 +64,7 @@ class TeacherStudentScenario():
         callback = callback or EarlyStopping(tol=1e-6, min_variance=1e-12)
         ep = ExpectationPropagation(self.student)
         ep.iterate(
-            max_iter=250, callback=callback, initializer=initializer,
+            max_iter=max_iter, callback=callback, initializer=initializer,
             check_decreasing=check_decreasing
         )
         ep_x_data = ep.get_variables_data(self.x_ids)
