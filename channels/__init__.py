@@ -17,6 +17,7 @@ from .sng_channel import SngChannel
 from .abs_channel import AbsChannel
 from .relu_channel import ReluChannel
 from .modulus_channel import ModulusChannel
+from .reshape_channel import ReshapeChannel
 
 
 CHANNEL_CLASSES = {
