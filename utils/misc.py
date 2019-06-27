@@ -77,4 +77,7 @@ def phi_2(x):
 
 
 def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s = 1 / (1 + np.exp(-x))
+    return s
