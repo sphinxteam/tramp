@@ -24,7 +24,7 @@ class ConstantInit(InitialConditions):
 
 
 class NoisyInit(InitialConditions):
-    def __init__(self, a_mean=1, a_var=0, b_mean=0, b_var=1):
+    def __init__(self, a_mean=0, a_var=0, b_mean=0, b_var=1):
         self.a_mean = a_mean
         self.a_var = a_var
         self.b_mean = b_mean
