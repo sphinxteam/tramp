@@ -99,7 +99,9 @@ class LinearChannel(Channel):
         return rx
 
     def compute_backward_variance(self, az, ax):
-        assert az > 0
+        if az==0:
+            logging.info(f"az=0 in {self} compute_backward_variance, clipping to 1e-11")
+        az = np.maximum(1e-11, az)
         n_eff = self.compute_n_eff(az, ax)
         vz = (1 - n_eff) / az
         return vz
