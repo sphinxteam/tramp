@@ -1,5 +1,6 @@
 from .sum_channel import SumChannel
 from .dft_channel import DFTChannel
+from .bias_channel import BiasChannel
 from .concat_channel import ConcatChannel
 from .duplicate_channel import DuplicateChannel
 from .gaussian_channel import GaussianChannel
