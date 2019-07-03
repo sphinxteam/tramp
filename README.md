@@ -15,6 +15,9 @@ will be renamed supertramp.
 
 ## TODO
 
+- utils
+  - [ ] add plotting
+  - [ ] improve logging
 - tests
   - [ ] linear channels (linear, conv, dft, sum, ...)
   - [ ] concat_channel, duplicate_channel
