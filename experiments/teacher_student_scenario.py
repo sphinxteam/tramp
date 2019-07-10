@@ -1,4 +1,4 @@
-from ..algos import ExpectationPropagation, StateEvolution, EarlyStopping
+from ..algos import ExpectationPropagation, StateEvolution
 from ..algos.metrics import mean_squared_error, overlap
 from ..models import DAGModel
 
@@ -36,37 +36,20 @@ class TeacherStudentScenario():
         # pass it to the student
         self.student = self.teacher.to_observed(self.observations)
 
-    def infer(self, max_iter=250, callback=None, initializer=None,
-              check_decreasing=True):
-        self.run_ep(
-            max_iter=max_iter, callback=callback, initializer=initializer,
-            check_decreasing=check_decreasing
-        )
-        self.run_se(
-            max_iter=max_iter, callback=callback, initializer=initializer,
-            check_decreasing=check_decreasing
-        )
+    def infer(self, **kwargs):
+        self.run_ep(**kwargs)
+        self.run_se(**kwargs)
 
-    def run_se(self, max_iter=250, callback=None, initializer=None,
-               check_decreasing=True):
-        callback = callback or EarlyStopping(tol=1e-6, min_variance=1e-12)
+    def run_se(self, **kwargs):
         se = StateEvolution(self.student)
-        se.iterate(
-            max_iter=max_iter, callback=callback, initializer=initializer,
-            check_decreasing=check_decreasing
-        )
+        se.iterate(**kwargs)
         se_x_data = se.get_variables_data(self.x_ids)
         self.mse_se = {x_id: data["v"] for x_id, data in se_x_data.items()}
         self.n_iter_se = se.n_iter
 
-    def run_ep(self, max_iter=250, callback=None, initializer=None,
-               check_decreasing=True):
-        callback = callback or EarlyStopping(tol=1e-6, min_variance=1e-12)
+    def run_ep(self, **kwargs):
         ep = ExpectationPropagation(self.student)
-        ep.iterate(
-            max_iter=max_iter, callback=callback, initializer=initializer,
-            check_decreasing=check_decreasing
-        )
+        ep.iterate(**kwargs)
         ep_x_data = ep.get_variables_data(self.x_ids)
         self.x_pred = {x_id: data["r"] for x_id, data in ep_x_data.items()}
         self.mse_ep = {x_id: data["v"] for x_id, data in ep_x_data.items()}
