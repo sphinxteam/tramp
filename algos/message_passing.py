@@ -45,15 +45,6 @@ class MessagePassing():
                 if data["direction"]==direction:
                     data["damping"] = damping
 
-    def configure_global_clipping(self, clipping):
-        "Configure clipping options globally"
-        if not isinstance(clipping, list) or len(clipping)!=2:
-            raise ValueError(
-                "You must provide clipping = [clip_min, clip_max]"
-            )
-        for source, target, data in self.message_dag.edges(data=True):
-            data["clipping"] = clipping
-
     def damp_message(self, message):
         "Damp message in-place"
         for source, target, data in message:
@@ -64,26 +55,16 @@ class MessagePassing():
                     old_value = self.message_dag[source][target][key]
                     data[key] = damping * old_value + (1 - damping) * data[key]
 
-    def clip_message(self, message):
-        "Clip message in-place"
-        for source, target, data in message:
-            clipping = self.message_dag[source][target]["clipping"]
-            if clipping:
-                clip_min, clip_max = clipping
-                if (data["a"] < clip_min) or (data["a"] > clip_max):
-                    logging.info(f"clipping {source}->{target} a={data['a']}")
-                data["a"] = np.clip(data["a"], clip_min, clip_max)
-
     def init_message_dag(self, initializer):
         message_dag = nx.DiGraph()
         message_dag.add_nodes_from(self.model_dag.nodes(data=True))
         message_dag.add_edges_from(
             self.model_dag.edges(data=True), direction="fwd",
-            damping = None, clipping = None, n_iter = 0
+            damping = None, n_iter = 0
         )
         message_dag.add_edges_from(
             self.model_dag.reverse().edges(data=True), direction="bwd",
-            damping = None, clipping = None, n_iter = 0
+            damping = None, n_iter = 0
         )
         for source, target, data in message_dag.edges(data=True):
             if data["direction"] == "fwd" and isinstance(source, Variable):
@@ -112,7 +93,6 @@ class MessagePassing():
         for node in self.forward_ordering:
             message = self.message_dag.in_edges(node, data=True)
             new_message = self.forward(node, message)
-            self.clip_message(new_message)
             self.damp_message(new_message)
             self.update_message(new_message)
 
@@ -120,7 +100,6 @@ class MessagePassing():
         for node in self.backward_ordering:
             message = self.message_dag.in_edges(node, data=True)
             new_message = self.backward(node, message)
-            self.clip_message(new_message)
             self.damp_message(new_message)
             self.update_message(new_message)
 
@@ -181,7 +160,7 @@ class MessagePassing():
     def iterate(self, max_iter,
                 callback=None, initializer=None, warm_start=False,
                 check_nan=True, check_decreasing=True,
-                global_clipping = None, variables_damping = None):
+                variables_damping = None):
         initializer = initializer or ConstantInit(a=0, b=0)
         callback = callback or EarlyStopping(tol=1e-6, min_variance=1e-12)
         if warm_start:
@@ -195,9 +174,6 @@ class MessagePassing():
         if variables_damping:
             logging.info(f"using damping on variables: {variables_damping}")
             self.configure_variables_damping(variables_damping)
-        if global_clipping:
-            logging.info(f"using global clipping = {global_clipping}")
-            self.configure_global_clipping(global_clipping)
         for i in range(max_iter):
             # backup message_dag
             if (i>0) and (check_nan or check_decreasing):
