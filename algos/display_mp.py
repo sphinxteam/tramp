@@ -1,4 +1,5 @@
 from .message_passing import MessagePassing
+from .initial_conditions import ConstantInit
 
 
 def format_latex_message(message, comment):
@@ -50,7 +51,7 @@ class DisplayLatexMessagePassing(MessagePassing):
 
     def run(self):
         self.latex = dict(forward=[], backward=[])
-        initializer = self._default_initializer
+        initializer = ConstantInit(a=0, b=0)
         self.init_message_dag(initializer)
         self.forward_message()
         self.backward_message()

@@ -6,6 +6,38 @@ from ..models import DAGModel
 from .initial_conditions import ConstantInit
 from .callbacks import EarlyStopping
 
+
+def get_size(x):
+    return np.size(x) if len(np.shape(x)) <= 1 else np.shape(x)
+
+
+def info_arrow(source, target, data, keys):
+    if data["direction"] == "fwd":
+        m = f"{source}->{target}"
+    else:
+        m = f"{target}<-{source}"
+    if "a" in keys:
+        m += f" a={data['a']:.3f}"
+    if "n_iter" in keys and "n_iter" in data:
+        m += f" n_iter={data['n_iter']}"
+    if "b" in keys and "b" in data:
+        m += f" b={data['b']}"
+    if "b_size" in keys and "b" in data:
+        b_size = get_size(data['b'])
+        m += f" b_size={b_size}"
+    return m
+
+
+def info_message(message, keys=["a", "n_iter"]):
+    if len(message) == 0:
+        return "[]"
+    infos = [
+        info_arrow(source, target, data, keys)
+        for source, target, data in message
+    ]
+    return "\n".join(infos)
+
+
 def find_variable_in_nodes(id, nodes):
     matchs = [
         node for node in nodes
@@ -55,6 +87,26 @@ class MessagePassing():
                     old_value = self.message_dag[source][target][key]
                     data[key] = damping * old_value + (1 - damping) * data[key]
 
+    def check_message(self, new_message, old_message):
+        "Raise error on nan values"
+        for source, target, data in new_message:
+            if np.isnan(data['a']):
+                logging.error(
+                    f"{source}->{target} a is nan\n" +
+                    "incoming:\n" +
+                    info_message(old_message, keys=["n_iter","a","b"])
+                )
+                raise ValueError(f"{source}->{target} a is nan")
+            if (data['a'] < 0):
+                logging.warning(f"{source}->{target} negative a {data['a']}")
+            if np.isnan(data['b']).any():
+                logging.error(
+                    f"{source}->{target} b is nan\n" +
+                    "incoming:\n" +
+                    info_message(old_message, keys=["n_iter","a","b"])
+                )
+                raise ValueError(f"{source}->{target} b is nan")
+
     def init_message_dag(self, initializer):
         message_dag = nx.DiGraph()
         message_dag.add_nodes_from(self.model_dag.nodes(data=True))
@@ -93,6 +145,7 @@ class MessagePassing():
         for node in self.forward_ordering:
             message = self.message_dag.in_edges(node, data=True)
             new_message = self.forward(node, message)
+            self.check_message(new_message, message)
             self.damp_message(new_message)
             self.update_message(new_message)
 
@@ -100,6 +153,7 @@ class MessagePassing():
         for node in self.backward_ordering:
             message = self.message_dag.in_edges(node, data=True)
             new_message = self.backward(node, message)
+            self.check_message(new_message, message)
             self.damp_message(new_message)
             self.update_message(new_message)
 
