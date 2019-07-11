@@ -1,5 +1,5 @@
 import unittest
-from tramp.channels import AbsChannel, SngChannel, ReluChannel
+from tramp.channels import AbsChannel, SngChannel, ReluChannel, LeakyReluChannel
 import numpy as np
 
 
@@ -94,6 +94,10 @@ class ChannelsTest(unittest.TestCase):
         channel = ReluChannel()
         self._test_function_posterior(channel, self.records, places=6)
 
+    def test_leaky_relu_posterior(self):
+        channel = LeakyReluChannel(slope=0.1)
+        self._test_function_posterior(channel, self.records, places=6)
+
     def test_abs_second_moment(self):
         channel = AbsChannel()
         self._test_function_second_moment(channel, self.records)
@@ -106,6 +110,10 @@ class ChannelsTest(unittest.TestCase):
         channel = ReluChannel()
         self._test_function_second_moment(channel, self.records, places=2)
 
+    def test_leaky_relu_second_moment(self):
+        channel = LeakyReluChannel(slope=0.1)
+        self._test_function_second_moment(channel, self.records, places=2)
+
     def test_abs_proba(self):
         channel = AbsChannel()
         self._test_function_proba(channel, self.records)
@@ -116,6 +124,10 @@ class ChannelsTest(unittest.TestCase):
 
     def test_relu_proba(self):
         channel = ReluChannel()
+        self._test_function_proba(channel, self.records)
+
+    def test_leaky_relu_proba(self):
+        channel = LeakyReluChannel(slope=0.1)
         self._test_function_proba(channel, self.records)
 
 if __name__ == "__main__":

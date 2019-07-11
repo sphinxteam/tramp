@@ -16,6 +16,7 @@ from .gradient_channel import GradientChannel
 from .sng_channel import SngChannel
 from .abs_channel import AbsChannel
 from .relu_channel import ReluChannel
+from .leaky_relu_channel import LeakyReluChannel
 from .tanh_channel import TanhChannel
 from .modulus_channel import ModulusChannel
 from .reshape_channel import ReshapeChannel

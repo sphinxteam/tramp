@@ -24,9 +24,7 @@ class ReluChannel(Channel):
         a = ax + az
         x_pos = (bx + bz) / np.sqrt(a)
         x_neg = - bz / np.sqrt(az)
-        eta_pos = phi_0(x_pos) + 0.5 * np.log(2 * np.pi / a)
-        eta_neg = phi_0(x_neg) + 0.5 * np.log(2 * np.pi / az)
-        delta = eta_pos - eta_neg
+        delta = phi_0(x_pos) - phi_0(x_neg) + 0.5 * np.log(az / a)
         sigma_pos = sigmoid(+delta)
         sigma_neg = sigmoid(-delta)
         r_pos = phi_1(x_pos) / np.sqrt(a)
@@ -43,9 +41,7 @@ class ReluChannel(Channel):
         a = ax + az
         x_pos = (bx + bz) / np.sqrt(a)
         x_neg = - bz / np.sqrt(az)
-        eta_pos = phi_0(x_pos) + 0.5 * np.log(2 * np.pi / a)
-        eta_neg = phi_0(x_neg) + 0.5 * np.log(2 * np.pi / az)
-        delta = eta_pos - eta_neg
+        delta = phi_0(x_pos) - phi_0(x_neg) + 0.5 * np.log(az / a)
         sigma_pos = sigmoid(+delta)
         sigma_neg = sigmoid(-delta)
         r_pos = + phi_1(x_pos) / np.sqrt(a)  # NB: + phi'(x_pos)
