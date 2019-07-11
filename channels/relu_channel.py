@@ -1,7 +1,7 @@
 import numpy as np
 from ..base import Channel
 from ..utils.integration import gaussian_measure_2d_full, gaussian_measure_2d
-from ..utils.misc import norm_cdf, phi_1, phi_2, sigmoid, relu, compute_log_odds
+from ..utils.misc import norm_cdf, phi_0, phi_1, phi_2, sigmoid, relu
 from scipy.integrate import quad
 
 
@@ -24,13 +24,9 @@ class ReluChannel(Channel):
         a = ax + az
         x_pos = (bx + bz) / np.sqrt(a)
         x_neg = - bz / np.sqrt(az)
-        p_pos = norm_cdf(x_pos)
-        p_neg = norm_cdf(x_neg)
-        delta = (
-            0.5 * (x_pos**2 - x_neg**2)
-            + 0.5 * np.log(az / a)
-            + compute_log_odds(p_pos, p_neg)
-        )
+        eta_pos = phi_0(x_pos) + 0.5 * np.log(2 * np.pi / a)
+        eta_neg = phi_0(x_neg) + 0.5 * np.log(2 * np.pi / az)
+        delta = eta_pos - eta_neg
         sigma_pos = sigmoid(+delta)
         sigma_neg = sigmoid(-delta)
         r_pos = phi_1(x_pos) / np.sqrt(a)
@@ -47,13 +43,9 @@ class ReluChannel(Channel):
         a = ax + az
         x_pos = (bx + bz) / np.sqrt(a)
         x_neg = - bz / np.sqrt(az)
-        p_pos = norm_cdf(x_pos)
-        p_neg = norm_cdf(x_neg)
-        delta = (
-            0.5 * (x_pos**2 - x_neg**2)
-            + 0.5 * np.log(az / a)
-            + compute_log_odds(p_pos, p_neg)
-        )
+        eta_pos = phi_0(x_pos) + 0.5 * np.log(2 * np.pi / a)
+        eta_neg = phi_0(x_neg) + 0.5 * np.log(2 * np.pi / az)
+        delta = eta_pos - eta_neg
         sigma_pos = sigmoid(+delta)
         sigma_neg = sigmoid(-delta)
         r_pos = + phi_1(x_pos) / np.sqrt(a)  # NB: + phi'(x_pos)

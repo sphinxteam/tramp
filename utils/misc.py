@@ -61,7 +61,7 @@ def log_norm_cdf_prime(x):
 
 def phi_0(x):
     "Computes phi(x) = x**2 / 2 + log Phi"
-    return 0.5 * (x**2) + np.log(norm_cdf(x))
+    return np.log(0.5 * erfcx(-x / np.sqrt(2)))
 
 
 def phi_1(x):
