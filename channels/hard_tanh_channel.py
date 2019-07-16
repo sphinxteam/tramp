@@ -18,7 +18,7 @@ class HardTanhChannel(Channel):
         return X
 
     def math(self):
-        return r"$\mathrm{h-tanh}$"
+        return r"$\textrm{h-tanh}$"
 
     def second_moment(self, tau):
         # TODO explicit formula

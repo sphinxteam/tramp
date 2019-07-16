@@ -15,7 +15,7 @@ class LeakyReluChannel(Channel):
         return X
 
     def math(self):
-        return r"$\mathrm{l-relu}$"
+        return r"$\textrm{l-relu}$"
 
     def second_moment(self, tau):
         return 0.5 * (1 + self.slope**2) * tau
