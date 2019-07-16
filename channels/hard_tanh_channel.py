@@ -35,6 +35,7 @@ class HardTanhChannel(Channel):
         r, v, A = merge_estimates(
             r_int, v_int, A_int, r_mid, v_mid, A_mid
         )
+        v = np.mean(v)
         return r, v
 
     def compute_backward_posterior(self, az, bz, ax, bx):
@@ -47,6 +48,7 @@ class HardTanhChannel(Channel):
         r, v, A = merge_estimates(
             r_int, v_int, A_int, r_mid, v_mid, A_mid
         )
+        v = np.mean(v)
         return r, v
 
     def beliefs_measure(self, az, ax, tau, f):
