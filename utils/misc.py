@@ -37,6 +37,10 @@ def leaky_relu(x, slope):
     return np.where(x < 0, slope * x, x)
 
 
+def hard_tanh(x):
+    return np.clip(x, -1, 1)
+
+
 def norm_cdf(x):
     "Computes Phi(x)"
     return 0.5 * (1 + erf(x / np.sqrt(2)))
@@ -77,3 +81,12 @@ def sigmoid(x):
         warnings.simplefilter("ignore")
         s = 1 / (1 + np.exp(-x))
     return s
+
+
+def merge_estimates(r1, v1, A1, r2, v2, A2):
+    p2 = sigmoid(A2 - A1)
+    p1 = sigmoid(A1 - A2)
+    r = p1*r1 + p2*r2
+    v = p1*v1 + p2*v2 + p1*p2*(r2-r1)**2
+    A = np.logaddexp(A1, A2)
+    return r, v, A

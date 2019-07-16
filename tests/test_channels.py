@@ -1,5 +1,7 @@
 import unittest
-from tramp.channels import AbsChannel, SngChannel, ReluChannel, LeakyReluChannel
+from tramp.channels import (
+    AbsChannel, SngChannel, ReluChannel, LeakyReluChannel, HardTanhChannel
+)
 import numpy as np
 
 
@@ -98,6 +100,10 @@ class ChannelsTest(unittest.TestCase):
         channel = LeakyReluChannel(slope=0.1)
         self._test_function_posterior(channel, self.records, places=6)
 
+    def test_hard_tanh_posterior(self):
+        channel = HardTanhChannel()
+        self._test_function_posterior(channel, self.records, places=1)
+
     def test_abs_second_moment(self):
         channel = AbsChannel()
         self._test_function_second_moment(channel, self.records)
@@ -112,6 +118,10 @@ class ChannelsTest(unittest.TestCase):
 
     def test_leaky_relu_second_moment(self):
         channel = LeakyReluChannel(slope=0.1)
+        self._test_function_second_moment(channel, self.records, places=2)
+
+    def test_hard_tanh_second_moment(self):
+        channel = HardTanhChannel()
         self._test_function_second_moment(channel, self.records, places=2)
 
     def test_abs_proba(self):
