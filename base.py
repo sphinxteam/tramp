@@ -46,6 +46,24 @@ def inv(v):
     return 1 / np.maximum(v, 1e-20)
 
 
+AMAX = 1e+11
+AMIN = 1e-11
+
+
+def compute_a_new(v, a):
+    "Compute a_new and b_new ensuring that a_new is between 1e-20 and 1e+20"
+    a_new = np.clip(inv(v) - a, AMIN, AMAX)
+    return a_new
+
+
+def compute_ab_new(r, v, a, b):
+    "Compute a_new and b_new ensuring that a_new is between 1e-20 and 1e+20"
+    a_new = np.clip(inv(v) - a, AMIN, AMAX)
+    v_inv = (a + a_new)
+    b_new = r * v_inv - b
+    return a_new, b_new
+
+
 class Variable(ReprMixin):
 
     def __init__(self, n_prev, n_next, id, dtype=float):
@@ -201,6 +219,7 @@ class SIMOVariable(Variable):
     def __init__(self, n_next, dtype=float, id=None):
         super().__init__(n_prev=1, n_next=n_next, dtype=dtype, id=id)
 
+
 class MISOVariable(Variable):
 
     def __init__(self, n_prev, dtype=float, id=None):
@@ -242,15 +261,18 @@ class MILeafVariable(Variable):
     def __init__(self, n_prev, dtype=float, id=None):
         super().__init__(n_prev=n_prev, n_next=0, dtype=dtype, id=id)
 
+
 class SILeafVariable(Variable):
 
     def __init__(self, dtype=float, id=None):
         super().__init__(n_prev=1, n_next=0, dtype=dtype, id=id)
 
+
 class MORootVariable(Variable):
 
     def __init__(self, n_next, dtype=float, id=None):
         super().__init__(n_prev=0, n_next=n_next, dtype=dtype, id=id)
+
 
 class SORootVariable(Variable):
 
@@ -408,24 +430,22 @@ class Channel(Factor):
 
     def compute_forward_message(self, az, bz, ax, bx):
         rx, vx = self.compute_forward_posterior(az, bz, ax, bx)
-        ax_new = inv(vx) - ax
-        bx_new = rx * inv(vx) - bx
+        ax_new, bx_new = compute_ab_new(rx, vx, ax, bx)
         return ax_new, bx_new
 
     def compute_backward_message(self, az, bz, ax, bx):
         rz, vz = self.compute_backward_posterior(az, bz, ax, bx)
-        az_new = inv(vz) - az
-        bz_new = rz * inv(vz) - bz
+        az_new, bz_new = compute_ab_new(rz, vz, az, bz)
         return az_new, bz_new
 
     def compute_forward_state_evolution(self, az, ax, tau):
         vx = self.compute_forward_error(az, ax, tau)
-        ax_new = inv(vx) - ax
+        ax_new = compute_a_new(vx, ax)
         return ax_new
 
     def compute_backward_state_evolution(self, az, ax, tau):
         vz = self.compute_backward_error(az, ax, tau)
-        az_new = inv(vz) - az
+        az_new = compute_a_new(vz, az)
         return az_new
 
     def compute_forward_error(self, az, ax, tau):
@@ -449,13 +469,12 @@ class Likelihood(Factor):
 
     def compute_backward_message(self, az, bz):
         rz, vz = self.compute_backward_posterior(az, bz, self.y)
-        az_new = inv(vz) - az
-        bz_new = rz * inv(vz) - bz
+        az_new, bz_new = compute_ab_new(rz, vz, az, bz)
         return az_new, bz_new
 
     def compute_backward_state_evolution(self, az, tau):
         vz = self.compute_backward_error(az, tau)
-        az_new = inv(vz) - az
+        az_new = compute_a_new(vz, az)
         return az_new
 
     def compute_backward_error(self, az, tau):
@@ -472,13 +491,12 @@ class Prior(Factor):
 
     def compute_forward_message(self, ax, bx):
         rx, vx = self.compute_forward_posterior(ax, bx)
-        ax_new = inv(vx) - ax
-        bx_new = rx * inv(vx) - bx
+        ax_new, bx_new = compute_ab_new(rx, vx, ax, bx)
         return ax_new, bx_new
 
     def compute_forward_state_evolution(self, ax):
         vx = self.compute_forward_error(ax)
-        ax_new = inv(vx) - ax
+        ax_new = compute_a_new(vx, ax)
         return ax_new
 
     def compute_forward_error(self, ax):

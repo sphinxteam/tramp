@@ -99,7 +99,7 @@ class MessagePassing():
                 raise ValueError(f"{source}->{target} a is nan")
             if (data['a'] < 0):
                 logging.warning(f"{source}->{target} negative a {data['a']}")
-            if np.isnan(data['b']).any():
+            if ('b' in data) and np.isnan(data['b']).any():
                 logging.error(
                     f"{source}->{target} b is nan\n" +
                     "incoming:\n" +
