@@ -21,6 +21,8 @@ from .hard_tanh_channel import HardTanhChannel
 from .tanh_channel import TanhChannel
 from .modulus_channel import ModulusChannel
 from .reshape_channel import ReshapeChannel
+from .low_rank_gram_channel import LowRankGramChannel
+from .low_rank_factorization import LowRankFactorization
 
 
 CHANNEL_CLASSES = {
