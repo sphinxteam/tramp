@@ -463,15 +463,15 @@ class AMP_matrix_factorization(object):
         # If takes too long
         cond_1 = self.step > self.max_step_AMP
         # If precision high enough and reaches Bayes optimality q=m
-        cond_2 = self.diff < self.threshold_error and self.m_q_close_bayes
-        # If convergence rate becomes very slow
-        n = 10
-        if self.step > n:
-            rate = np.abs(
-                self.list_diff[-1] - self.list_diff[-n]) / (self.list_diff[-n] * n) * 100
-            cond_3 = self.step > self.min_step_AMP and rate < 1
-        else:
-            cond_3 = False
+        # cond_2 = self.diff < self.threshold_error and self.m_q_close_bayes
+        # # If convergence rate becomes very slow
+        # n = 10
+        # if self.step > n:
+        #     rate = np.abs(
+        #         self.list_diff[-1] - self.list_diff[-n]) / (self.list_diff[-n] * n) * 100
+        #     cond_3 = self.step > self.min_step_AMP and rate < 1
+        # else:
+        #     cond_3 = False
         #list_cond = [cond_1, cond_2, cond_3]
         list_cond = [cond_1]
         if any(list_cond):
