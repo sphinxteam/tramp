@@ -76,13 +76,13 @@ class MessagePassing():
             for source, target, data in edges:
                 if data["direction"]==direction:
                     data["damping"] = damping
+                    logging.info(f"damping {source}->{target} at {damping}")
 
     def damp_message(self, message):
         "Damp message in-place"
         for source, target, data in message:
             damping = self.message_dag[source][target]["damping"]
             if damping:
-                logging.info(f"damping {source}->{target} at {damping}")
                 for key in self.message_keys:
                     old_value = self.message_dag[source][target][key]
                     data[key] = damping * old_value + (1 - damping) * data[key]
@@ -226,7 +226,6 @@ class MessagePassing():
             self.n_iter = 0
             self.init_message_dag(initializer)
         if variables_damping:
-            logging.info(f"using damping on variables: {variables_damping}")
             self.configure_variables_damping(variables_damping)
         for i in range(max_iter):
             # backup message_dag
