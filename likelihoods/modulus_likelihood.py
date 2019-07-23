@@ -43,7 +43,9 @@ class ModulusLikelihood(Likelihood):
         bz = array2complex(bz)
         b = np.absolute(bz)
         I = ive(1, b * y) / ive(0, b * y)
-        b_normed = np.where(b==0, np.zeros_like(bz), bz/b)
+        b_normed = np.zeros_like(bz)
+        nonzero = (b != 0)
+        b_normed[nonzero] = bz[nonzero]/b[nonzero]
         rz = b_normed * y * I
         v = 0.5 * (y**2) * (1 - I**2)
         vz = np.mean(v)
