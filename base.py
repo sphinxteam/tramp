@@ -51,13 +51,13 @@ AMIN = 1e-11
 
 
 def compute_a_new(v, a):
-    "Compute a_new and b_new ensuring that a_new is between 1e-20 and 1e+20"
+    "Compute a_new and b_new ensuring that a_new is between AMIN and AMAX"
     a_new = np.clip(inv(v) - a, AMIN, AMAX)
     return a_new
 
 
 def compute_ab_new(r, v, a, b):
-    "Compute a_new and b_new ensuring that a_new is between 1e-20 and 1e+20"
+    "Compute a_new and b_new ensuring that a_new is between AMIN and AMAX"
     a_new = np.clip(inv(v) - a, AMIN, AMAX)
     v_inv = (a + a_new)
     b_new = r * v_inv - b

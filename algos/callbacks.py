@@ -66,13 +66,12 @@ class TrackEvolution(Callback):
 
 
 class TrackErrors(Callback):
-    def __init__(self, true_values, metric="mse", every=1):
+    def __init__(self, true_values, metrics=["mse"], every=1):
         self.ids = true_values.keys()
-        self.metric = metric
+        self.metrics = metrics
         self.every = every
         self.repr_init()
         self.X_true = true_values
-        self.compute_metric = METRICS.get(metric)
         self.errors = []
 
     def __call__(self, algo,  i, max_iter):
@@ -84,11 +83,13 @@ class TrackErrors(Callback):
                 variable_id: data["r"]
                 for variable_id, data in variables_data.items()
             }
-            errors = [{
-                "id": id,
-                self.metric: self.compute_metric(X_pred[id], self.X_true[id]),
-                "iter": i
-            } for id in self.ids]
+            errors = []
+            for id in self.ids:
+                error = dict(id=id, iter=i)
+                for metric in self.metrics:
+                    func = METRICS.get(metric)
+                    error[metric] = func(X_pred[id], self.X_true[id])
+                errors.append(error)
             self.errors += errors
 
     def get_dataframe(self):
