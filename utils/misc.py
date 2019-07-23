@@ -4,10 +4,7 @@ import warnings
 
 
 def complex2array(z):
-    """Transform complex z into real array Z where:
-    - Z[0] = z.real
-    - Z[1] = z.imag
-    """
+    "Transforms complex z into real array Z where Z[0] = z.real Z[1] = z.imag"
     Z_shape = (2,) + z.shape
     Z = np.zeros(Z_shape)
     Z[0] = z.real
@@ -16,15 +13,9 @@ def complex2array(z):
 
 
 def array2complex(Z):
-    """Transform real array Z into complex z where:
-    - z.real = Z[0]
-    - z.imag = Z[1]
-    """
+    "Transforms real array Z into complex z where z.real = Z[0] z.imag = Z[1]"
     if Z.shape[0] != 2:
-        raise ValueError(
-            "first axis of Z must be of length 2"
-            "where Z[0] = Z.real and Z[1] = Z.imag"
-        )
+        raise ValueError("First axis of Z must be of length 2")
     z = Z[0] + 1j * Z[1]
     return z
 
