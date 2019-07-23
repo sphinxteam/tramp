@@ -1,5 +1,5 @@
 """
-Computes the mean and variance of a trunctated normal distribution.
+Computes the mean and variance of a truncated normal distribution.
 
  Reference
  ---------
