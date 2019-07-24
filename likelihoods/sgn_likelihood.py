@@ -5,7 +5,7 @@ from ..utils.misc import phi_1, phi_2, norm_cdf
 from scipy.integrate import quad
 
 
-class SngLikelihood(Likelihood):
+class SgnLikelihood(Likelihood):
     def __init__(self, y, y_name="y"):
         self.y_name = y_name
         self.size = y.shape[0] if len(y.shape) == 1 else y.shape
@@ -16,7 +16,7 @@ class SngLikelihood(Likelihood):
         return np.sign(X)
 
     def math(self):
-        return r"$\mathrm{sng}$"
+        return r"$\mathrm{sgn}$"
 
     def compute_backward_posterior(self, az, bz, y):
         x = y * bz / np.sqrt(az)

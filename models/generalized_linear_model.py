@@ -68,7 +68,7 @@ class RidgeRegression(GeneralizedLinearModel):
             var_noise=var_noise
         )
 
-class SngRetrieval(GeneralizedLinearModel):
+class SgnRetrieval(GeneralizedLinearModel):
     def __init__(self, N, alpha, ensemble_type, mean_prior):
         prior_type = "gaussian"
         output_type = "abs"
@@ -81,7 +81,7 @@ class SngRetrieval(GeneralizedLinearModel):
 class Perceptron(GeneralizedLinearModel):
     def __init__(self, N, alpha, ensemble_type, p_pos):
         prior_type = "binary"
-        output_type = "sng"
+        output_type = "sgn"
         super().__init__(
             N, alpha, ensemble_type, prior_type, output_type,
             p_pos=p_pos

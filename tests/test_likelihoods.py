@@ -1,6 +1,6 @@
 import unittest
 from tramp.likelihoods import (
-    GaussianLikelihood, SngLikelihood, AbsLikelihood, ModulusLikelihood
+    GaussianLikelihood, SgnLikelihood, AbsLikelihood, ModulusLikelihood
 )
 from tramp.utils.misc import complex2array, array2complex
 import numpy as np
@@ -93,10 +93,10 @@ class likelihoodsTest(unittest.TestCase):
         for likelihood in likelihoods:
             self._test_function_posterior(likelihood, self.records)
 
-    def test_sng_posterior(self):
+    def test_sgn_posterior(self):
         likelihoods = [
-            SngLikelihood(y = np.array([+1])),
-            SngLikelihood(y = np.array([-1]))
+            SgnLikelihood(y = np.array([+1])),
+            SgnLikelihood(y = np.array([-1]))
         ]
         for likelihood in likelihoods:
             self._test_function_posterior(likelihood, self.records)
@@ -122,10 +122,10 @@ class likelihoodsTest(unittest.TestCase):
         for likelihood in likelihoods:
             self._test_function_posterior(likelihood, records)
 
-    def test_sng_proba(self):
+    def test_sgn_proba(self):
         likelihoods = [
-            SngLikelihood(y = np.array([+1])),
-            SngLikelihood(y = np.array([-1]))
+            SgnLikelihood(y = np.array([+1])),
+            SgnLikelihood(y = np.array([-1]))
         ]
         for likelihood in likelihoods:
             self._test_function_proba(likelihood, self.records)

@@ -5,7 +5,7 @@ from ..utils.misc import norm_cdf, phi_0, phi_1, phi_2, sigmoid
 from scipy.integrate import quad
 
 
-class SngChannel(Channel):
+class SgnChannel(Channel):
     def __init__(self):
         self.repr_init()
 
@@ -14,13 +14,13 @@ class SngChannel(Channel):
         return X
 
     def math(self):
-        return r"$\mathrm{sng}$"
+        return r"$\mathrm{sgn}$"
 
     def second_moment(self, tau):
         return 1.
 
     def compute_forward_posterior(self, az, bz, ax, bx):
-        # estimate x from x = sng(z)
+        # estimate x from x = sgn(z)
         x_pos = + bz / np.sqrt(az)
         x_neg = - bz / np.sqrt(az)
         delta = 2 * bx + phi_0(x_pos) - phi_0(x_neg)
@@ -30,7 +30,7 @@ class SngChannel(Channel):
         return rx, vx
 
     def compute_backward_posterior(self, az, bz, ax, bx):
-        # estimate z from x = sng(z)
+        # estimate z from x = sgn(z)
         x_pos = + bz / np.sqrt(az)
         x_neg = - bz / np.sqrt(az)
         delta = 2 * bx + phi_0(x_pos) - phi_0(x_neg)

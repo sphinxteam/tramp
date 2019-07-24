@@ -1,5 +1,5 @@
 from .gaussian_likelihood import GaussianLikelihood
-from .sng_likelihood import SngLikelihood
+from .sgn_likelihood import SgnLikelihood
 from .abs_likelihood import AbsLikelihood
 from .modulus_likelihood import ModulusLikelihood
 
@@ -7,6 +7,6 @@ from .modulus_likelihood import ModulusLikelihood
 LIKELIHOOD_CLASSES = {
     "gaussian": GaussianLikelihood,
     "abs": AbsLikelihood,
-    "sng": SngLikelihood,
+    "sgn": SgnLikelihood,
     "modulus": ModulusLikelihood
 }

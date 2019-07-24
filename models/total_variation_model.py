@@ -3,7 +3,7 @@ from ..base import SISOVariable, SIMOVariable, MILeafVariable
 from .dag_model import DAGModel
 from ..channels import LinearChannel, GaussianChannel, GradientChannel
 from ..priors import GaussianPrior, GaussBernouilliPrior, MAP_L21NormPrior
-from ..likelihoods import GaussianLikelihood, SngLikelihood
+from ..likelihoods import GaussianLikelihood, SgnLikelihood
 
 
 class SparseGradientRegression(DAGModel):
@@ -58,7 +58,7 @@ class SparseGradientClassification(DAGModel):
                 SISOVariable(id="z") @
                 GaussianChannel(var=var_noise) @
                 SISOVariable(id="a") @
-                SngLikelihood(y) + (
+                SgnLikelihood(y) + (
                     GradientChannel(shape=x_shape) +
                     GaussBernouilliPrior(size=grad_shape, rho=rho_grad)
                 ) @
@@ -120,7 +120,7 @@ class TVClassification(DAGModel):
                 SISOVariable(id="z") @
                 GaussianChannel(var=var_noise) @
                 SISOVariable(id="a") @
-                SngLikelihood(y) + (
+                SgnLikelihood(y) + (
                     GradientChannel(shape=x_shape) +
                     MAP_L21NormPrior(size=grad_shape, scale=scale_grad, axis=0)
                 ) @

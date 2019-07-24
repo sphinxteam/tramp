@@ -13,7 +13,7 @@ from .conv_channel import (
     DifferentialChannel, LaplacianChannel
 )
 from .gradient_channel import GradientChannel
-from .sng_channel import SngChannel
+from .sgn_channel import SgnChannel
 from .abs_channel import AbsChannel
 from .relu_channel import ReluChannel
 from .leaky_relu_channel import LeakyReluChannel
@@ -41,7 +41,7 @@ CHANNEL_CLASSES = {
     "diff": DifferentialChannel,
     "laplacian": LaplacianChannel,
     "gradient": GradientChannel,
-    "sng": SngChannel,
+    "sgn": SgnChannel,
     "abs": AbsChannel,
     "relu": ReluChannel
 }

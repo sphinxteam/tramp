@@ -8,7 +8,7 @@ will be renamed supertramp.
 ## FIXME
 
 - [ ] ax=0 in L1 and L12 map priors
-- [ ] sng committee : EP diverges
+- [ ] sgn committee : EP diverges
 - [ ] mse_ep seems off for gradient channel and conv channels
 - [ ] deconv with sparse grad
 - [ ] migrate to networkx 2.x

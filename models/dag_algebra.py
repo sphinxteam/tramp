@@ -1,9 +1,9 @@
 from ..base import (
     Variable, SISOVariable, SILeafVariable, Factor, Likelihood, ReprMixin
 )
-from ..channels import GaussianChannel, AbsChannel, SngChannel, ModulusChannel
+from ..channels import GaussianChannel, AbsChannel, SgnChannel, ModulusChannel
 from ..likelihoods import (
-    GaussianLikelihood, AbsLikelihood, SngLikelihood, ModulusLikelihood
+    GaussianLikelihood, AbsLikelihood, SgnLikelihood, ModulusLikelihood
 )
 from .dag_layout import Layout
 import networkx as nx
@@ -14,8 +14,8 @@ def channel2likelihood(channel, y, y_name):
         return GaussianLikelihood(var=channel.var, y=y, y_name=y_name)
     if isinstance(channel, AbsChannel):
         return AbsLikelihood(y=y, y_name=y_name)
-    if isinstance(channel, SngChannel):
-        return SngLikelihood(y=y, y_name=y_name)
+    if isinstance(channel, SgnChannel):
+        return SgnLikelihood(y=y, y_name=y_name)
     if isinstance(channel, ModulusChannel):
         return ModulusLikelihood(y=y, y_name=y_name)
     raise NotImplementedError(f"cannot convert {channel} to likelihood")

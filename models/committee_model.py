@@ -9,13 +9,13 @@ class Committee(DAGModel):
 
     def __init__(self, K, N, alpha, ensemble_type,
                  priors, activation1, activation2, var_noise=None):
-        if activation1 not in ["abs", "relu", "sng"]:
+        if activation1 not in ["abs", "relu", "sgn"]:
             raise ValueError(
-                f"activation1={activation1} must be abs, sng or relu"
+                f"activation1={activation1} must be abs, sgn or relu"
             )
-        if activation2 not in ["identity", "abs", "relu", "sng"]:
+        if activation2 not in ["identity", "abs", "relu", "sgn"]:
             raise ValueError(
-                f"activation2={activation2} must be identity, abs, sng or relu"
+                f"activation2={activation2} must be identity, abs, sgn or relu"
             )
         if not isinstance(priors, list) or len(priors) != K:
             raise ValueError(f"priors must be a list of length {K}")
@@ -43,7 +43,7 @@ class Committee(DAGModel):
             experts = expert if experts is None else experts + expert
         # committee of the K experts
         model_dag = experts @ SumChannel(n_prev=K)
-        if activation2 in ["abs", "relu", "sng"]:
+        if activation2 in ["abs", "relu", "sgn"]:
             model_dag = model_dag @ SISOVariable(id="a") @ get_channel(activation2)
         if var_noise:
             model_dag = model_dag @ SISOVariable(id="n") @ GaussianChannel(var=var_noise)
@@ -52,7 +52,7 @@ class Committee(DAGModel):
         DAGModel.__init__(self, model_dag)
 
 
-class SngCommittee(Committee):
+class SgnCommittee(Committee):
     def __init__(self, K, N, alpha, ensemble_type,
                  p_pos, var_noise=None):
         if not isinstance(p_pos, list) or len(p_pos) != K:
@@ -61,8 +61,8 @@ class SngCommittee(Committee):
             dict(prior_type="binary", p_pos=p)
             for p in p_pos
         ]
-        activation1 = "sng"
-        activation2 = "sng"
+        activation1 = "sgn"
+        activation2 = "sgn"
         super().__init__(
             K, N, alpha,
             ensemble_type, priors, activation1, activation2,
