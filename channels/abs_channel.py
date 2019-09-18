@@ -1,6 +1,6 @@
 import numpy as np
 from ..base import Channel
-from ..utils.integration import gaussian_measure_2d_full
+from ..utils.integration import gaussian_measure_2d, gaussian_measure_2d_full
 from ..utils.misc import norm_cdf, phi_0, phi_1, phi_2, sigmoid
 from scipy.integrate import quad
 
