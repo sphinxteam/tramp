@@ -12,7 +12,6 @@ will be renamed supertramp.
 - [ ] mse_ep seems off for gradient channel and conv channels
 - [ ] deconv with sparse grad
 - [ ] migrate to networkx 2.x
-- [ ] ln cosh overflow in AbsLikelihood
 - [ ] division and integration warning in ModulusLikelihood
 
 ## TODO

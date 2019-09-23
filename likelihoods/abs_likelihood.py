@@ -41,6 +41,6 @@ class AbsLikelihood(Likelihood):
 
     def log_partition(self, az, bz, y):
         logZ = np.sum(
-            -0.5*az*(y**2) + np.log(2*np.cosh(bz*y))
+            -0.5*az*(y**2) + np.logaddexp(bz*y, -bz*y)
         )
         return logZ
