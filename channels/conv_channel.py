@@ -140,6 +140,23 @@ class ConvChannel(Channel):
         vx = self.compute_forward_variance(az, ax)
         return vx
 
+    def log_partition(self, az, bz, ax, bx):
+        rz = self.compute_backward_mean(az, bz, ax, bx)
+        rx = self.compute_forward_mean(az, bz, ax, bx)
+        a = az + ax * self.spectrum
+        coef = 0.5 if self.real else 1
+        logZ = (
+            0.5 * np.sum(bz * rz) + 0.5 * np.sum(bx*rx) +
+            coef * np.sum(np.log(2 * np.pi / a))
+        )
+        return logZ
+
+    def free_energy(self, az, ax, tau):
+        tau_x = self.second_moment(tau)
+        K = np.log(2*np.pi / (az + ax * self.spectrum))
+        A = 0.5*(az*tau + ax*tau_x - 1 + K.mean())
+        return A
+
 
 class DifferentialChannel(ConvChannel):
     def __init__(self, D1, D2, shape, real=True):
@@ -173,9 +190,9 @@ class Blur1DChannel(ConvChannel):
 
 class Blur2DChannel(ConvChannel):
     def __init__(self, sigma, shape, real=True):
-        if len(sigma)!=2:
+        if len(sigma) != 2:
             raise ValueError("sigma must be a length 2 array")
-        if len(shape)!=2:
+        if len(shape) != 2:
             raise ValueError("shape must be a length 2 tuple")
         self.sigma = sigma
         self.repr_init()

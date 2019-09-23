@@ -2,6 +2,7 @@ import numpy as np
 from ..base import Prior
 from ..utils.integration import gaussian_measure
 
+
 class GaussianPrior(Prior):
     def __init__(self, size, mean=0, var=1):
         self.size = size
@@ -29,6 +30,11 @@ class GaussianPrior(Prior):
         vx = 1 / a
         return rx, vx
 
+    def compute_forward_error(self, ax):
+        a = ax + self.a
+        vx = 1 / a
+        return vx
+
     def compute_forward_message(self, ax, bx):
         ax_new = self.a
         bx_new = self.b
@@ -40,3 +46,17 @@ class GaussianPrior(Prior):
 
     def measure(self, f):
         return gaussian_measure(self.mean, self.sigma, f)
+
+    def log_partition(self, ax, bx):
+        a = ax + self.a
+        b = bx + self.b
+        logZ = 0.5 * np.sum(
+            b**2 / a - self.b**2 / self.a + np.log(self.a/a)
+        )
+        return logZ
+
+    def free_energy(self, ax):
+        tau = self.second_moment()
+        a = ax + self.a
+        A = 0.5 * (ax * tau + np.log(self.a/a))
+        return A

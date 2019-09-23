@@ -26,8 +26,8 @@ class DuplicateChannel(Factor):
 
     def compute_backward_posterior(self, az, bz, ax, bx):
         "estimate z from (xk = z for all k)"
-        a = ax + sum(az)
-        b = bx + sum(bz)
+        a = az + sum(ax)
+        b = bz + sum(bx)
         rz = b / a
         vz = 1. / a
         return rz, vz
@@ -38,6 +38,15 @@ class DuplicateChannel(Factor):
         return vx
 
     def compute_backward_error(self, az, ax, tau):
-        a = ax + sum(az)
+        a = az + sum(ax)
         vz = 1. / a
         return vz
+
+    def log_partition(self, az, bz, ax, bx):
+        a = az + sum(ax)
+        b = bz + sum(bx)
+        logZ = 0.5 * np.sum(b**2 / a + np.log(2 * np.pi / a))
+        return logZ
+
+    def free_energy(self, az, ax, tau):
+        raise NotImplementedError

@@ -62,6 +62,8 @@ class DFTChannel(Channel):
         bz_new = ifftn(bx, norm="ortho")
         if self.real:
             bz_new = np.real(bz_new)
+        else:
+            bz_new = complex2array(bz_new)
         return az_new, bz_new
 
     def compute_forward_state_evolution(self, az, ax, tau):
@@ -71,3 +73,16 @@ class DFTChannel(Channel):
     def compute_backward_state_evolution(self, az, ax, tau):
         az_new = ax
         return az_new
+
+    def log_partition(self, az, bz, ax, bx):
+        _, bz_new = self.compute_backward_mean(az, bz, ax, bx)
+        b = bz + bz_new
+        a = az + ax
+        coef = 0.5 if self.real else 1
+        logZ = 0.5 * np.sum(b**2 / a) + coef * self.N * np.log(2 * np.pi / a)
+        return logZ
+
+    def free_energy(self, az, ax, tau):
+        a = ax + az
+        A = 0.5*(a*tau - 1 + np.log(2*np.pi / a))
+        return A

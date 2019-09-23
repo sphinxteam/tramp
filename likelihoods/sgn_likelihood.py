@@ -1,7 +1,7 @@
 import numpy as np
 from ..base import Likelihood
 from ..utils.integration import gaussian_measure
-from ..utils.misc import phi_1, phi_2, norm_cdf
+from ..utils.misc import phi_0, phi_1, phi_2, norm_cdf
 from scipy.integrate import quad
 
 
@@ -41,3 +41,9 @@ class SgnLikelihood(Likelihood):
             return quad(f, 0, max)[0]
         else:
             return quad(f, -max, 0)[0]
+
+    def log_partition(self, az, bz, y):
+        logZ = np.sum(
+            phi_0(y*bz/np.sqrt(az)) + 0.5*np.log(2*np.pi/az)
+        )
+        return logZ

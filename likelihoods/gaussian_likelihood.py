@@ -28,6 +28,11 @@ class GaussianLikelihood(Likelihood):
         vz = 1 / a
         return rz, vz
 
+    def compute_backward_error(self, az, tau):
+        a = az + self.a
+        vz = 1 / a
+        return vz
+
     def compute_backward_message(self, az, bz):
         az_new = self.a
         bz_new = self.b
@@ -39,3 +44,17 @@ class GaussianLikelihood(Likelihood):
 
     def measure(self, y, f):
         return gaussian_measure(y, self.sigma, f)
+
+    def log_partition(self, az, bz, y):
+        ay, by = self.a, self.a*y
+        a = az + ay
+        b = bz + by
+        logZ = 0.5 * np.sum(
+            b**2 / a - by**2 / ay + np.log(ay/a)
+        )
+        return logZ
+
+    def free_energy(self, az, tau):
+        a = az + self.a
+        A = 0.5 * az * tau + 0.5 * np.log(self.a/a) - 1
+        return A

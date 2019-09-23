@@ -19,7 +19,7 @@ def get_prior(size, prior_type, **kwargs):
         prior_kwargs["p_pos"] = kwargs["p_pos"]
     if prior_type == "gauss_bernouilli":
         prior_kwargs["rho"] = kwargs["rho"]
-    if prior_type == "gaussian":
+    if prior_type in ["gaussian", "gauss_bernouilli"]:
         prior_kwargs["var"] = kwargs.get("var_prior", 1)
         prior_kwargs["mean"] = kwargs.get("mean_prior", 0)
     prior = PRIOR_CLASSES[prior_type](size=size, **prior_kwargs)

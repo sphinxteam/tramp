@@ -28,6 +28,7 @@ class AbsLikelihood(Likelihood):
         "NB: Assumes that f(bz, y) pair in y."
         u_eff = np.maximum(0, az * tau - 1)
         sz_eff = np.sqrt(az * u_eff)
+
         def f_scaled(xi_b, xi_y):
             bz = sz_eff * xi_b
             y = bz / az + xi_y / np.sqrt(az)
@@ -37,3 +38,9 @@ class AbsLikelihood(Likelihood):
 
     def measure(self, y, f):
         return f(+y) + f(-y)
+
+    def log_partition(self, az, bz, y):
+        logZ = np.sum(
+            -0.5*az*(y**2) + np.log(2*np.cosh(bz*y))
+        )
+        return logZ

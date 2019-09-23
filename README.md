@@ -12,11 +12,14 @@ will be renamed supertramp.
 - [ ] mse_ep seems off for gradient channel and conv channels
 - [ ] deconv with sparse grad
 - [ ] migrate to networkx 2.x
+- [ ] ln cosh overflow in AbsLikelihood
+- [ ] division and integration warning in ModulusLikelihood
 
 ## TODO
 
+- free energy
+  - [ ] concat_channel, duplicate_channel
 - utils
-  - [ ] add plotting
   - [ ] improve logging
 - tests
   - [ ] linear channels (linear, conv, dft, sum, ...)
@@ -26,7 +29,7 @@ will be renamed supertramp.
 - compute_output_shape for each module
 - channels
   - [ ] matrix factorization using MAP ?
-  - [ ] low rank matrix factorization (eg learn weights of conv channel) ?
+  - [ ] learn weights of conv channel ?
   - [ ] x = pow(z, n)
   - [ ] x = exp(alpha z) to model scale variables, eg XRay imaging:
     - signal s is log-density, ie density = 10^s = exp(ln10 s)

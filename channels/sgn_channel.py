@@ -66,3 +66,6 @@ class SgnChannel(Channel):
         def integrand(z):
             return f(z, np.sign(z))
         return quad(integrand, zmin, zmax)[0]
+
+    def log_partition(self, az, bz, ax, bx):
+        raise NotImplementedError

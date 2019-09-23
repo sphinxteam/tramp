@@ -1,6 +1,7 @@
 from ..base import Factor, filter_message
 import numpy as np
 
+
 class ConcatChannel(Factor):
     n_next = 1
 
@@ -41,11 +42,10 @@ class ConcatChannel(Factor):
         vx = sum(N * v for N, v in zip(self.Ns, vz)) / self.N
         return rx, vx
 
-    def compute_backward_posterior(self, az, bz, ax, bx):
-        "estimate z={zk} from x = [zk]"
+    def _compute_ak_bk(self, az, bz, ax, bx):
         for N, Z in zip(self.Ns, bz):
-            assert bz.shape[self.axis]==N
-        assert bx.shape[self.axis]==self.N
+            assert bz.shape[self.axis] == N
+        assert bx.shape[self.axis] == self.N
         idx = [0]+list(np.cumsum(self.Ns))
         bx_subs = [
             np.take(bx, range(idx_min, idx_max), axis=self.axis)
@@ -53,6 +53,11 @@ class ConcatChannel(Factor):
         ]
         ak = [a + ax for a in az]
         bk = [b + bx_sub for b, bx_sub in zip(bz, bx_subs)]
+        return ak, bk
+
+    def compute_backward_posterior(self, az, bz, ax, bx):
+        "estimate z={zk} from x = [zk]"
+        ak, bk = self._compute_ak_bk(az, bz, ax, bx)
         vz = [1 / a for a in ak]
         rz = [b / a for a, b in zip(ak, bk)]
         return rz, vz
@@ -66,3 +71,14 @@ class ConcatChannel(Factor):
         ak = [a + ax for a in az]
         vz = [1 / ak for a in ak]
         return vz
+
+    def log_partition(self, az, bz, ax, bx):
+        ak, bk = self._compute_ak_bk(az, bz, ax, bx)
+        logZ = sum([
+            0.5 * np.sum(b**2 / a + np.log(2 * np.pi / a))
+            for a, b in zip(ak, bk)
+        ])
+        return logZ
+
+    def free_energy(self, az, ax, tau):
+        raise NotImplementedError

@@ -462,6 +462,12 @@ class Channel(Factor):
         error = self.beliefs_measure(az, ax, tau, f=variance)
         return error
 
+    def free_energy(self, az, ax, tau):
+        def log_partition(bz, bx):
+            return self.log_partition(az, bz, ax, bx)
+        A = self.beliefs_measure(az, ax, tau, f=log_partition)
+        return A
+
 
 class Likelihood(Factor):
     n_next = 0
@@ -484,6 +490,12 @@ class Likelihood(Factor):
         error = self.beliefs_measure(az, tau, f=variance)
         return error
 
+    def free_energy(self, az, tau):
+        def log_partition(bz, y):
+            return self.log_partition(az, bz, y)
+        A = self.beliefs_measure(az, tau, f=log_partition)
+        return A
+
 
 class Prior(Factor):
     n_next = 1
@@ -505,6 +517,12 @@ class Prior(Factor):
             return vx
         error = self.beliefs_measure(ax, f=variance)
         return error
+
+    def free_energy(self, ax):
+        def log_partition(bx):
+            return self.log_partition(ax, bx)
+        A = self.beliefs_measure(ax, f=log_partition)
+        return A
 
 
 class Ensemble(ReprMixin):

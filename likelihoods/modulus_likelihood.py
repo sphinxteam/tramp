@@ -76,3 +76,11 @@ class ModulusLikelihood(Likelihood):
         def polar_f(theta):
             return y * f(y * np.exp(theta * 1j))
         return quad(polar_f, 0, 2 * np.pi)[0]
+
+    def log_partition(self, az, bz, y):
+        b = np.absolute(bz)
+        I0 = ive(0, b*y)
+        logZ = np.sum(
+            -0.5*az*(y**2) + np.log(2*np.pi*y*ive(0, b*y)) + b*y
+        )
+        return logZ

@@ -133,3 +133,16 @@ class LinearChannel(Channel):
     def compute_forward_error(self, az, ax, tau):
         vx = self.compute_forward_variance(az, ax)
         return vx
+
+    def log_partition(self, az, bz, ax, bx):
+        rz = self.compute_backward_mean(az, bz, ax, bx)
+        b = bz + self.W.T @ bx
+        a = az + ax * self.spectrum
+        logZ = 0.5 * np.sum(b * rz) + 0.5 * np.sum(np.log(2 * np.pi / a))
+        return logZ
+
+    def free_energy(self, az, ax, tau):
+        tau_x = self.second_moment(tau)
+        K = np.log(2*np.pi / (az + ax * self.spectrum))
+        A = 0.5*(az*tau + self.alpha*ax*tau_x - 1 + K.mean())
+        return A

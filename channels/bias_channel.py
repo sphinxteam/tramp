@@ -34,3 +34,16 @@ class BiasChannel(Channel):
     def compute_backward_state_evolution(self, az, ax, tau):
         az_new = ax
         return az_new
+
+    def log_partition(self, az, bz, ax, bx):
+        b = bx + bz - ax*self.bias
+        a = ax + az
+        logZ = 0.5 * np.sum(
+            b**2 / a + np.log(2*np.pi / a) + 2*bx*self.bias - ax*(self.bias**2)
+        )
+        return logZ
+
+    def free_energy(self, az, ax, tau):
+        a = ax + az
+        A = 0.5*(a*tau + ax*(self.bias**2) - 1 + np.log(2*np.pi / a))
+        return A

@@ -3,6 +3,13 @@ from scipy.special import erf, erfcx
 import warnings
 
 
+def gather(df, melted_columns, value_name="value", var_name="variable"):
+    """Gather melted_columns."""
+    id_vars = [column for column in df.columns if column not in melted_columns]
+    melted = df.melt(id_vars=id_vars, value_name=value_name, var_name=var_name)
+    return melted
+
+
 def complex2array(z):
     "Transforms complex z into real array Z where Z[0] = z.real Z[1] = z.imag"
     Z_shape = (2,) + z.shape

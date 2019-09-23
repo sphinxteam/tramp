@@ -76,3 +76,16 @@ class UnitaryChannel(Channel):
     def compute_backward_state_evolution(self, az, ax, tau):
         az_new = ax
         return az_new
+
+    def log_partition(self, az, bz, ax, bx):
+        b = complex2array(
+            array2complex(bz) + self.U.conj().T @ array2complex(bx)
+        )
+        a = az + ax
+        logZ = 0.5 * np.sum(b**2 / a) + self.N * np.log(2 * np.pi / a)
+        return logZ
+
+    def free_energy(self, az, ax, tau):
+        a = ax + az
+        A = 0.5*(a*tau - 1 + np.log(2*np.pi / a))
+        return A
