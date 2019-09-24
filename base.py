@@ -48,12 +48,11 @@ def inv(v):
 
 class Variable(ReprMixin):
 
-    def __init__(self, n_prev, n_next, id, dtype=float):
+    def __init__(self, id, n_prev, n_next):
+        self.id = id
         self.n_prev = n_prev
         self.n_next = n_next
-        self.id = id
         self.repr_init()
-        self.dtype = dtype
 
     def __add__(self, other):
         from .models.dag_algebra import DAG

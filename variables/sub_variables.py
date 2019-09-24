@@ -3,20 +3,20 @@ from ..base import Variable
 
 class SIMOVariable(Variable):
 
-    def __init__(self, n_next, dtype=float, id=None):
-        super().__init__(n_prev=1, n_next=n_next, dtype=dtype, id=id)
+    def __init__(self, id, n_next):
+        super().__init__(id=id, n_prev=1, n_next=n_next)
 
 
 class MISOVariable(Variable):
 
-    def __init__(self, n_prev, dtype=float, id=None):
-        super().__init__(n_prev=n_prev, n_next=1, dtype=dtype, id=id)
+    def __init__(self, id, n_prev):
+        super().__init__(id=id, n_prev=n_prev, n_next=1)
 
 
 class SISOVariable(Variable):
 
-    def __init__(self, dtype=float, id=None):
-        super().__init__(n_prev=1, n_next=1, dtype=dtype, id=id)
+    def __init__(self, id):
+        super().__init__(id=id, n_prev=1, n_next=1)
 
     def forward_message(self, message):
         "pass message from previous factor k to next factor l"
@@ -45,23 +45,23 @@ class SISOVariable(Variable):
 
 class MILeafVariable(Variable):
 
-    def __init__(self, n_prev, dtype=float, id=None):
-        super().__init__(n_prev=n_prev, n_next=0, dtype=dtype, id=id)
+    def __init__(self, id, n_prev):
+        super().__init__(id=id, n_prev=n_prev, n_next=0)
 
 
 class SILeafVariable(Variable):
 
-    def __init__(self, dtype=float, id=None):
-        super().__init__(n_prev=1, n_next=0, dtype=dtype, id=id)
+    def __init__(self, id):
+        super().__init__(id=id, n_prev=1, n_next=0)
 
 
 class MORootVariable(Variable):
 
-    def __init__(self, n_next, dtype=float, id=None):
-        super().__init__(n_prev=0, n_next=n_next, dtype=dtype, id=id)
+    def __init__(self, id, n_next):
+        super().__init__(id=id, n_prev=0, n_next=n_next)
 
 
 class SORootVariable(Variable):
 
-    def __init__(self, dtype=float, id=None):
-        super().__init__(n_prev=0, n_next=1, dtype=dtype, id=id)
+    def __init__(self, id):
+        super().__init__(id=id, n_prev=0, n_next=1)
