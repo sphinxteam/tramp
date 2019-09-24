@@ -1,12 +1,12 @@
 import numpy as np
-from ..base import SISOVariable, SIMOVariable, MILeafVariable
-from .dag_model import DAGModel
+from .base_model import Model
+from ..variables import SISOVariable, SIMOVariable, MILeafVariable
 from ..channels import LinearChannel, GaussianChannel, GradientChannel
 from ..priors import GaussianPrior, GaussBernouilliPrior, MAP_L21NormPrior
 from ..likelihoods import GaussianLikelihood, SgnLikelihood
 
 
-class SparseGradientRegression(DAGModel):
+class SparseGradientRegression(Model):
     def __init__(self, A, y, x_shape, rho_grad, var_noise, var_prior):
         M, N = A.shape
         if len(y) != M:
@@ -33,10 +33,10 @@ class SparseGradientRegression(DAGModel):
                 MILeafVariable(id="x'", n_prev=2)
             )
         ).to_model_dag()
-        DAGModel.__init__(self, model_dag)
+        Model.__init__(self, model_dag)
 
 
-class SparseGradientClassification(DAGModel):
+class SparseGradientClassification(Model):
     def __init__(self, A, y, x_shape, rho_grad, var_noise, var_prior):
         M, N = A.shape
         if len(y) != M:
@@ -65,10 +65,10 @@ class SparseGradientClassification(DAGModel):
                 MILeafVariable(id="x'", n_prev=2)
             )
         ).to_model_dag()
-        DAGModel.__init__(self, model_dag)
+        Model.__init__(self, model_dag)
 
 
-class TVRegression(DAGModel):
+class TVRegression(Model):
     def __init__(self, A, y, x_shape, scale_grad, var_noise, var_prior):
         M, N = A.shape
         if len(y) != M:
@@ -95,10 +95,10 @@ class TVRegression(DAGModel):
                 MILeafVariable(id="x'", n_prev=2)
             )
         ).to_model_dag()
-        DAGModel.__init__(self, model_dag)
+        Model.__init__(self, model_dag)
 
 
-class TVClassification(DAGModel):
+class TVClassification(Model):
     def __init__(self, A, y, x_shape, scale_grad, var_noise, var_prior):
         M, N = A.shape
         if len(y) != M:
@@ -127,4 +127,4 @@ class TVClassification(DAGModel):
                 MILeafVariable(id="x'", n_prev=2)
             )
         ).to_model_dag()
-        DAGModel.__init__(self, model_dag)
+        Model.__init__(self, model_dag)

@@ -1,5 +1,5 @@
 import numpy as np
-from ..base import Ensemble
+from .base_ensemble import Ensemble
 from .gaussian_ensemble import GaussianEnsemble
 
 

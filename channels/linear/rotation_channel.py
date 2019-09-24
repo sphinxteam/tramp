@@ -1,5 +1,5 @@
 import numpy as np
-from ..base import Channel
+from ..base_channel import Channel
 
 
 def check_rotation(R):

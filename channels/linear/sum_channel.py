@@ -1,9 +1,8 @@
 import numpy as np
-from ..base import Factor
+from ..base_channel import SOFactor
 
 
-class SumChannel(Factor):
-    n_next = 1
+class SumChannel(SOFactor):
 
     def __init__(self, n_prev):
         self.n_prev = n_prev

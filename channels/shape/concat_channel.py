@@ -1,8 +1,8 @@
-from ..base import Factor, filter_message
+from ..base_channel import SOFactor
 import numpy as np
 
 
-class ConcatChannel(Factor):
+class ConcatChannel(SOFactor):
     n_next = 1
 
     def __init__(self, Ns, axis=0):

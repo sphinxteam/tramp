@@ -1,7 +1,7 @@
 import numpy as np
-from ..base import Channel
-from ..utils.AMP_matrix_factorization import VAMP_matrix_factorization
-from ..utils.SE_matrix_factorization import SE_matrix_factorization
+from ..base_channel import Channel
+from .AMP_matrix_factorization import VAMP_matrix_factorization
+from .SE_matrix_factorization import SE_matrix_factorization
 
 
 class LowRankGramChannel(Channel):
@@ -35,38 +35,30 @@ class LowRankGramChannel(Channel):
 
     def compute_forward_posterior(self, az, bz, ax, bx):
         "estimate x; for x = zz^T / sqrt(N)"
-        assert bz.shape == (self.N, self.K)
-        assert bx.shape == (self.N, self.N)
-        # intermediate matrices
-        xz = bz / az
-        G = xz @ xz.T / np.sqrt(self.N)
-        H = (G**2 +  # (N,N)
-             (xz**2).sum(axis=1).reshape(-1, 1) / (az * self.N) +
-             self.K / (az * az * self.N))
-
-        # posterior on x
-        rx_new = G + bx * H
-        vx_new = H.mean()
-        #raise NotImplementedError
-        return rx_new, vx_new
+        # FIXME : derive forward posterior for matrix factorization
+        # Using placeholders
+        rx, vx = np.ones_like(bx), 1.
+        return rx, vx
 
     def compute_backward_posterior(self, az, bz, ax, bx):
         "estimate z; for x = zz^T / sqrt(N)"
         assert bz.shape == (self.N, self.K)
         assert bx.shape == (self.N, self.N)
-
         VAMP = VAMP_matrix_factorization(
-            K=self.K, N=self.N, model='XX', au_av_bu_bv=[az, az, bz, bz], ax_bx=[ax, bx], verbose=False)
+            K=self.K, N=self.N, model='XX',
+            au_av_bu_bv=[az, az, bz, bz], ax_bx=[ax, bx], verbose=False
+        )
         # posterior on z
-        (rz_new, vz_new, _, _) = VAMP.VAMP_training()
-        return rz_new, vz_new
+        rz, vz, _, _ = VAMP.VAMP_training()
+        return rz, vz
 
-    def compute_forward_state_evolution(self, az, ax, tau):
-
+    def compute_forward_error(self, az, ax, tau):
         raise NotImplementedError
 
-    def compute_backward_state_evolution(self, az, ax, tau):
+    def compute_backward_error(self, az, ax, tau):
         SE = SE_matrix_factorization(
-            K=self.K, N=self.N, model='XX', au_av=[az, az], ax=ax, verbose=False)
-        mse_x = SE.main()
-        return mse_x
+            K=self.K, N=self.N, model='XX',
+            au_av=[az, az], ax=ax, verbose=False
+        )
+        vz = SE.main()
+        return vz

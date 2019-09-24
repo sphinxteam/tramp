@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.stats import norm
-from ..base import Likelihood
+from .base_likelihood import Likelihood
 from ..utils.integration import gaussian_measure_2d
 
 

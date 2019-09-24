@@ -1,6 +1,7 @@
-from ..base import (
-    Variable, SISOVariable, SILeafVariable, Factor, Likelihood, ReprMixin
-)
+from ..base import Variable, Factor, ReprMixin
+from ..likelihoods.base_likelihood import Likelihood
+from ..priors.base_prior import Prior
+from ..variables import SISOVariable, SILeafVariable
 from ..channels import GaussianChannel, AbsChannel, SgnChannel, ModulusChannel
 from ..likelihoods import (
     GaussianLikelihood, AbsLikelihood, SgnLikelihood, ModulusLikelihood

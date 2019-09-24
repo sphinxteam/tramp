@@ -1,6 +1,6 @@
 import numpy as np
-from ..base import Channel
-from ..ensembles import MarchenkoPasturEnsemble
+from ..base_channel import Channel
+from tramp.ensembles import MarchenkoPasturEnsemble
 
 
 class AnalyticalLinearChannel(Channel):

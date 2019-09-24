@@ -1,6 +1,6 @@
 import numpy as np
-from ..base import Channel
-from ..utils.integration import gaussian_measure
+from ..base_channel import Channel
+from tramp.utils.integration import gaussian_measure
 from scipy.integrate import quad
 
 

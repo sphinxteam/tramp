@@ -1,4 +1,4 @@
-from ..base import Channel
+from ..base_channel import Channel
 
 
 class ReshapeChannel(Channel):

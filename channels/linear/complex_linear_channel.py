@@ -1,6 +1,6 @@
 import numpy as np
-from ..base import Channel
-from ..utils.misc import complex2array, array2complex
+from ..base_channel import Channel
+from tramp.utils.misc import complex2array, array2complex
 import logging
 
 

@@ -9,4 +9,4 @@ from .total_variation_model import (
 )
 from .committee_model import Committee, SgnCommittee, SoftCommittee
 from .factor_model import FactorModel
-from .dag_model import DAGModel
+from .base_model import Model

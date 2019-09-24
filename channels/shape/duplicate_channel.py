@@ -1,8 +1,7 @@
-from ..base import Factor
+from ..base_channel import SIFactor
 
 
-class DuplicateChannel(Factor):
-    n_prev = 1
+class DuplicateChannel(SIFactor):
 
     def __init__(self, n_next):
         self.n_next = n_next

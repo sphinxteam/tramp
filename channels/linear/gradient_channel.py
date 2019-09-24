@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.fft import fftn, ifftn
-from ..base import Channel
-from ..utils.conv_filters import gradient_filters
+from ..base_channel import Channel
+from tramp.utils.conv_filters import gradient_filters
 import logging
 
 

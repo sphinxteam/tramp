@@ -1,31 +1,36 @@
-from .sum_channel import SumChannel
-from .dft_channel import DFTChannel
-from .bias_channel import BiasChannel
-from .concat_channel import ConcatChannel
-from .duplicate_channel import DuplicateChannel
-from .gaussian_channel import GaussianChannel
-from .rotation_channel import RotationChannel
-from .unitary_channel import UnitaryChannel
-from .linear_channel import LinearChannel
-from .complex_linear_channel import ComplexLinearChannel
-from .conv_channel import (
+# noise
+from .noise.gaussian_channel import GaussianChannel
+# shape
+from .shape.concat_channel import ConcatChannel
+from .shape.duplicate_channel import DuplicateChannel
+from .shape.reshape_channel import ReshapeChannel
+# linear
+from .linear.sum_channel import SumChannel
+from .linear.dft_channel import DFTChannel
+from .linear.bias_channel import BiasChannel
+from .linear.rotation_channel import RotationChannel
+from .linear.unitary_channel import UnitaryChannel
+from .linear.linear_channel import LinearChannel
+from .linear.complex_linear_channel import ComplexLinearChannel
+from .linear.conv_channel import (
     ConvChannel, Blur1DChannel, Blur2DChannel,
     DifferentialChannel, LaplacianChannel
 )
-from .gradient_channel import GradientChannel
-from .sgn_channel import SgnChannel
-from .abs_channel import AbsChannel
-from .relu_channel import ReluChannel
-from .leaky_relu_channel import LeakyReluChannel
-from .hard_tanh_channel import HardTanhChannel
-from .tanh_channel import TanhChannel
-from .modulus_channel import ModulusChannel
-from .reshape_channel import ReshapeChannel
-from .low_rank_gram_channel import LowRankGramChannel
-from .low_rank_factorization import LowRankFactorization
-from .analytical_linear_channel import (
+from .linear.gradient_channel import GradientChannel
+from .linear.analytical_linear_channel import (
     AnalyticalLinearChannel, MarchenkoPasturChannel
 )
+# activation
+from .activation.sgn_channel import SgnChannel
+from .activation.abs_channel import AbsChannel
+from .activation.relu_channel import ReluChannel
+from .activation.leaky_relu_channel import LeakyReluChannel
+from .activation.hard_tanh_channel import HardTanhChannel
+from .activation.tanh_channel import TanhChannel
+from .activation.modulus_channel import ModulusChannel
+# low rank
+from .low_rank.low_rank_gram_channel import LowRankGramChannel
+from .low_rank.low_rank_factorization import LowRankFactorization
 
 
 CHANNEL_CLASSES = {

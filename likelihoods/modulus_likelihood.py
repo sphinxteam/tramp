@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.special import ive
 from scipy.integrate import quad
-from ..base import Likelihood
+from .base_likelihood import Likelihood
 from ..utils.integration import gaussian_measure_2d, gaussian_measure
 from ..utils.misc import relu, complex2array, array2complex
 

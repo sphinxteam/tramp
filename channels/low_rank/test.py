@@ -1,4 +1,4 @@
-from utils.SE_matrix_factorization import SE_matrix_factorization
+from .SE_matrix_factorization import SE_matrix_factorization
 import numpy as np
 
 N, M = 1000, 1000

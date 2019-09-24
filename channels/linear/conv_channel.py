@@ -1,10 +1,10 @@
 import numpy as np
 from numpy.fft import fftn, ifftn
-from ..base import Channel
-from ..utils.conv_filters import (
+from ..base_channel import Channel
+from tramp.utils.conv_filters import (
     gaussian_filter, differential_filter, laplacian_filter
 )
-from ..utils.misc import complex2array, array2complex
+from tramp.utils.misc import complex2array, array2complex
 import logging
 
 

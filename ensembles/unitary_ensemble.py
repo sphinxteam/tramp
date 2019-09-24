@@ -1,4 +1,4 @@
-from ..base import Ensemble
+from .base_ensemble import Ensemble
 from scipy.stats import unitary_group
 
 

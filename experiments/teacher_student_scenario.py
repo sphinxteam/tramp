@@ -2,7 +2,7 @@ import logging
 import pandas as pd
 from ..algos import ExpectationPropagation, StateEvolution
 from ..algos import TrackErrors, TrackEvolution, EarlyStopping, JoinCallback
-from ..models import DAGModel
+from ..models import Model
 from ..algos.metrics import METRICS
 
 
@@ -11,15 +11,15 @@ class TeacherStudentScenario():
 
     Parameters
     ----------
-    - model : DAGModel instance
+    - model : Model instance
         Generative model
     - x_ids : ids of the variables to infer (signals)
     - y_ids : ids of the observed variables (measurements)
     """
 
     def __init__(self, model, x_ids=["x"], y_ids=["y"]):
-        if not isinstance(model, DAGModel):
-            raise ValueError(f"{model} not a DAGModel")
+        if not isinstance(model, Model):
+            raise ValueError(f"{model} not a Model")
         for x_id in x_ids:
             if x_id not in model.variable_ids:
                 raise ValueError(f"x_id = {x_id} not in model variable_ids")

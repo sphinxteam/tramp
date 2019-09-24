@@ -2,7 +2,7 @@ import numpy as np
 import networkx as nx
 import logging
 from ..base import Variable, Factor
-from ..models import DAGModel
+from ..models import Model
 from .initial_conditions import ConstantInit
 from .callbacks import EarlyStopping
 
@@ -49,8 +49,8 @@ def find_variable_in_nodes(id, nodes):
 class MessagePassing():
 
     def __init__(self, model, message_keys, forward, backward, update):
-        if not isinstance(model, DAGModel):
-            raise ValueError(f"model {model} is not a DAGModel")
+        if not isinstance(model, Model):
+            raise ValueError(f"model {model} is not a Model")
         self.message_keys = message_keys
         self.forward = forward
         self.backward = backward

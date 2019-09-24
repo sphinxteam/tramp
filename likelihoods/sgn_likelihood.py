@@ -1,5 +1,5 @@
 import numpy as np
-from ..base import Likelihood
+from .base_likelihood import Likelihood
 from ..utils.integration import gaussian_measure
 from ..utils.misc import phi_0, phi_1, phi_2, norm_cdf
 from scipy.integrate import quad

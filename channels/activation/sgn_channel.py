@@ -1,7 +1,7 @@
 import numpy as np
-from ..base import Channel
-from ..utils.integration import gaussian_measure_2d
-from ..utils.misc import norm_cdf, phi_0, phi_1, phi_2, sigmoid
+from ..base_channel import Channel
+from tramp.utils.integration import gaussian_measure_2d
+from tramp.utils.misc import norm_cdf, phi_0, phi_1, phi_2, sigmoid
 from scipy.integrate import quad
 
 

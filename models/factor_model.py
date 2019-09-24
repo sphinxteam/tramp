@@ -1,8 +1,8 @@
-from .dag_model import DAGModel
+from .base_model import Model
 from .dag_algebra import FactorDAG
 
 
-class FactorModel(DAGModel):
+class FactorModel(Model):
     def __init__(self, factor_dag):
         if not isinstance(factor_dag, FactorDAG):
             raise TypeError(f"factor_dag {factor_dag} is not a FactorDAG")
@@ -10,4 +10,4 @@ class FactorModel(DAGModel):
             raise ValueError(f"root node {node} not a prior")
         self.factor_dag = factor_dag
         model_dag = factor_dag.to_model_dag()
-        DAGModel.__init__(self, model_dag)
+        Model.__init__(self, model_dag)

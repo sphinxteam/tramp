@@ -1,4 +1,4 @@
-from ..base import Variable, Factor, Model
+from ..base import ReprMixin
 from .dag_algebra import ModelDAG
 import numpy as np
 import networkx as nx
@@ -20,7 +20,7 @@ def check_variable_ids(variables):
         raise ValueError(f"having {n_unique} ids but {n_variables} variables")
 
 
-class DAGModel(Model):
+class Model(ReprMixin):
     def __init__(self, model_dag):
         if not isinstance(model_dag, ModelDAG):
             raise TypeError(f"model_dag {model_dag} is not a ModelDAG")
@@ -58,7 +58,7 @@ class DAGModel(Model):
             observations = {id: observation}
         """
         observed_dag = self.model_dag.to_observed(observations)
-        return DAGModel(observed_dag)
+        return Model(observed_dag)
 
     def sample(self):
         "Forward sampling of the model"

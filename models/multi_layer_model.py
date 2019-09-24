@@ -1,5 +1,8 @@
-from ..base import Prior, Channel, Likelihood, SISOVariable, SILeafVariable
-from .dag_model import DAGModel
+from ..priors.base_prior import Prior
+from ..channels.base_channel import Channel
+from ..likelihoods.base_likelihood import Likelihood
+from ..variables import SISOVariable, SILeafVariable
+from .base_model import Model
 import networkx as nx
 
 
@@ -25,7 +28,7 @@ def default_ids(n_layers):
     return ids
 
 
-class MultiLayerModel(DAGModel):
+class MultiLayerModel(Model):
     def __init__(self, layers, ids=None):
         check_layers(layers)
         n_layers = len(layers)
@@ -43,4 +46,4 @@ class MultiLayerModel(DAGModel):
         for l in range(1, n_layers):
             dag = dag @ layers[l] @ get_variable(l)
         model_dag = dag.to_model_dag()
-        DAGModel.__init__(self, model_dag)
+        Model.__init__(self, model_dag)

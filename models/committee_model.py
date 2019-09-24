@@ -1,11 +1,11 @@
-from ..base import SISOVariable, SILeafVariable
-from .dag_model import DAGModel
+from .base_model import Model
+from ..variables import SISOVariable, SILeafVariable
 from ..priors import get_prior
 from ..channels import get_channel, SumChannel, LinearChannel, GaussianChannel
 from ..ensembles import get_ensemble
 
 
-class Committee(DAGModel):
+class Committee(Model):
 
     def __init__(self, K, N, alpha, ensemble_type,
                  priors, activation1, activation2, var_noise=None):
@@ -49,7 +49,7 @@ class Committee(DAGModel):
             model_dag = model_dag @ SISOVariable(id="n") @ GaussianChannel(var=var_noise)
         model_dag = model_dag @ SILeafVariable(id="y")
         model_dag = model_dag.to_model_dag()
-        DAGModel.__init__(self, model_dag)
+        Model.__init__(self, model_dag)
 
 
 class SgnCommittee(Committee):

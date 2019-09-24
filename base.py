@@ -46,24 +46,6 @@ def inv(v):
     return 1 / np.maximum(v, 1e-20)
 
 
-AMAX = 1e+11
-AMIN = 1e-11
-
-
-def compute_a_new(v, a):
-    "Compute a_new and b_new ensuring that a_new is between AMIN and AMAX"
-    a_new = np.clip(inv(v) - a, AMIN, AMAX)
-    return a_new
-
-
-def compute_ab_new(r, v, a, b):
-    "Compute a_new and b_new ensuring that a_new is between AMIN and AMAX"
-    a_new = np.clip(inv(v) - a, AMIN, AMAX)
-    v_inv = (a + a_new)
-    b_new = r * v_inv - b
-    return a_new, b_new
-
-
 class Variable(ReprMixin):
 
     def __init__(self, n_prev, n_next, id, dtype=float):
@@ -214,73 +196,26 @@ class Variable(ReprMixin):
         return new_message
 
 
-class SIMOVariable(Variable):
-
-    def __init__(self, n_next, dtype=float, id=None):
-        super().__init__(n_prev=1, n_next=n_next, dtype=dtype, id=id)
-
-
-class MISOVariable(Variable):
-
-    def __init__(self, n_prev, dtype=float, id=None):
-        super().__init__(n_prev=n_prev, n_next=1, dtype=dtype, id=id)
-
-
-class SISOVariable(Variable):
-
-    def __init__(self, dtype=float, id=None):
-        super().__init__(n_prev=1, n_next=1, dtype=dtype, id=id)
-
-    def forward_message(self, message):
-        "pass message from previous factor k to next factor l"
-        k_source, l_source, ak, bk, al, bl = self._parse_message_ab(message)
-        new_message = [(self, l_source, dict(a=ak, b=bk, direction="fwd"))]
-        return new_message
-
-    def backward_message(self, message):
-        "pass message from next factor l to previous factor k"
-        k_source, l_source, ak, bk, al, bl = self._parse_message_ab(message)
-        new_message = [(self, k_source, dict(a=al, b=bl, direction="bwd"))]
-        return new_message
-
-    def forward_state_evolution(self, message):
-        "pass message from previous factor k to next factor l"
-        k_source, l_source, ak, al = self._parse_message_a(message)
-        new_message = [(self, l_source, dict(a=ak, direction="fwd"))]
-        return new_message
-
-    def backward_state_evolution(self, message):
-        "pass message from next factor l to previous factor k"
-        k_source, l_source, ak, al = self._parse_message_a(message)
-        new_message = [(self, k_source, dict(a=al, direction="bwd"))]
-        return new_message
-
-
-class MILeafVariable(Variable):
-
-    def __init__(self, n_prev, dtype=float, id=None):
-        super().__init__(n_prev=n_prev, n_next=0, dtype=dtype, id=id)
-
-
-class SILeafVariable(Variable):
-
-    def __init__(self, dtype=float, id=None):
-        super().__init__(n_prev=1, n_next=0, dtype=dtype, id=id)
-
-
-class MORootVariable(Variable):
-
-    def __init__(self, n_next, dtype=float, id=None):
-        super().__init__(n_prev=0, n_next=n_next, dtype=dtype, id=id)
-
-
-class SORootVariable(Variable):
-
-    def __init__(self, dtype=float, id=None):
-        super().__init__(n_prev=0, n_next=1, dtype=dtype, id=id)
-
-
 class Factor(ReprMixin):
+
+    AMAX = 1e+11
+    AMIN = 1e-11
+
+    def reset_precision_bounds(AMIN, AMAX):
+        self.AMIN = AMIN
+        self.AMAX = AMAX
+
+    def compute_a_new(self, v, a):
+        "Compute a_new and b_new ensuring that a_new is between AMIN and AMAX"
+        a_new = np.clip(inv(v) - a, self.AMIN, self.AMAX)
+        return a_new
+
+    def compute_ab_new(self, r, v, a, b):
+        "Compute a_new and b_new ensuring that a_new is between AMIN and AMAX"
+        a_new = np.clip(inv(v) - a, self.AMIN, self.AMAX)
+        v_inv = (a + a_new)
+        b_new = r * v_inv - b
+        return a_new, b_new
 
     def __add__(self, other):
         from .models.dag_algebra import DAG
@@ -423,111 +358,32 @@ class Factor(ReprMixin):
             ]
         return new_message
 
-
-class Channel(Factor):
-    n_next = 1
-    n_prev = 1
-
     def compute_forward_message(self, az, bz, ax, bx):
         rx, vx = self.compute_forward_posterior(az, bz, ax, bx)
-        ax_new, bx_new = compute_ab_new(rx, vx, ax, bx)
+        ab_new = [
+            self.compute_ab_new(rk, vk, ak, bk)
+            for rk, vk, ak, bk in zip(rx, vx, ax, bx)
+        ]
+        ax_new = [a for a, b in ab_new]
+        bx_new = [b for a, b in ab_new]
         return ax_new, bx_new
-
-    def compute_backward_message(self, az, bz, ax, bx):
-        rz, vz = self.compute_backward_posterior(az, bz, ax, bx)
-        az_new, bz_new = compute_ab_new(rz, vz, az, bz)
-        return az_new, bz_new
 
     def compute_forward_state_evolution(self, az, ax, tau):
         vx = self.compute_forward_error(az, ax, tau)
-        ax_new = compute_a_new(vx, ax)
+        ax_new = [self.compute_a_new(vk, ak) for vk, ak in zip(vx, ax)]
         return ax_new
+
+    def compute_backward_message(self, az, bz, ax, bx):
+        rz, vz = self.compute_backward_posterior(az, bz, ax, bx)
+        ab_new = [
+            self.compute_ab_new(rk, vk, ak, bk)
+            for rk, vk, ak, bk in zip(rz, vz, az, bz)
+        ]
+        az_new = [a for a, b in ab_new]
+        bz_new = [b for a, b in ab_new]
+        return az_new, bz_new
 
     def compute_backward_state_evolution(self, az, ax, tau):
         vz = self.compute_backward_error(az, ax, tau)
-        az_new = compute_a_new(vz, az)
+        az_new = [self.compute_a_new(vk, ak) for vk, ak in zip(vz, az)]
         return az_new
-
-    def compute_forward_error(self, az, ax, tau):
-        def variance(bz, bx):
-            rx, vx = self.compute_forward_posterior(az, bz, ax, bx)
-            return vx
-        error = self.beliefs_measure(az, ax, tau, f=variance)
-        return error
-
-    def compute_backward_error(self, az, ax, tau):
-        def variance(bz, bx):
-            rz, vz = self.compute_backward_posterior(az, bz, ax, bx)
-            return vz
-        error = self.beliefs_measure(az, ax, tau, f=variance)
-        return error
-
-    def free_energy(self, az, ax, tau):
-        def log_partition(bz, bx):
-            return self.log_partition(az, bz, ax, bx)
-        A = self.beliefs_measure(az, ax, tau, f=log_partition)
-        return A
-
-
-class Likelihood(Factor):
-    n_next = 0
-    n_prev = 1
-
-    def compute_backward_message(self, az, bz):
-        rz, vz = self.compute_backward_posterior(az, bz, self.y)
-        az_new, bz_new = compute_ab_new(rz, vz, az, bz)
-        return az_new, bz_new
-
-    def compute_backward_state_evolution(self, az, tau):
-        vz = self.compute_backward_error(az, tau)
-        az_new = compute_a_new(vz, az)
-        return az_new
-
-    def compute_backward_error(self, az, tau):
-        def variance(bz, y):
-            rz, vz = self.compute_backward_posterior(az, bz, y)
-            return vz
-        error = self.beliefs_measure(az, tau, f=variance)
-        return error
-
-    def free_energy(self, az, tau):
-        def log_partition(bz, y):
-            return self.log_partition(az, bz, y)
-        A = self.beliefs_measure(az, tau, f=log_partition)
-        return A
-
-
-class Prior(Factor):
-    n_next = 1
-    n_prev = 0
-
-    def compute_forward_message(self, ax, bx):
-        rx, vx = self.compute_forward_posterior(ax, bx)
-        ax_new, bx_new = compute_ab_new(rx, vx, ax, bx)
-        return ax_new, bx_new
-
-    def compute_forward_state_evolution(self, ax):
-        vx = self.compute_forward_error(ax)
-        ax_new = compute_a_new(vx, ax)
-        return ax_new
-
-    def compute_forward_error(self, ax):
-        def variance(bx):
-            rx, vx = self.compute_forward_posterior(ax, bx)
-            return vx
-        error = self.beliefs_measure(ax, f=variance)
-        return error
-
-    def free_energy(self, ax):
-        def log_partition(bx):
-            return self.log_partition(ax, bx)
-        A = self.beliefs_measure(ax, f=log_partition)
-        return A
-
-
-class Ensemble(ReprMixin):
-    pass
-
-
-class Model(ReprMixin):
-    pass

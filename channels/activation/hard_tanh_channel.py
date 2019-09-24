@@ -1,8 +1,8 @@
 import numpy as np
-from ..base import Channel
-from ..utils.misc import merge_estimates, hard_tanh
-from ..utils.truncated_normal import TruncatedNormal
-from ..utils.integration import gaussian_measure
+from ..base_channel import Channel
+from tramp.utils.misc import merge_estimates, hard_tanh
+from tramp.utils.truncated_normal import TruncatedNormal
+from tramp.utils.integration import gaussian_measure
 from scipy.integrate import quad
 
 

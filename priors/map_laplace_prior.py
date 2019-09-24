@@ -1,5 +1,5 @@
 import numpy as np
-from ..base import Prior
+from .base_prior import Prior
 
 
 def soft_threshold(x, gamma):
