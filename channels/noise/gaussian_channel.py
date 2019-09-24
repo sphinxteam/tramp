@@ -17,8 +17,8 @@ class GaussianChannel(Channel):
     def math(self):
         return r"$\mathcal{N}$"
 
-    def second_moment(self, tau):
-        return tau + self.var
+    def second_moment(self, tau_z):
+        return tau_z + self.var
 
     def compute_forward_message(self, az, bz, ax, bx):
         kz = self.a / (self.a + az)
@@ -32,12 +32,12 @@ class GaussianChannel(Channel):
         bz_new = kx * bx
         return az_new, bz_new
 
-    def compute_forward_state_evolution(self, az, ax, tau):
+    def compute_forward_state_evolution(self, az, ax, tau_z):
         kz = self.a / (self.a + az)
         ax_new = kz * az
         return ax_new
 
-    def compute_backward_state_evolution(self, az, ax, tau):
+    def compute_backward_state_evolution(self, az, ax, tau_z):
         kx = self.a / (self.a + ax)
         az_new = kx * ax
         return az_new
@@ -51,8 +51,8 @@ class GaussianChannel(Channel):
         logZ = 0.5 * np.sum(rz*bz + rx*bx + np.log(2 * np.pi / d))
         return logZ
 
-    def free_energy(self, az, ax, tau):
-        tau_x = self.second_moment(tau)
+    def free_energy(self, az, ax, tau_z):
+        tau_x = self.second_moment(tau_z)
         K = np.log(2*np.pi / (ax + az + ax*az/self.a))
-        A = 0.5*(az*tau + ax*tau_x - 1 + K.mean())
+        A = 0.5*(az*tau_z + ax*tau_x - 1 + K.mean())
         return A

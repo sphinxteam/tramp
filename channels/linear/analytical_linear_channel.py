@@ -18,8 +18,8 @@ class AnalyticalLinearChannel(Channel):
     def math(self):
         return r"$"+self.W_name+"$"
 
-    def second_moment(self, tau):
-        tau_x = tau * (self.ensemble.mean_spectrum / self.alpha)
+    def second_moment(self, tau_z):
+        tau_x = tau_z * (self.ensemble.mean_spectrum / self.alpha)
         return tau_x
 
     def compute_n_eff(self, az, ax):
@@ -28,26 +28,26 @@ class AnalyticalLinearChannel(Channel):
         n_eff = 1 - self.ensemble.eta_transform(gamma)
         return n_eff
 
-    def compute_backward_error(self, az, ax, tau):
+    def compute_backward_error(self, az, ax, tau_z):
         n_eff = self.compute_n_eff(az, ax)
         vz = (1 - n_eff) / az
         return vz
 
-    def compute_forward_error(self, az, ax, tau):
+    def compute_forward_error(self, az, ax, tau_z):
         n_eff = self.compute_n_eff(az, ax)
         vx = n_eff / (self.alpha * ax)
         return vx
 
-    def mutual_information(self, az, ax, tau):
+    def mutual_information(self, az, ax, tau_z):
         gamma = ax / az
         S = self.ensemble.shannon_transform(gamma)
-        I = 0.5*np.log(az*tau) + 0.5*S
+        I = 0.5*np.log(az*tau_z) + 0.5*S
         return I
 
-    def free_energy(self, az, ax, tau):
-        tau_x = self.second_moment(tau)
-        I = self.mutual_information(az, ax, tau)
-        A = 0.5*(az*tau + self.alpha*ax*tau_x) - I + 0.5*np.log(2*np.pi*tau/np.e)
+    def free_energy(self, az, ax, tau_z):
+        tau_x = self.second_moment(tau_z)
+        I = self.mutual_information(az, ax, tau_z)
+        A = 0.5*(az*tau_z + self.alpha*ax*tau_x) - I + 0.5*np.log(2*np.pi*tau_z/np.e)
         return A
 
 

@@ -25,8 +25,8 @@ class SgnLikelihood(Likelihood):
         vz = np.mean(v)
         return rz, vz
 
-    def beliefs_measure(self, az, tau, f):
-        u_eff = np.maximum(0, az * tau - 1)
+    def beliefs_measure(self, az, tau_z, f):
+        u_eff = np.maximum(0, az * tau_z - 1)
         sz_eff = np.sqrt(az * u_eff)
         def f_pos(bz):
             return norm_cdf(+bz / np.sqrt(az)) * f(bz, +1)

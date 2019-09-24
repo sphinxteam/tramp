@@ -52,9 +52,9 @@ class ModulusLikelihood(Likelihood):
         rz = complex2array(rz)
         return rz, vz
 
-    def beliefs_measure(self, az, tau, f):
-        u_eff = np.maximum(0, az * tau - 1)
-        # handling special case az * tau = 1 (no integration over b)
+    def beliefs_measure(self, az, tau_z, f):
+        u_eff = np.maximum(0, az * tau_z - 1)
+        # handling special case az * tau_z = 1 (no integration over b)
         if u_eff == 0:
             def f_scaled_y(xi_y):
                 y = xi_y / np.sqrt(az)

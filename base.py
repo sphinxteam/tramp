@@ -265,11 +265,11 @@ class Factor(ReprMixin):
         z_message = filter_message(message, "fwd")
         assert len(z_message) == self.n_prev
         az = [data["a"] for source, target, data in z_message]
-        tau = [data["tau"] for source, target, data in z_message]
+        tau_z = [data["tau"] for source, target, data in z_message]
         z_source = [source for source, target, data in z_message]
         if self.n_prev == 1:
             az = az[0]
-            tau = tau[0]
+            tau_z = tau_z[0]
             z_source = z_source[0]
         # next variable x send bwd message
         x_message = filter_message(message, "bwd")
@@ -279,7 +279,7 @@ class Factor(ReprMixin):
         if self.n_next == 1:
             ax = ax[0]
             x_source = x_source[0]
-        return z_source, x_source, az, ax, tau
+        return z_source, x_source, az, ax, tau_z
 
     def forward_message(self, message):
         if self.n_next == 0:
@@ -322,11 +322,11 @@ class Factor(ReprMixin):
     def forward_state_evolution(self, message):
         if self.n_next == 0:
             return []
-        z_source, x_source, az, ax, tau = self._parse_message_a(message)
+        z_source, x_source, az, ax, tau_z = self._parse_message_a(message)
         if self.n_prev == 0:
             ax_new = self.compute_forward_state_evolution(ax)
         else:
-            ax_new = self.compute_forward_state_evolution(az, ax, tau)
+            ax_new = self.compute_forward_state_evolution(az, ax, tau_z)
         if self.n_next == 1:
             new_message = [(
                 self, x_source, dict(a=ax_new, direction="fwd")
@@ -341,11 +341,11 @@ class Factor(ReprMixin):
     def backward_state_evolution(self, message):
         if self.n_prev == 0:
             return []
-        z_source, x_source, az, ax, tau = self._parse_message_a(message)
+        z_source, x_source, az, ax, tau_z = self._parse_message_a(message)
         if self.n_next == 0:
-            az_new = self.compute_backward_state_evolution(az, tau)
+            az_new = self.compute_backward_state_evolution(az, tau_z)
         else:
-            az_new = self.compute_backward_state_evolution(az, ax, tau)
+            az_new = self.compute_backward_state_evolution(az, ax, tau_z)
         if self.n_prev == 1:
             new_message = [(
                 self, z_source, dict(a=az_new, direction="bwd")
@@ -367,8 +367,8 @@ class Factor(ReprMixin):
         bx_new = [b for a, b in ab_new]
         return ax_new, bx_new
 
-    def compute_forward_state_evolution(self, az, ax, tau):
-        vx = self.compute_forward_error(az, ax, tau)
+    def compute_forward_state_evolution(self, az, ax, tau_z):
+        vx = self.compute_forward_error(az, ax, tau_z)
         ax_new = [self.compute_a_new(vk, ak) for vk, ak in zip(vx, ax)]
         return ax_new
 
@@ -382,7 +382,7 @@ class Factor(ReprMixin):
         bz_new = [b for a, b in ab_new]
         return az_new, bz_new
 
-    def compute_backward_state_evolution(self, az, ax, tau):
-        vz = self.compute_backward_error(az, ax, tau)
+    def compute_backward_state_evolution(self, az, ax, tau_z):
+        vz = self.compute_backward_error(az, ax, tau_z)
         az_new = [self.compute_a_new(vk, ak) for vk, ak in zip(vz, az)]
         return az_new

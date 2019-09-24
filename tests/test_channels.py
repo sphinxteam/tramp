@@ -5,16 +5,15 @@ from tramp.channels import (
 import numpy as np
 
 
-def empirical_second_moment(tau, channel):
+def empirical_second_moment(tau_z, channel):
     """
     Estimate second_moment by sampling.
     """
     noise = np.random.standard_normal(size=1000 * 1000)
-    Z = np.sqrt(tau) * noise
-    tau_Z = (Z**2).mean()
+    Z = np.sqrt(tau_z) * noise / noise.std()
     X = channel.sample(Z)
-    tau_X = (X**2).mean()
-    return tau_Z, tau_X
+    tau_x = (X**2).mean()
+    return tau_x
 
 
 def explicit_integral(az, bz, ax, bx, channel):
@@ -49,9 +48,9 @@ def explicit_integral(az, bz, ax, bx, channel):
 class ChannelsTest(unittest.TestCase):
     def setUp(self):
         self.records = [
-            dict(az=2.1, bz=2.0, ax=2.0, bx=2.0, tau=2.0),
-            dict(az=2.0, bz=+1.6, ax=1.5, bx=1.3, tau=1.5),
-            dict(az=2.0, bz=-1.6, ax=1.5, bx=1.3, tau=1.0)
+            dict(az=2.1, bz=2.0, ax=2.0, bx=2.0, tau_z=2.0),
+            dict(az=2.0, bz=+1.6, ax=1.5, bx=1.3, tau_z=1.5),
+            dict(az=2.0, bz=-1.6, ax=1.5, bx=1.3, tau_z=1.0)
         ]
 
     def tearDown(self):
@@ -59,10 +58,11 @@ class ChannelsTest(unittest.TestCase):
 
     def _test_function_second_moment(self, channel, records, places=6):
         for record in records:
-            tau_Z, tau_X = empirical_second_moment(record["tau"], channel)
-            tau_X_hat = channel.second_moment(tau_Z)
+            tau_z = record["tau_z"]
+            tau_x_emp = empirical_second_moment(tau_z, channel)
+            tau_x_hat = channel.second_moment(tau_z)
             msg = f"record={record}"
-            self.assertAlmostEqual(tau_X_hat, tau_X, places=places, msg=msg)
+            self.assertAlmostEqual(tau_x_emp, tau_x_hat, places=places, msg=msg)
 
     def _test_function_posterior(self, channel, records, places=12):
         for record in records:
@@ -78,9 +78,9 @@ class ChannelsTest(unittest.TestCase):
 
     def _test_function_proba(self, channel, records, places=12):
         for record in records:
-            az, ax, tau = record["az"], record["ax"], record["tau"]
+            az, ax, tau_z = record["az"], record["ax"], record["tau_z"]
             one = lambda bz, bx: 1
-            sum_proba = channel.beliefs_measure(az, ax, tau, f=one)
+            sum_proba = channel.beliefs_measure(az, ax, tau_z, f=one)
             msg = f"record={record}"
             self.assertAlmostEqual(sum_proba, 1., places=places, msg=msg)
 
@@ -106,7 +106,7 @@ class ChannelsTest(unittest.TestCase):
 
     def test_abs_second_moment(self):
         channel = AbsChannel()
-        self._test_function_second_moment(channel, self.records)
+        self._test_function_second_moment(channel, self.records, places=2)
 
     def test_sgn_second_moment(self):
         channel = SgnChannel()

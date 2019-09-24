@@ -16,8 +16,8 @@ class ReluChannel(Channel):
     def math(self):
         return r"$\mathrm{relu}$"
 
-    def second_moment(self, tau):
-        return 0.5 * tau
+    def second_moment(self, tau_z):
+        return 0.5 * tau_z
 
     def compute_forward_posterior(self, az, bz, ax, bx):
         # estimate x from x = relu(z)
@@ -54,8 +54,8 @@ class ReluChannel(Channel):
         vz = np.mean(v)
         return rz, vz
 
-    def beliefs_measure(self, az, ax, tau, f):
-        u_eff = np.maximum(0, az * tau - 1)
+    def beliefs_measure(self, az, ax, tau_z, f):
+        u_eff = np.maximum(0, az * tau_z - 1)
         sz_eff = np.sqrt(az * u_eff)
 
         def f_pos(bz, bx):
@@ -68,11 +68,11 @@ class ReluChannel(Channel):
             return norm_cdf(x_neg) * f(bz, bx)
 
         if ax==0 or u_eff==0:
-            sx_eff = np.sqrt(ax * (ax * tau + 1))
+            sx_eff = np.sqrt(ax * (ax * tau_z + 1))
             mu_pos = gaussian_measure_2d(0, sz_eff, 0, sx_eff, f_pos)
         else:
             cov_pos = np.array([
-                [ax * (ax * tau + 1), +ax * u_eff],
+                [ax * (ax * tau_z + 1), +ax * u_eff],
                 [+ax * u_eff, az * u_eff]
             ])
             mu_pos = gaussian_measure_2d_full(cov_pos, 0, f_pos)

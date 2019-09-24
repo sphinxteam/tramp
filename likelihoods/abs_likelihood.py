@@ -24,9 +24,9 @@ class AbsLikelihood(Likelihood):
         vz = np.mean(v)
         return rz, vz
 
-    def beliefs_measure(self, az, tau, f):
+    def beliefs_measure(self, az, tau_z, f):
         "NB: Assumes that f(bz, y) pair in y."
-        u_eff = np.maximum(0, az * tau - 1)
+        u_eff = np.maximum(0, az * tau_z - 1)
         sz_eff = np.sqrt(az * u_eff)
 
         def f_scaled(xi_b, xi_y):

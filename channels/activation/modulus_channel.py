@@ -29,8 +29,8 @@ class ModulusChannel(Channel):
     def math(self):
         return r"$|\cdot|$"
 
-    def second_moment(self, tau):
-        return 2 * tau
+    def second_moment(self, tau_z):
+        return 2 * tau_z
 
     def compute_forward_posterior(self, az, bz, ax, bx):
         bz = array2complex(bz)
@@ -40,7 +40,7 @@ class ModulusChannel(Channel):
         bz = array2complex(bz)
         raise NotImplementedError
 
-    def beliefs_measure(self, az, ax, tau, f):
+    def beliefs_measure(self, az, ax, tau_z, f):
         raise NotImplementedError
 
     def measure(self, f, zmin, zmax):

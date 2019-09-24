@@ -63,8 +63,8 @@ class ConvChannel(Channel):
     def math(self):
         return r"$\ast$"
 
-    def second_moment(self, tau):
-        return tau * self.spectrum.mean()
+    def second_moment(self, tau_z):
+        return tau_z * self.spectrum.mean()
 
     def compute_n_eff(self, az, ax):
         "Effective number of parameters = overlap in z"
@@ -132,11 +132,11 @@ class ConvChannel(Channel):
         vx = self.compute_forward_variance(az, ax)
         return rx, vx
 
-    def compute_backward_error(self, az, ax, tau):
+    def compute_backward_error(self, az, ax, tau_z):
         vz = self.compute_backward_variance(az, ax)
         return vz
 
-    def compute_forward_error(self, az, ax, tau):
+    def compute_forward_error(self, az, ax, tau_z):
         vx = self.compute_forward_variance(az, ax)
         return vx
 
@@ -151,10 +151,10 @@ class ConvChannel(Channel):
         )
         return logZ
 
-    def free_energy(self, az, ax, tau):
-        tau_x = self.second_moment(tau)
+    def free_energy(self, az, ax, tau_z):
+        tau_x = self.second_moment(tau_z)
         K = np.log(2*np.pi / (az + ax * self.spectrum))
-        A = 0.5*(az*tau + ax*tau_x - 1 + K.mean())
+        A = 0.5*(az*tau_z + ax*tau_x - 1 + K.mean())
         return A
 
 

@@ -52,8 +52,8 @@ def explicit_complex_integral(az, bz, y, likelihood):
 class likelihoodsTest(unittest.TestCase):
     def setUp(self):
         self.records = [
-            dict(az=2.0, bz=2.0, tau = 1.0),
-            dict(az=3.5, bz=1.3, tau = 0.5)
+            dict(az=2.0, bz=2.0, tau_z = 1.0),
+            dict(az=3.5, bz=1.3, tau_z = 0.5)
         ]
 
     def tearDown(self):
@@ -79,9 +79,9 @@ class likelihoodsTest(unittest.TestCase):
 
     def _test_function_proba(self, likelihood, records, places=12):
         for record in records:
-            az, tau = record["az"], record["tau"]
+            az, tau_z = record["az"], record["tau_z"]
             one = lambda bz, y: 1
-            sum_proba = likelihood.beliefs_measure(az, tau, f=one)
+            sum_proba = likelihood.beliefs_measure(az, tau_z, f=one)
             msg = f"record={record} likelihood={likelihood}"
             self.assertAlmostEqual(sum_proba, 1., places=places, msg=msg)
 
@@ -115,9 +115,9 @@ class likelihoodsTest(unittest.TestCase):
             ModulusLikelihood(y = np.array([1.3]))
         ]
         records = [
-            dict(az=2.0, bz=2.0, tau = 1.0),
-            dict(az=2.0, bz=2.0-1j, tau = 1.0),
-            dict(az=3.5, bz=1.3+2j, tau = 0.5)
+            dict(az=2.0, bz=2.0, tau_z = 1.0),
+            dict(az=2.0, bz=2.0-1j, tau_z = 1.0),
+            dict(az=3.5, bz=1.3+2j, tau_z = 0.5)
         ]
         for likelihood in likelihoods:
             self._test_function_posterior(likelihood, records)

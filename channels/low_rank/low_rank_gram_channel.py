@@ -28,10 +28,10 @@ class LowRankGramChannel(Channel):
     def math(self):
         return r"$zz^T$"
 
-    def second_moment(self, tau):
+    def second_moment(self, tau_z):
         # we ignore O(1/N^2) terms
-        tau = self.K * tau * tau / self.N
-        return tau
+        tau_x = self.K * tau_z * tau_z / self.N
+        return tau_x
 
     def compute_forward_posterior(self, az, bz, ax, bx):
         "estimate x; for x = zz^T / sqrt(N)"
@@ -52,10 +52,10 @@ class LowRankGramChannel(Channel):
         rz, vz, _, _ = VAMP.VAMP_training()
         return rz, vz
 
-    def compute_forward_error(self, az, ax, tau):
+    def compute_forward_error(self, az, ax, tau_z):
         raise NotImplementedError
 
-    def compute_backward_error(self, az, ax, tau):
+    def compute_backward_error(self, az, ax, tau_z):
         SE = SE_matrix_factorization(
             K=self.K, N=self.N, model='XX',
             au_av=[az, az], ax=ax, verbose=False

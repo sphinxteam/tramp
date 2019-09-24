@@ -29,10 +29,10 @@ class ConcatChannel(SOFactor):
     def math(self):
         return r"$\oplus$"
 
-    def second_moment(self, *taus):
-        if len(taus) != self.n_prev:
-            raise ValueError(f"expect {self.n_prev} taus")
-        tau_x = sum(N * tau for N, tau in zip(self.Ns, taus)) / self.N
+    def second_moment(self, *tau_zs):
+        if len(tau_zs) != self.n_prev:
+            raise ValueError(f"expect {self.n_prev} tau_zs")
+        tau_x = sum(N * tau_z for N, tau_z in zip(self.Ns, tau_zs)) / self.N
         return tau_x
 
     def compute_forward_posterior(self, az, bz, ax, bx):
@@ -62,12 +62,12 @@ class ConcatChannel(SOFactor):
         rz = [b / a for a, b in zip(ak, bk)]
         return rz, vz
 
-    def compute_forward_error(self, az, ax, tau):
-        vz = self.compute_backward_error(az, ax, tau)
+    def compute_forward_error(self, az, ax, tau_z):
+        vz = self.compute_backward_error(az, ax, tau_z)
         vx = sum(N * v for N, v in zip(self.Ns, vz)) / self.N
         return vx
 
-    def compute_backward_error(self, az, ax, tau):
+    def compute_backward_error(self, az, ax, tau_z):
         ak = [a + ax for a in az]
         vz = [1 / ak for a in ak]
         return vz
@@ -80,5 +80,5 @@ class ConcatChannel(SOFactor):
         ])
         return logZ
 
-    def free_energy(self, az, ax, tau):
+    def free_energy(self, az, ax, tau_z):
         raise NotImplementedError

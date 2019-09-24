@@ -20,9 +20,9 @@ class HardTanhChannel(Channel):
     def math(self):
         return r"$\textrm{h-tanh}$"
 
-    def second_moment(self, tau):
+    def second_moment(self, tau_z):
         # TODO explicit formula
-        tau_x = gaussian_measure(0, np.sqrt(tau), f = lambda z: hard_tanh(z)**2)
+        tau_x = gaussian_measure(0, np.sqrt(tau_z), f = lambda z: hard_tanh(z)**2)
         return tau_x
 
     def compute_forward_posterior(self, az, bz, ax, bx):
@@ -51,7 +51,7 @@ class HardTanhChannel(Channel):
         v = np.mean(v)
         return r, v
 
-    def beliefs_measure(self, az, ax, tau, f):
+    def beliefs_measure(self, az, ax, tau_z, f):
         raise NotImplementedError
 
     def measure(self, f, zmin, zmax):

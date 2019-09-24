@@ -13,9 +13,9 @@ class BiasChannel(Channel):
     def math(self):
         return r"$+$"
 
-    def second_moment(self, tau):
+    def second_moment(self, tau_z):
         tau_bias = (self.bias**2).mean()
-        return tau + tau_bias
+        return tau_z + tau_bias
 
     def compute_forward_message(self, az, bz, ax, bx):
         ax_new = az
@@ -27,11 +27,11 @@ class BiasChannel(Channel):
         bz_new = bx - ax * self.bias
         return az_new, bz_new
 
-    def compute_forward_state_evolution(self, az, ax, tau):
+    def compute_forward_state_evolution(self, az, ax, tau_z):
         ax_new = az
         return ax_new
 
-    def compute_backward_state_evolution(self, az, ax, tau):
+    def compute_backward_state_evolution(self, az, ax, tau_z):
         az_new = ax
         return az_new
 
@@ -43,7 +43,7 @@ class BiasChannel(Channel):
         )
         return logZ
 
-    def free_energy(self, az, ax, tau):
+    def free_energy(self, az, ax, tau_z):
         a = ax + az
-        A = 0.5*(a*tau + ax*(self.bias**2) - 1 + np.log(2*np.pi / a))
+        A = 0.5*(a*tau_z + ax*(self.bias**2) - 1 + np.log(2*np.pi / a))
         return A

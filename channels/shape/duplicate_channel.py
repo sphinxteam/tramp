@@ -13,8 +13,8 @@ class DuplicateChannel(SIFactor):
     def math(self):
         return r"$\delta$"
 
-    def second_moment(self, tau):
-        return (tau,) * self.n_next
+    def second_moment(self, tau_z):
+        return (tau_z,) * self.n_next
 
     def compute_forward_posterior(self, az, bz, ax, bx):
         "estimate x = {xk} from (xk = z for all k)"
@@ -31,12 +31,12 @@ class DuplicateChannel(SIFactor):
         vz = 1. / a
         return rz, vz
 
-    def compute_forward_error(self, az, ax, tau):
-        vz = self.compute_backward_error(az, ax, tau)
+    def compute_forward_error(self, az, ax, tau_z):
+        vz = self.compute_backward_error(az, ax, tau_z)
         vx = [vz] * self.n_next
         return vx
 
-    def compute_backward_error(self, az, ax, tau):
+    def compute_backward_error(self, az, ax, tau_z):
         a = az + sum(ax)
         vz = 1. / a
         return vz
@@ -47,5 +47,5 @@ class DuplicateChannel(SIFactor):
         logZ = 0.5 * np.sum(b**2 / a + np.log(2 * np.pi / a))
         return logZ
 
-    def free_energy(self, az, ax, tau):
+    def free_energy(self, az, ax, tau_z):
         raise NotImplementedError

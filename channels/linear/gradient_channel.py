@@ -37,8 +37,8 @@ class GradientChannel(Channel):
     def math(self):
         return r"$\nabla$"
 
-    def second_moment(self, tau):
-        return tau * self.spectrum.mean() / self.d
+    def second_moment(self, tau_z):
+        return tau_z * self.spectrum.mean() / self.d
 
     def compute_n_eff(self, az, ax):
         "Effective number of parameters = overlap in z"
@@ -99,10 +99,10 @@ class GradientChannel(Channel):
         vx = self.compute_forward_variance(az, ax)
         return rx, vx
 
-    def compute_backward_error(self, az, ax, tau):
+    def compute_backward_error(self, az, ax, tau_z):
         vz = self.compute_backward_variance(az, ax)
         return vz
 
-    def compute_forward_error(self, az, ax, tau):
+    def compute_forward_error(self, az, ax, tau_z):
         vx = self.compute_forward_variance(az, ax)
         return vx

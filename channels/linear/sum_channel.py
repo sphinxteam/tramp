@@ -17,11 +17,11 @@ class SumChannel(SOFactor):
     def math(self):
         return r"$\Sigma$"
 
-    def second_moment(self, *taus):
-        if len(taus) != self.n_prev:
+    def second_moment(self, *tau_zs):
+        if len(tau_zs) != self.n_prev:
             raise ValueError(f"expect {self.n_prev} arrays")
-        tau = sum(taus)
-        return tau
+        tau_z = sum(tau_zs)
+        return tau_z
 
     def compute_forward_message(self, az, bz, ax, bx):
         "fwd message to x; for x = sum(z)"
@@ -43,13 +43,13 @@ class SumChannel(SOFactor):
         bz_new = [r / v for v, r in zip(vk, rk)]
         return az_new, bz_new
 
-    def compute_forward_state_evolution(self, az, ax, tau):
+    def compute_forward_state_evolution(self, az, ax, tau_z):
         "fwd state evo to x; for x = sum(z)"
         v_bar = sum(1 / a for a in az)
         ax_new = 1 / v_bar
         return ax_new
 
-    def compute_backward_state_evolution(self, az, ax, tau):
+    def compute_backward_state_evolution(self, az, ax, tau_z):
         "bwd state evo to z = {zk}; for x = sum(z)"
         v_bar = sum(1 / a for a in az)
         vx = 1 / ax

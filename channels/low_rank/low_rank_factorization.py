@@ -33,8 +33,8 @@ class LowRankFactorization(MatrixFactorization):
         return r"$uv^T$"
 
     def second_moment(self, tau_u, tau_v):
-        tau = self.K * tau_u * tau_v / self.N
-        return tau
+        tau_x = self.K * tau_u * tau_v / self.N
+        return tau_x
 
     def compute_forward_posterior(self, az, bz, ax, bx):
         "estimate x; for x = uv^T / sqrt(N) and z = [u, v]"
@@ -62,10 +62,10 @@ class LowRankFactorization(MatrixFactorization):
         vz = [vz_u, vz_v]
         return rz, vz
 
-    def compute_forward_error(self, az, ax, tau):
+    def compute_forward_error(self, az, ax, tau_z):
         raise NotImplementedError
 
-    def compute_backward_error(self, az, ax, tau):
+    def compute_backward_error(self, az, ax, tau_z):
         au, av = az
         SE = SE_matrix_factorization(
             K=self.K, N=self.N, M=self.M, model='UV',

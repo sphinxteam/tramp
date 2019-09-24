@@ -23,8 +23,8 @@ class ActivationChannel(Channel):
     def math(self):
         return r"$\mathrm{" + self.name + r"}$"
 
-    def second_moment(self, tau):
-        tau_x = gaussian_measure(0, np.sqrt(tau), f = lambda z: self.func(z)**2)
+    def second_moment(self, tau_z):
+        tau_x = gaussian_measure(0, np.sqrt(tau_z), f = lambda z: self.func(z)**2)
         return tau_x
 
     def scalar_forward_posterior(self, az, bz, ax, bx):
@@ -69,7 +69,7 @@ class ActivationChannel(Channel):
         vz = vz.mean()
         return rz, vz
 
-    def beliefs_measure(self, az, ax, tau, f):
+    def beliefs_measure(self, az, ax, tau_z, f):
         raise NotImplementedError
 
     def measure(self, f, zmin, zmax):

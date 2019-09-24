@@ -9,8 +9,8 @@ def empirical_second_moment(prior):
     """
     prior.size = 1000*1000
     X = prior.sample()
-    tau = (X**2).mean()
-    return tau
+    tau_x = (X**2).mean()
+    return tau_x
 
 def explicit_integral(ax, bx, prior):
     """
@@ -41,10 +41,10 @@ class PriorsTest(unittest.TestCase):
         pass
 
     def _test_function_second_moment(self, prior, places=2):
-        tau = empirical_second_moment(prior)
-        tau_hat = prior.second_moment()
+        tau_x_emp = empirical_second_moment(prior)
+        tau_x_hat = prior.second_moment()
         msg = f"prior={prior}"
-        self.assertAlmostEqual(tau, tau_hat, places=places, msg=msg)
+        self.assertAlmostEqual(tau_x_emp, tau_x_hat, places=places, msg=msg)
 
     def _test_function_posterior(self, prior, records, places=12):
         for record in records:

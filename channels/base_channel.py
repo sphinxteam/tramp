@@ -15,34 +15,34 @@ class Channel(Factor):
         az_new, bz_new = self.compute_ab_new(rz, vz, az, bz)
         return az_new, bz_new
 
-    def compute_forward_state_evolution(self, az, ax, tau):
-        vx = self.compute_forward_error(az, ax, tau)
+    def compute_forward_state_evolution(self, az, ax, tau_z):
+        vx = self.compute_forward_error(az, ax, tau_z)
         ax_new = self.compute_a_new(vx, ax)
         return ax_new
 
-    def compute_backward_state_evolution(self, az, ax, tau):
-        vz = self.compute_backward_error(az, ax, tau)
+    def compute_backward_state_evolution(self, az, ax, tau_z):
+        vz = self.compute_backward_error(az, ax, tau_z)
         az_new = self.compute_a_new(vz, az)
         return az_new
 
-    def compute_forward_error(self, az, ax, tau):
+    def compute_forward_error(self, az, ax, tau_z):
         def variance(bz, bx):
             rx, vx = self.compute_forward_posterior(az, bz, ax, bx)
             return vx
-        error = self.beliefs_measure(az, ax, tau, f=variance)
+        error = self.beliefs_measure(az, ax, tau_z, f=variance)
         return error
 
-    def compute_backward_error(self, az, ax, tau):
+    def compute_backward_error(self, az, ax, tau_z):
         def variance(bz, bx):
             rz, vz = self.compute_backward_posterior(az, bz, ax, bx)
             return vz
-        error = self.beliefs_measure(az, ax, tau, f=variance)
+        error = self.beliefs_measure(az, ax, tau_z, f=variance)
         return error
 
-    def free_energy(self, az, ax, tau):
+    def free_energy(self, az, ax, tau_z):
         def log_partition(bz, bx):
             return self.log_partition(az, bz, ax, bx)
-        A = self.beliefs_measure(az, ax, tau, f=log_partition)
+        A = self.beliefs_measure(az, ax, tau_z, f=log_partition)
         return A
 
 class SIFactor(Factor):
@@ -53,8 +53,8 @@ class SIFactor(Factor):
         az_new, bz_new = self.compute_ab_new(rz, vz, az, bz)
         return az_new, bz_new
 
-    def compute_forward_state_evolution(self, az, ax, tau):
-        vx = self.compute_forward_error(az, ax, tau)
+    def compute_forward_state_evolution(self, az, ax, tau_z):
+        vx = self.compute_forward_error(az, ax, tau_z)
         ax_new = self.compute_a_new(vx, ax)
         return ax_new
 
@@ -67,8 +67,8 @@ class SOFactor(Factor):
         ax_new, bx_new = self.compute_ab_new(rx, vx, ax, bx)
         return ax_new, bx_new
 
-    def compute_backward_state_evolution(self, az, ax, tau):
-        vz = self.compute_backward_error(az, ax, tau)
+    def compute_backward_state_evolution(self, az, ax, tau_z):
+        vz = self.compute_backward_error(az, ax, tau_z)
         az_new = self.compute_a_new(vz, az)
         return az_new
 

@@ -28,7 +28,7 @@ class GaussianLikelihood(Likelihood):
         vz = 1 / a
         return rz, vz
 
-    def compute_backward_error(self, az, tau):
+    def compute_backward_error(self, az, tau_z):
         a = az + self.a
         vz = 1 / a
         return vz
@@ -38,7 +38,7 @@ class GaussianLikelihood(Likelihood):
         bz_new = self.b
         return az_new, bz_new
 
-    def compute_backward_state_evolution(self, az, tau):
+    def compute_backward_state_evolution(self, az, tau_z):
         az_new = self.a
         return az_new
 
@@ -54,7 +54,7 @@ class GaussianLikelihood(Likelihood):
         )
         return logZ
 
-    def free_energy(self, az, tau):
+    def free_energy(self, az, tau_z):
         a = az + self.a
-        A = 0.5 * az * tau + 0.5 * np.log(self.a/a) - 1
+        A = 0.5 * az * tau_z + 0.5 * np.log(self.a/a) - 1
         return A

@@ -25,8 +25,8 @@ class RotationChannel(Channel):
     def math(self):
         return r"$"+self.R_name+"$"
 
-    def second_moment(self, tau):
-        return tau
+    def second_moment(self, tau_z):
+        return tau_z
 
     def compute_forward_message(self, az, bz, ax, bx):
         # x = R z
@@ -40,11 +40,11 @@ class RotationChannel(Channel):
         bz_new = self.R.T @ bx
         return az_new, bz_new
 
-    def compute_forward_state_evolution(self, az, ax, tau):
+    def compute_forward_state_evolution(self, az, ax, tau_z):
         ax_new = az
         return ax_new
 
-    def compute_backward_state_evolution(self, az, ax, tau):
+    def compute_backward_state_evolution(self, az, ax, tau_z):
         az_new = ax
         return az_new
 
@@ -54,7 +54,7 @@ class RotationChannel(Channel):
         logZ = 0.5 * np.sum(b**2 / a) + 0.5 * self.N * np.log(2 * np.pi / a)
         return logZ
 
-    def free_energy(self, az, ax, tau):
+    def free_energy(self, az, ax, tau_z):
         a = ax + az
-        A = 0.5*(a*tau - 1 + np.log(2*np.pi / a))
+        A = 0.5*(a*tau_z - 1 + np.log(2*np.pi / a))
         return A

@@ -16,7 +16,7 @@ class SgnChannel(Channel):
     def math(self):
         return r"$\mathrm{sgn}$"
 
-    def second_moment(self, tau):
+    def second_moment(self, tau_z):
         return 1.
 
     def compute_forward_posterior(self, az, bz, ax, bx):
@@ -46,8 +46,8 @@ class SgnChannel(Channel):
         vz = np.mean(v)
         return rz, vz
 
-    def beliefs_measure(self, az, ax, tau, f):
-        u_eff = np.maximum(0, az * tau - 1)
+    def beliefs_measure(self, az, ax, tau_z, f):
+        u_eff = np.maximum(0, az * tau_z - 1)
         sz_eff = np.sqrt(az * u_eff)
 
         def f_pos(bz, bx):

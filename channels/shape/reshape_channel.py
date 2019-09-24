@@ -20,8 +20,8 @@ class ReshapeChannel(Channel):
     def math(self):
         return r"$\delta$"
 
-    def second_moment(self, tau):
-        return tau
+    def second_moment(self, tau_z):
+        return tau_z
 
     def compute_forward_message(self, az, bz, ax, bx):
         return az, bz.reshape(self.shape)
@@ -29,10 +29,10 @@ class ReshapeChannel(Channel):
     def compute_backward_message(self, az, bz, ax, bx):
         return ax, bx.ravel()
 
-    def compute_forward_state_evolution(self, az, ax, tau):
+    def compute_forward_state_evolution(self, az, ax, tau_z):
         return az
 
-    def compute_backward_state_evolution(self, az, ax, tau):
+    def compute_backward_state_evolution(self, az, ax, tau_z):
         return ax
 
     def log_partition(self, az, bz, ax, bx):
@@ -41,7 +41,7 @@ class ReshapeChannel(Channel):
         logZ = 0.5 * np.sum(b**2 / a + np.log(2 * np.pi / a))
         return logZ
 
-    def free_energy(self, az, ax, tau):
+    def free_energy(self, az, ax, tau_z):
         a = az + ax
-        A = 0.5*(a*tau - 1 + np.log(2*np.pi / a))
+        A = 0.5*(a*tau_z - 1 + np.log(2*np.pi / a))
         return A

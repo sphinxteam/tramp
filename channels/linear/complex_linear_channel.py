@@ -73,8 +73,8 @@ class ComplexLinearChannel(Channel):
     def math(self):
         return r"$" + self.W_name + "$"
 
-    def second_moment(self, tau):
-        return tau * self.spectrum.sum() / self.Nx
+    def second_moment(self, tau_z):
+        return tau_z * self.spectrum.sum() / self.Nx
 
     def compute_n_eff(self, az, ax):
         "Effective number of parameters = overlap in z"
@@ -145,11 +145,11 @@ class ComplexLinearChannel(Channel):
         vx = self.compute_forward_variance(az, ax)
         return rx, vx
 
-    def compute_backward_error(self, az, ax, tau):
+    def compute_backward_error(self, az, ax, tau_z):
         vz = self.compute_backward_variance(az, ax)
         return vz
 
-    def compute_forward_error(self, az, ax, tau):
+    def compute_forward_error(self, az, ax, tau_z):
         vx = self.compute_forward_variance(az, ax)
         return vx
 
@@ -162,8 +162,8 @@ class ComplexLinearChannel(Channel):
         logZ = 0.5 * np.sum(b * rz) + np.sum(np.log(2 * np.pi / a))
         return logZ
 
-    def free_energy(self, az, ax, tau):
-        tau_x = self.second_moment(tau)
+    def free_energy(self, az, ax, tau_z):
+        tau_x = self.second_moment(tau_z)
         K = np.log(2*np.pi / (az + ax * self.spectrum))
-        A = 0.5*(az*tau + self.alpha*ax*tau_x - 1 + K.mean())
+        A = 0.5*(az*tau_z + self.alpha*ax*tau_x - 1 + K.mean())
         return A
