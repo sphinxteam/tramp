@@ -4,7 +4,7 @@ from .rotation_ensemble import RotationEnsemble
 from .unitary_ensemble import UnitaryEnsemble
 from .binary_ensemble import BinaryEnsemble
 from .ternary_ensemble import TernaryEnsemble
-
+from .marchenko_pastur_ensemble import MarchenkoPasturEnsemble
 
 ENSEMBLE_CLASSES = {
     "gaussian": GaussianEnsemble,

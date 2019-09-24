@@ -23,6 +23,9 @@ from .modulus_channel import ModulusChannel
 from .reshape_channel import ReshapeChannel
 from .low_rank_gram_channel import LowRankGramChannel
 from .low_rank_factorization import LowRankFactorization
+from .analytical_linear_channel import (
+    AnalyticalLinearChannel, MarchenkoPasturChannel
+)
 
 
 CHANNEL_CLASSES = {
