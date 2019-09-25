@@ -9,6 +9,7 @@ Computes the mean and variance of a truncated normal distribution.
 import numpy as np
 from scipy.special import erf, erfc, erfcx
 
+
 def switch(x, y):
     "Switch x and y values to have np.abs(x) <= np.abs(y)"
     x_new = np.where(np.abs(x) > np.abs(y), y, x)
@@ -51,6 +52,7 @@ def F0_pos(x, y):
 def F0_other(x, y):
     return np.log(np.abs(erf(y) - erf(x)))
 
+
 def F0(x, y, thresh=1e-7):
     "Computes log|erf(y) - erf(x)|"
     x, y = switch(x, y)
@@ -73,6 +75,7 @@ def F0(x, y, thresh=1e-7):
     F[other] = F0_other(x[other], y[other])
 
     return F
+
 
 def F1_inf(x, y):
     "Return F1(x, y) where y is inf"
@@ -104,6 +107,7 @@ def F1_other(x, y):
     D = np.exp(x**2 - y**2)
     return np.exp(-x**2) * (1 - D) / (erf(y) - erf(x))
 
+
 def F1(x, y, thresh=1e-7):
     "Computes (exp(-x^2) - exp(-y^2)) / (erf(y) - erf(x))"
     x, y = switch(x, y)
@@ -127,9 +131,11 @@ def F1(x, y, thresh=1e-7):
 
     return F
 
+
 def F2_inf(x, y):
     "Return F2(x, y) where y is inf"
     return np.sign(y)*x/erfcx(np.sign(y)*x)
+
 
 def F2_close(x, y):
     "Taylor expansion of F2(x, x+e)"
@@ -142,17 +148,21 @@ def F2_close(x, y):
         + (1/90)*(2*x**4 + 3*x**2 - 8)*e**4
     )
 
+
 def F2_neg(x, y):
     D = np.exp(x**2 - y**2)
     return (x - D * y) / (D * erfcx(-y) - erfcx(-x))
+
 
 def F2_pos(x, y):
     D = np.exp(x**2 - y**2)
     return (x - D * y) / (erfcx(x) - D * erfcx(y))
 
+
 def F2_other(x, y):
     D = np.exp(x**2 - y**2)
     return np.exp(-x**2) * (x - D * y) / (erf(y) - erf(x))
+
 
 def F2(x, y, thresh=1e-7):
     "Computes (x*exp(-x^2) - y*exp(-y^2)) / (erf(y) - erf(x))"
@@ -177,18 +187,19 @@ def F2(x, y, thresh=1e-7):
 
     return F
 
+
 def G0(x, y):
     "Computes log|Phi(y) - Phi(x)|"
     return np.log(0.5) + F0(x/np.sqrt(2), y/np.sqrt(2))
 
 
 def G1(x, y):
-    "Computes [N(y) - N(x)] / [Phi(y) - Phi(x)]"
-    return -np.sqrt(2/np.pi) * F1(x/np.sqrt(2), y/np.sqrt(2))
+    "Computes [N(x) - N(y)] / [Phi(y) - Phi(x)]"
+    return np.sqrt(2/np.pi) * F1(x/np.sqrt(2), y/np.sqrt(2))
 
 
 def G2(x, y):
-    "Computes [-y*N(y) + x*N(x)] / [Phi(y) - Phi(x)]"
+    "Computes [y*N(y) - x*N(x)] / [Phi(y) - Phi(x)]"
     return (2/np.sqrt(np.pi)) * F2(x/np.sqrt(2), y/np.sqrt(2))
 
 
@@ -199,23 +210,24 @@ def G0_inf(x, s):
 
 def G1_inf(x, s):
     "Computes G1(x, +inf) or G1(x, -inf)"
-    return -np.sqrt(2/np.pi) * F1_inf(x/np.sqrt(2), s)
+    return np.sqrt(2/np.pi) * F1_inf(x/np.sqrt(2), s)
 
 
 def G2_inf(x, s):
     "Computes G2(x, +inf) or G2(x, -inf)"
     return (2/np.sqrt(np.pi)) * F2_inf(x/np.sqrt(2), s)
 
+
 def truncated_normal_mean(r0, v0, zmin, zmax):
     "Mean of N(z | r0 v0) delta_[zmin, zmin](z)"
     assert zmin < zmax
     s0 = np.sqrt(v0)
-    ymin = (r0 - zmin) / s0
-    ymax = (r0 - zmax) / s0
+    ymin = (zmin - r0) / s0
+    ymax = (zmax - r0) / s0
     if (zmax == +np.inf):
-        g1 = G1_inf(ymin, -1)
+        g1 = G1_inf(ymin, +1)
     elif (zmin == -np.inf):
-        g1 = G1_inf(ymax, +1)
+        g1 = G1_inf(ymax, -1)
     else:
         g1 = G1(ymin, ymax)
     r = r0 + s0 * g1
@@ -226,14 +238,14 @@ def truncated_normal_var(r0, v0, zmin, zmax):
     "Variance of N(z | r0 v0) delta_[zmin, zmin](z)"
     assert zmin < zmax
     s0 = np.sqrt(v0)
-    ymin = (r0 - zmin) / s0
-    ymax = (r0 - zmax) / s0
+    ymin = (zmin - r0) / s0
+    ymax = (zmax - r0) / s0
     if (zmax == +np.inf):
-        g1 = G1_inf(ymin, -1)
-        g2 = G2_inf(ymin, -1)
+        g1 = G1_inf(ymin, +1)
+        g2 = G2_inf(ymin, +1)
     elif (zmin == -np.inf):
-        g1 = G1_inf(ymax, +1)
-        g2 = G2_inf(ymax, +1)
+        g1 = G1_inf(ymax, -1)
+        g2 = G2_inf(ymax, -1)
     else:
         g1 = G1(ymin, ymax)
         g2 = G2(ymin, ymax)
@@ -241,44 +253,23 @@ def truncated_normal_var(r0, v0, zmin, zmax):
     return v
 
 
-def truncated_normal_logZ(r0, v0, zmin, zmax):
-    "Log Partition of N(z | r0 v0) delta_[zmin, zmin](z)"
+def truncated_normal_log_proba(r0, v0, zmin, zmax):
+    "Proba of z in [zmin, zmin] for N(z | r0 v0)"
     assert zmin < zmax
     s0 = np.sqrt(v0)
-    ymin = (r0 - zmin) / s0
-    ymax = (r0 - zmax) / s0
+    ymin = (zmin - r0) / s0
+    ymax = (zmax - r0) / s0
     if (zmax == +np.inf):
-        g0 = G0_inf(ymin, -1)
+        g0 = G0_inf(ymin, +1)
     elif (zmin == -np.inf):
-        g0 = G0_inf(ymax, +1)
+        g0 = G0_inf(ymax, -1)
     else:
         g0 = G0(ymin, ymax)
+    return g0
+
+
+def truncated_normal_logZ(r0, v0, zmin, zmax):
+    "Log Partition of N(z | r0 v0) delta_[zmin, zmin](z)"
+    g0 = truncated_normal_log_proba(r0, v0, zmin, zmax)
     logZ = 0.5*np.sqrt(2*np.pi*v0) + 0.5*r0**2/v0 + g0
     return logZ
-
-
-class TruncatedNormal():
-    "Inference knowing z in [zmin, zmax] and x = z0 + slope*z"
-    def __init__(self, zmin, zmax, z0, slope):
-        assert zmin < zmax
-        self.zmin = zmin
-        self.zmax = zmax
-        self.z0 = z0
-        self.slope = slope
-
-    def backward(self, az, bz, ax, bx):
-        a = az + self.slope**2 * ax
-        b = bz + self.slope * (bx - ax * self.z0)
-        r0 = b / a
-        v0 = 1 / a
-        rz = truncated_normal_mean(r0, v0, self.zmin, self.zmax)
-        vz = truncated_normal_var(r0, v0, self.zmin, self.zmax)
-        logZ = truncated_normal_logZ(r0, v0, self.zmin, self.zmax)
-        A = logZ - 0.5*ax*self.z0**2 + bx*self.z0
-        return rz, vz, A
-
-    def forward(self, az, bz, ax, bx):
-        rz, vz, A = self.backward(az, bz, ax, bx)
-        rx = self.slope * rz + self.z0
-        vx = self.slope**2 * vz
-        return rx, vx, A

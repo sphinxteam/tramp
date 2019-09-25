@@ -1,7 +1,7 @@
 import numpy as np
 from ..base_channel import Channel
 from tramp.utils.misc import merge_estimates, hard_tanh
-from tramp.utils.truncated_normal import TruncatedNormal
+from tramp.utils.linear_region import LinearRegion
 from tramp.utils.integration import gaussian_measure
 from scipy.integrate import quad
 
@@ -9,9 +9,9 @@ from scipy.integrate import quad
 class HardTanhChannel(Channel):
     def __init__(self):
         self.repr_init()
-        self.pos = TruncatedNormal(zmin=-np.inf, zmax=-1, slope=0, z0=-1)
-        self.mid = TruncatedNormal(zmin=-1, zmax=+1, slope=1, z0=0)
-        self.neg = TruncatedNormal(zmin=1, zmax=np.inf, slope=0, z0=1)
+        self.pos = LinearRegion(zmin=-np.inf, zmax=-1, slope=0, x0=-1)
+        self.mid = LinearRegion(zmin=-1, zmax=+1, slope=1, x0=0)
+        self.neg = LinearRegion(zmin=1, zmax=np.inf, slope=0, x0=1)
 
     def sample(self, Z):
         X = hard_tanh(Z)

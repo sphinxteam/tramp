@@ -21,11 +21,10 @@ from .linear.analytical_linear_channel import (
     AnalyticalLinearChannel, MarchenkoPasturChannel
 )
 # activation
-from .activation.sgn_channel import SgnChannel
-from .activation.abs_channel import AbsChannel
-from .activation.relu_channel import ReluChannel
-from .activation.leaky_relu_channel import LeakyReluChannel
-from .activation.hard_tanh_channel import HardTanhChannel
+from .activation.piecewise_linear_channel import (
+    PiecewiseLinearChannel, SgnChannel, AbsChannel, ReluChannel,
+    LeakyReluChannel, HardTanhChannel
+)
 from .activation.tanh_channel import TanhChannel
 from .activation.modulus_channel import ModulusChannel
 # low rank
