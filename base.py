@@ -142,6 +142,15 @@ class Variable(ReprMixin):
         v_hat = 1. / a_hat
         return v_hat
 
+    def mutual_information(self, ax, tau_x):
+        I = 0.5*np.log(ax*tau_x)
+        return I
+
+    def free_energy(self, ax, tau_x):
+        I = self.mutual_information(ax, tau_x)
+        A = 0.5*ax*tau_x - I + 0.5*np.log(2*np.pi*tau_x/np.e)
+        return A
+
     def forward_message(self, message):
         if self.n_next == 0:
             return []
