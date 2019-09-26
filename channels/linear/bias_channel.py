@@ -43,7 +43,13 @@ class BiasChannel(Channel):
         )
         return logZ
 
-    def free_energy(self, az, ax, tau_z):
+    def mutual_information(self, az, ax, tau_z):
         a = ax + az
-        A = 0.5*(a*tau_z + ax*(self.bias**2) - 1 + np.log(2*np.pi / a))
+        I = 0.5*np.log(a*tau_z)
+        return I
+
+    def free_energy(self, az, ax, tau_z):
+        tau_x = self.second_moment(tau_z)
+        I = self.mutual_information(az, ax, tau_z)
+        A = 0.5*(az*tau_z + ax*tau_x) - I + 0.5*np.log(2*np.pi*tau_z/np.e)
         return A

@@ -82,7 +82,13 @@ class DFTChannel(Channel):
         logZ = 0.5 * np.sum(b**2 / a) + coef * self.N * np.log(2 * np.pi / a)
         return logZ
 
-    def free_energy(self, az, ax, tau_z):
+    def mutual_information(self, az, ax, tau_z):
         a = ax + az
-        A = 0.5*(a*tau_z - 1 + np.log(2*np.pi / a))
+        I = 0.5*np.log(a*tau_z)
+        return I
+
+    def free_energy(self, az, ax, tau_z):
+        tau_x = self.second_moment(tau_z)
+        I = self.mutual_information(az, ax, tau_z)
+        A = 0.5*(az*tau_z + ax*tau_x) - I + 0.5*np.log(2*np.pi*tau_z/np.e)
         return A

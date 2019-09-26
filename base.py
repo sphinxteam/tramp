@@ -367,11 +367,6 @@ class Factor(ReprMixin):
         bx_new = [b for a, b in ab_new]
         return ax_new, bx_new
 
-    def compute_forward_state_evolution(self, az, ax, tau_z):
-        vx = self.compute_forward_error(az, ax, tau_z)
-        ax_new = [self.compute_a_new(vk, ak) for vk, ak in zip(vx, ax)]
-        return ax_new
-
     def compute_backward_message(self, az, bz, ax, bx):
         rz, vz = self.compute_backward_posterior(az, bz, ax, bx)
         ab_new = [
@@ -382,7 +377,23 @@ class Factor(ReprMixin):
         bz_new = [b for a, b in ab_new]
         return az_new, bz_new
 
+    def compute_forward_state_evolution(self, az, ax, tau_z):
+        vx = self.compute_forward_error(az, ax, tau_z)
+        ax_new = [self.compute_a_new(vk, ak) for vk, ak in zip(vx, ax)]
+        return ax_new
+
     def compute_backward_state_evolution(self, az, ax, tau_z):
         vz = self.compute_backward_error(az, ax, tau_z)
         az_new = [self.compute_a_new(vk, ak) for vk, ak in zip(vz, az)]
         return az_new
+
+    def compute_forward_overlap(self, az, ax, tau_z):
+        vx = self.compute_forward_error(az, ax, tau_z)
+        tau_x  = self.second_moment(tau_z)
+        mx = [tau_k - vk for tau_k, vk in zip(tau_x, vx)]
+        return mx
+
+    def compute_backward_overlap(self, az, ax, tau_z):
+        vz = self.compute_backward_error(az, ax, tau_z)
+        mz = [tau_k - vk for tau_k, vk in zip(tau_z, vz)]
+        return mz

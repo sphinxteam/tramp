@@ -22,8 +22,18 @@ class Likelihood(Factor):
         error = self.beliefs_measure(az, tau_z, f=variance)
         return error
 
+    def compute_backward_overlap(self, az, tau_z):
+        vz = self.compute_backward_error(az, tau_z)
+        mz = tau_z - vz
+        return mz
+
     def free_energy(self, az, tau_z):
         def log_partition(bz, y):
             return self.log_partition(az, bz, y)
         A = self.beliefs_measure(az, tau_z, f=log_partition)
+        return A
+
+    def mutual_information(self, az, tau_z):
+        A = self.free_energy(az, ax, tau_z)
+        I = 0.5*az*tau_z - A + 0.5*np.log(2*pi*tau_z/np.e)
         return A

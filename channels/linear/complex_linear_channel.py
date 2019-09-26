@@ -162,8 +162,13 @@ class ComplexLinearChannel(Channel):
         logZ = 0.5 * np.sum(b * rz) + np.sum(np.log(2 * np.pi / a))
         return logZ
 
+    def mutual_information(self, az, ax, tau_z):
+        I = 0.5*np.log((az + ax * self.spectrum)*tau_z)
+        I = I.mean()
+        return I
+
     def free_energy(self, az, ax, tau_z):
         tau_x = self.second_moment(tau_z)
-        K = np.log(2*np.pi / (az + ax * self.spectrum))
-        A = 0.5*(az*tau_z + self.alpha*ax*tau_x - 1 + K.mean())
+        I = self.mutual_information(az, ax, tau_z)
+        A = 0.5*(az*tau_z + self.alpha*ax*tau_x) - I + 0.5*np.log(2*np.pi*tau_z/np.e)
         return A

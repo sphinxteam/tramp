@@ -55,8 +55,13 @@ class GaussianPrior(Prior):
         )
         return logZ
 
-    def free_energy(self, ax):
-        tau_x = self.second_moment()
+    def mutual_information(self, ax):
         a = ax + self.a
-        A = 0.5 * (ax * tau_x + np.log(self.a/a))
+        I = 0.5*np.log(a*self.var)
+        return I
+
+    def free_energy(self, az, tau_z):
+        tau_x = self.second_moment()
+        I = self.mutual_information(ax)
+        A = 0.5*ax*tau_x - I
         return A

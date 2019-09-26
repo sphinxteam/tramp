@@ -51,8 +51,13 @@ class GaussianChannel(Channel):
         logZ = 0.5 * np.sum(rz*bz + rx*bx + np.log(2 * np.pi / d))
         return logZ
 
+    def mutual_information(self, az, ax, tau_z):
+        a = ax + az + ax*az/self.a
+        I = 0.5*np.log(a*tau_z)
+        return I
+
     def free_energy(self, az, ax, tau_z):
         tau_x = self.second_moment(tau_z)
-        K = np.log(2*np.pi / (ax + az + ax*az/self.a))
-        A = 0.5*(az*tau_z + ax*tau_x - 1 + K.mean())
+        I = self.mutual_information(az, ax, tau_z)
+        A = 0.5*(az*tau_z + ax*tau_x) - I + 0.5*np.log(2*np.pi*tau_z/np.e)
         return A

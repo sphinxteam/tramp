@@ -54,7 +54,13 @@ class GaussianLikelihood(Likelihood):
         )
         return logZ
 
-    def free_energy(self, az, tau_z):
+    def mutual_information(self, az, tau_z):
         a = az + self.a
-        A = 0.5 * az * tau_z + 0.5 * np.log(self.a/a) - 1
+        H = 0.5*np.log(2*np.pi*np.e*self.var)
+        I = 0.5*np.log(a*tau_z) + H
+        return I
+
+    def free_energy(self, az, tau_z):
+        I = self.mutual_information(az, au_z)
+        A = 0.5*az*tau_z - I + 0.5*np.log(2*np.pi*tau_z/np.e)
         return A
