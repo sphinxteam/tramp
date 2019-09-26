@@ -54,5 +54,5 @@ will be renamed supertramp.
   - [ ] Reeves formula
   - [ ] EP approximation of evidence
 - explainer
-  - [ ] animation of message passing (store daft every step)
+  - [ ] animation of message passing
   - [ ] evolution of beliefs / state evo

@@ -119,7 +119,7 @@ class DAG():
     def to_model_dag(self):
         return ModelDAG(self.dag)
 
-    def daft(self, layout=None, show_observed=False):
+    def plot(self, layout=None, show_observed=False):
         layout = layout or Layout()
         layout.compute_dag(self.dag)
         from matplotlib import rc

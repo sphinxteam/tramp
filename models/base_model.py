@@ -46,7 +46,7 @@ class Model(ReprMixin):
         self.init_second_moments()
         nx.freeze(self.dag)
 
-    def daft(self, layout=None):
+    def plot(self, layout=None):
         self.model_dag.daft(layout)
 
     def to_observed(self, observations):
