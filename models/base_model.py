@@ -1,4 +1,4 @@
-from ..base import ReprMixin
+from ..base import ReprMixin, Variable, Factor
 from .dag_algebra import ModelDAG
 import numpy as np
 import networkx as nx

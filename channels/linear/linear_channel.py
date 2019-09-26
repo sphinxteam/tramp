@@ -21,19 +21,14 @@ class LinearChannel(Channel):
     - W: array of shape (Nx, Nz)
     - precompute_svd: bool
         if True precompute SVD of W = U S V.T
-    - ravel: bool
-        if True  x = W @ z.ravel()
-        if False x = W @ z
     - W_name: str
         name of weight matrix W for display
     """
 
-    def __init__(self, W, ravel=False, precompute_svd=True, W_name="W"):
+    def __init__(self, W, precompute_svd=True, W_name="W"):
         self.W_name = W_name
         self.Nx = W.shape[0]
-        # TODO check Nz when ravel = False and z matrix
         self.Nz = W.shape[1]
-        self.ravel = ravel
         self.precompute_svd = precompute_svd
         self.repr_init()
         self.W = W
@@ -49,8 +44,6 @@ class LinearChannel(Channel):
         self.singular = self.spectrum[:self.rank]
 
     def sample(self, Z):
-        if self.ravel:
-            Z = Z.ravel()
         X = self.W @ Z
         return X
 
@@ -73,9 +66,6 @@ class LinearChannel(Channel):
 
     def compute_backward_mean(self, az, bz, ax, bx):
         # estimate z from x = Wz
-        if self.ravel:
-            z_shape = bz.shape
-            bz = bz.ravel()
         if self.precompute_svd:
             bx_svd = self.U.T @ bx
             bz_svd = self.V.T @ bz
@@ -86,15 +76,11 @@ class LinearChannel(Channel):
             a = az * np.identity(self.Nz) + ax * self.C
             b = (bz + self.W.T @ bx)
             rz = np.linalg.solve(a, b)
-        if self.ravel:
-            rz = rz.reshape(z_shape)
         return rz
 
     def compute_forward_mean(self, az, bz, ax, bx):
         # estimate x from x = Wz we have rx = W rz
         rz = self.compute_backward_mean(az, bz, ax, bx)
-        if self.ravel:
-            rz = rz.ravel()
         rx = self.W @ rz
         return rx
 

@@ -3,19 +3,21 @@ from ..base_channel import Channel
 
 class ReshapeChannel(Channel):
     """
-    Reshape vector into tensor of given shape.
+    Reshape array
 
-    Notes
-    -----
-    - length of input vector must be consitent with the output shape.
+    Parameters
+    ----------
+    - next_shape : output shape
+    - prev_shape : input shape
     """
 
-    def __init__(self, shape):
-        self.shape = shape
+    def __init__(self, prev_shape, next_shape):
+        self.prev_shape = prev_shape
+        self.next_shape = next_shape
         self.repr_init()
 
     def sample(self, Z):
-        return Z.reshape(self.shape)
+        return Z.reshape(self.next_shape)
 
     def math(self):
         return r"$\delta$"
@@ -24,10 +26,10 @@ class ReshapeChannel(Channel):
         return tau_z
 
     def compute_forward_message(self, az, bz, ax, bx):
-        return az, bz.reshape(self.shape)
+        return az, bz.reshape(self.next_shape)
 
     def compute_backward_message(self, az, bz, ax, bx):
-        return ax, bx.ravel()
+        return ax, bx.reshape(self.prev_shape)
 
     def compute_forward_state_evolution(self, az, ax, tau_z):
         return az
@@ -37,7 +39,7 @@ class ReshapeChannel(Channel):
 
     def log_partition(self, az, bz, ax, bx):
         a = az + ax
-        b = bz + bx.rehape(self.shape)
+        b = bz + bx.rehape(self.prev_shape)
         logZ = 0.5 * np.sum(b**2 / a + np.log(2 * np.pi / a))
         return logZ
 

@@ -22,9 +22,6 @@ class ComplexLinearChannel(Channel):
     - W: real or complex array of shape (Nx, Nz)
     - precompute_svd: bool
         if True precompute SVD of W = U S V.conj().T
-    - ravel: bool
-        if True  x = W @ z.ravel()
-        if False x = W @ z
     - W_name: str
         name of weight matrix W for display
 
@@ -40,12 +37,10 @@ class ComplexLinearChannel(Channel):
     - message bx, posterior rx: real arrays of shape (2, x.shape)
     """
 
-    def __init__(self, W, ravel=False, precompute_svd=True, W_name="W"):
+    def __init__(self, W, precompute_svd=True, W_name="W"):
         self.W_name = W_name
         self.Nx = W.shape[0]
-        # TODO check Nz when ravel = False and z matrix
         self.Nz = W.shape[1]
-        self.ravel = ravel
         self.precompute_svd = precompute_svd
         self.repr_init()
         self.W = W
@@ -63,8 +58,6 @@ class ComplexLinearChannel(Channel):
     def sample(self, Z):
         "We assume Z[0] = Z.real and Z[1] = Z.imag"
         Z = array2complex(Z)
-        if self.ravel:
-            Z = Z.ravel()
         X = self.W.dot(Z)
         X = complex2array(X)
         assert X.shape == (2, self.Nx)
@@ -91,9 +84,6 @@ class ComplexLinearChannel(Channel):
         # estimate z from x = Wz
         bz = array2complex(bz)
         bx = array2complex(bx)
-        if self.ravel:
-            z_shape = bz.shape
-            bz = bz.ravel()
         if self.precompute_svd:
             bx_svd = self.U.conj().T @ bx
             bz_svd = self.V.conj().T @ bz
@@ -104,8 +94,6 @@ class ComplexLinearChannel(Channel):
             a = az * np.identity(self.Nz) + ax * self.C
             b = (bz + self.W.conj().T @ bx)
             rz = np.linalg.solve(a, b)
-        if self.ravel:
-            rz = rz.reshape(z_shape)
         rz = complex2array(rz)
         return rz
 
@@ -113,8 +101,6 @@ class ComplexLinearChannel(Channel):
         # estimate x from x = Wz we have rx = W rz
         rz = self.compute_backward_mean(az, bz, ax, bx)
         rz = array2complex(rz)
-        if self.ravel:
-            rz = rz.ravel()
         rx = self.W @ rz
         rx = complex2array(rx)
         return rx

@@ -1,7 +1,9 @@
 import numpy as np
 from .base_model import Model
 from ..variables import SISOVariable, SIMOVariable, MILeafVariable
-from ..channels import LinearChannel, GaussianChannel, GradientChannel
+from ..channels import (
+    LinearChannel, GaussianChannel, GradientChannel, ReshapeChannel
+)
 from ..priors import GaussianPrior, GaussBernouilliPrior, MAP_L21NormPrior
 from ..likelihoods import GaussianLikelihood, SgnLikelihood
 
@@ -14,7 +16,6 @@ class SparseGradientRegression(Model):
         if np.product(x_shape) != N:
             raise ValueError(f"Bad shape x: {x_shape} A: {A.shape}")
         d = len(x_shape)
-        ravel = (d > 1)
         grad_shape = (d,) + x_shape
         self.x_shape = x_shape
         self.rho_grad = rho_grad
@@ -24,7 +25,9 @@ class SparseGradientRegression(Model):
         model_dag = (
             GaussianPrior(size=x_shape, var=var_prior) @
             SIMOVariable(id="x", n_next=2) @ (
-                LinearChannel(A, ravel=ravel, W_name="A") @
+                ReshapeChannel(prev_shape=x_shape, next_shape=N) @
+                SISOVariable(id="x_v") @
+                LinearChannel(A, W_name="A") @
                 SISOVariable(id="z") @
                 GaussianLikelihood(y, var=var_noise) + (
                     GradientChannel(shape=x_shape) +
@@ -44,7 +47,6 @@ class SparseGradientClassification(Model):
         if np.product(x_shape) != N:
             raise ValueError(f"Bad shape x: {x_shape} A: {A.shape}")
         d = len(x_shape)
-        ravel = (d > 1)
         grad_shape = (d,) + x_shape
         self.x_shape = x_shape
         self.rho_grad = rho_grad
@@ -54,7 +56,9 @@ class SparseGradientClassification(Model):
         model_dag = (
             GaussianPrior(size=x_shape, var=var_prior) @
             SIMOVariable(id="x", n_next=2) @ (
-                LinearChannel(A, ravel=ravel, W_name="A") @
+                ReshapeChannel(prev_shape=x_shape, next_shape=N) @
+                SISOVariable(id="x_v") @
+                LinearChannel(A, W_name="A") @
                 SISOVariable(id="z") @
                 GaussianChannel(var=var_noise) @
                 SISOVariable(id="a") @
@@ -76,7 +80,6 @@ class TVRegression(Model):
         if np.product(x_shape) != N:
             raise ValueError(f"Bad shape x: {x_shape} A: {A.shape}")
         d = len(x_shape)
-        ravel = (d > 1)
         grad_shape = (d,) + x_shape
         self.x_shape = x_shape
         self.scale_grad = scale_grad
@@ -86,7 +89,9 @@ class TVRegression(Model):
         model_dag = (
             GaussianPrior(size=x_shape, var=var_prior) @
             SIMOVariable(id="x", n_next=2) @ (
-                LinearChannel(A, ravel=ravel, W_name="A") @
+                ReshapeChannel(prev_shape=x_shape, next_shape=N) @
+                SISOVariable(id="x_v") @
+                LinearChannel(A, W_name="A") @
                 SISOVariable(id="z") @
                 GaussianLikelihood(y, var=var_noise) + (
                     GradientChannel(shape=x_shape) +
@@ -106,7 +111,6 @@ class TVClassification(Model):
         if np.product(x_shape) != N:
             raise ValueError(f"Bad shape x: {x_shape} A: {A.shape}")
         d = len(x_shape)
-        ravel = (d > 1)
         grad_shape = (d,) + x_shape
         self.x_shape = x_shape
         self.scale_grad = scale_grad
@@ -116,7 +120,9 @@ class TVClassification(Model):
         model_dag = (
             GaussianPrior(size=x_shape, var=var_prior) @
             SIMOVariable(id="x", n_next=2) @ (
-                LinearChannel(A, ravel=ravel, W_name="A") @
+                ReshapeChannel(prev_shape=x_shape, next_shape=N) @
+                SISOVariable(id="x_v") @
+                LinearChannel(A, W_name="A") @
                 SISOVariable(id="z") @
                 GaussianChannel(var=var_noise) @
                 SISOVariable(id="a") @
