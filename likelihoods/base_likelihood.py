@@ -5,14 +5,23 @@ class Likelihood(Factor):
     n_next = 0
     n_prev = 1
 
+    def get_size(self, y):
+        if y is None:
+            size =  None
+        elif len(y.shape) == 1:
+            size = y.shape[0]
+        else:
+            size = y.shape
+        return size
+
     def compute_backward_message(self, az, bz):
         rz, vz = self.compute_backward_posterior(az, bz, self.y)
-        az_new, bz_new = compute_ab_new(rz, vz, az, bz)
+        az_new, bz_new = self.compute_ab_new(rz, vz, az, bz)
         return az_new, bz_new
 
     def compute_backward_state_evolution(self, az, tau_z):
         vz = self.compute_backward_error(az, tau_z)
-        az_new = compute_a_new(vz, az)
+        az_new = self.compute_a_new(vz, az)
         return az_new
 
     def compute_backward_error(self, az, tau_z):

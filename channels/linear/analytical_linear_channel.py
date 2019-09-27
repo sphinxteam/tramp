@@ -1,16 +1,17 @@
 import numpy as np
 from ..base_channel import Channel
 from tramp.ensembles import MarchenkoPasturEnsemble
-
+import logging
 
 class AnalyticalLinearChannel(Channel):
     def __init__(self, ensemble, W_name="W"):
-        self.ensemble = ensemble
+        self.W_name = W_name
+        self.alpha = ensemble.alpha
         self.repr_init()
-        self.alpha = self.ensemble.alpha
+        self.ensemble = ensemble
 
     def sample(self, Z):
-        N = Z.shape[1]
+        N = Z.shape[0]
         F = self.ensemble.generate(N)
         X = F @ Z
         return X
@@ -24,16 +25,27 @@ class AnalyticalLinearChannel(Channel):
 
     def compute_n_eff(self, az, ax):
         "Effective number of parameters"
+        if ax == 0:
+            logging.info(f"ax=0 in {self} compute_n_eff")
+            return 0.
+        if az / ax == 0:
+            logging.info(f"az/ax=0 in {self} compute_n_eff")
+            return min(1, self.alpha)
         gamma = ax / az
         n_eff = 1 - self.ensemble.eta_transform(gamma)
         return n_eff
 
     def compute_backward_error(self, az, ax, tau_z):
+        if az==0:
+            logging.info(f"az=0 in {self} compute_backward_error")
+        az = np.maximum(1e-11, az)
         n_eff = self.compute_n_eff(az, ax)
         vz = (1 - n_eff) / az
         return vz
 
     def compute_forward_error(self, az, ax, tau_z):
+        if ax == 0:
+            return self.ensemble.mean_spectrum / (self.alpha * az)
         n_eff = self.compute_n_eff(az, ax)
         vx = n_eff / (self.alpha * ax)
         return vx

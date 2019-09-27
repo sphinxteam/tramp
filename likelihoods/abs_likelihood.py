@@ -7,7 +7,7 @@ from ..utils.integration import gaussian_measure_2d
 class AbsLikelihood(Likelihood):
     def __init__(self, y, y_name="y"):
         self.y_name = y_name
-        self.size = y.shape[0] if len(y.shape) == 1 else y.shape
+        self.size = self.get_size(y)
         self.repr_init()
         self.y = y
 

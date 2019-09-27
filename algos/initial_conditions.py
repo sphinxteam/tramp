@@ -20,6 +20,7 @@ class ConstantInit(InitialConditions):
         return self.a
 
     def init_b(self, shape):
+        assert shape is not None
         return self.b * np.ones(shape)
 
 
@@ -37,4 +38,5 @@ class NoisyInit(InitialConditions):
         return self.a_mean + self.a_sigma * np.random.standard_normal()
 
     def init_b(self, shape):
+        assert shape is not None
         return self.b_mean + self.b_sigma * np.random.standard_normal(shape)

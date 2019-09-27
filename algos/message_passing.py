@@ -48,13 +48,10 @@ def find_variable_in_nodes(id, nodes):
 
 class MessagePassing():
 
-    def __init__(self, model, message_keys, forward, backward, update):
+    def __init__(self, model, message_keys):
         if not isinstance(model, Model):
             raise ValueError(f"model {model} is not a Model")
         self.message_keys = message_keys
-        self.forward = forward
-        self.backward = backward
-        self.update = update
         self.model_dag = model.dag
         self.forward_ordering = model.forward_ordering
         self.backward_ordering = list(reversed(model.forward_ordering))
@@ -120,10 +117,10 @@ class MessagePassing():
         )
         for source, target, data in message_dag.edges(data=True):
             if data["direction"] == "fwd" and isinstance(source, Variable):
-                data["tau"] = self.model_dag.node[source]["tau"]
+                data["tau"] = self.model_dag.node[source].get("tau")
             variable = source if isinstance(source, Variable) else target
             for message_key in self.message_keys:
-                shape = self.model_dag.node[variable]["shape"]
+                shape = self.model_dag.node[variable].get("shape")
                 data[message_key] = initializer.init(message_key, shape)
         self.message_dag = message_dag
         nx.freeze(self.message_dag)

@@ -119,6 +119,10 @@ class DAG():
     def to_model_dag(self):
         return ModelDAG(self.dag)
 
+    def to_model(self):
+        from .base_model import Model
+        return Model(self.to_model_dag())
+
     def plot(self, layout=None, show_observed=False):
         layout = layout or Layout()
         layout.compute_dag(self.dag)

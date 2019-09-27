@@ -26,28 +26,26 @@ def format_latex_message(message, comment):
 
 
 class DisplayLatexMessagePassing(MessagePassing):
-    def __init__(self, model, keys=[]):
-        def forward(node, message):
-            m = format_latex_message(message, "incoming")
-            new_message = node.forward_message(message)
-            m += r"\;" + format_latex_message(new_message, "outcoming")
-            self.latex["forward"].append(r"$" + m + r"$")
-            return new_message
+    def __init__(self, model):
+        model.init_shapes()
+        super().__init__(model, message_keys=["a", "b"])
 
-        def backward(node, message):
-            m = format_latex_message(message, "incoming")
-            new_message = node.backward_message(message)
-            m += r"\;" + format_latex_message(new_message, "outcoming")
-            self.latex["backward"].append(r"$" + m + r"$")
-            return new_message
+    def forward(self, node, message):
+        m = format_latex_message(message, "incoming")
+        new_message = node.forward_message(message)
+        m += r"\;" + format_latex_message(new_message, "outcoming")
+        self.latex["forward"].append(r"$" + m + r"$")
+        return new_message
 
-        def update(variable, message):
-            pass
+    def backward(self, node, message):
+        m = format_latex_message(message, "incoming")
+        new_message = node.backward_message(message)
+        m += r"\;" + format_latex_message(new_message, "outcoming")
+        self.latex["backward"].append(r"$" + m + r"$")
+        return new_message
 
-        super().__init__(
-            model, message_keys=["a", "b"],
-            forward=forward, backward=backward, update=update
-        )
+    def update(self, variable, message):
+        pass
 
     def run(self):
         self.latex = dict(forward=[], backward=[])

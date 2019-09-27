@@ -42,12 +42,10 @@ class Model(ReprMixin):
             if isinstance(node, Factor)
         ]
         self.n_factors = len(self.factors)
-        self.init_shapes()
-        self.init_second_moments()
         nx.freeze(self.dag)
 
     def plot(self, layout=None):
-        self.model_dag.daft(layout)
+        self.model_dag.plot(layout)
 
     def to_observed(self, observations):
         """ModelDAG with observed variables.

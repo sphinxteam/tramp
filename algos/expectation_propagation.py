@@ -3,16 +3,15 @@ from .message_passing import MessagePassing
 
 class ExpectationPropagation(MessagePassing):
     def __init__(self, model):
-        def forward(node, message):
-            return node.forward_message(message)
+        model.init_shapes()
+        super().__init__(model, message_keys=["a", "b"])
 
-        def backward(node, message):
-            return node.backward_message(message)
+    def forward(self, node, message):
+        return node.forward_message(message)
 
-        def update(variable, message):
-            r, v = variable.posterior_rv(message)
-            return dict(r=r, v=v)
-        super().__init__(
-            model, message_keys=["a", "b"],
-            forward=forward, backward=backward, update=update
-        )
+    def backward(self, node, message):
+        return node.backward_message(message)
+
+    def update(self, variable, message):
+        r, v = variable.posterior_rv(message)
+        return dict(r=r, v=v)

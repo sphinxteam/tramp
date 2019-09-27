@@ -7,34 +7,35 @@ from .initial_conditions import ConstantInit
 class ExplainMessagePassing(MessagePassing):
     def __init__(self, model, keys=[],
                  print_incoming=True, print_outcoming=True):
-        def forward(node, message):
-            if print_incoming:
-                print(f"{node}: incoming message")
-                print(info_message(message, keys))
-            new_message = node.forward_message(message)
-            if print_outcoming:
-                print(f"{node}: outgoing message")
-                print(info_message(new_message, keys))
-            return new_message
+        model.init_shapes()
+        super().__init__(model, message_keys=["a", "b"])
+        self.keys = keys
+        self.print_incoming = print_incoming
+        self.print_outcoming = print_outcoming
 
-        def backward(node, message):
-            if print_incoming:
-                print(f"{node}: incoming message")
-                print(info_message(message, keys))
-            new_message = node.backward_message(message)
-            if print_outcoming:
-                print(f"{node}: outgoing message")
-                print(info_message(new_message, keys))
-            return new_message
+    def forward(self, node, message):
+        if self.print_incoming:
+            print(f"{node}: incoming message")
+            print(info_message(message, self.keys))
+        new_message = node.forward_message(message)
+        if self.print_outcoming:
+            print(f"{node}: outgoing message")
+            print(info_message(new_message, self.keys))
+        return new_message
 
-        def update(variable, message):
-            r, v = variable.posterior_rv(message)
-            return dict(r=r, v=v)
+    def backward(self, node, message):
+        if self.print_incoming:
+            print(f"{node}: incoming message")
+            print(info_message(message, self.keys))
+        new_message = node.backward_message(message)
+        if self.print_outcoming:
+            print(f"{node}: outgoing message")
+            print(info_message(new_message, self.keys))
+        return new_message
 
-        super().__init__(
-            model, message_keys=["a", "b"],
-            forward=forward, backward=backward, update=update
-        )
+    def update(self, variable, message):
+        r, v = variable.posterior_rv(message)
+        return dict(r=r, v=v)
 
     def run(self, n_iter=1, initializer=None):
         initializer = initializer or ConstantInit(a=0, b=0)
