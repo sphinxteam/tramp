@@ -9,6 +9,7 @@ class PiecewiseLinearChannel(Channel):
         self.name = name
         self.repr_init()
         self.regions = [LinearRegion(**region) for region in regions]
+        self.n_regions = len(regions)
 
     def sample(self, Z):
         X = sum(region.sample(Z) for region in self.regions)
@@ -24,34 +25,35 @@ class PiecewiseLinearChannel(Channel):
         return tau_x
 
     def merge_estimates(self, rs, vs, As):
-        ps = softmax(As)
+        ps = softmax(As, axis=0)
         r = sum(p*r for p, r in zip(ps, rs))
-        v = (
-            sum(p*v for p, v in zip(ps, vs)) +
-            sum(p*(r**2) for p, r in zip(ps, rs)) -
-            sum(p*r for p, r in zip(ps, rs))**2
+        Dr = sum(
+            ps[i]*ps[j]*(rs[i] - rs[j])**2
+            for i in range(self.n_regions)
+            for j in range(i+1, self.n_regions)
         )
+        v = sum(p*v for p, v in zip(ps, vs)) + Dr
         v = v.mean()
         return r, v
 
     def compute_forward_posterior(self, az, bz, ax, bx):
         rs = [region.forward_mean(az, bz, ax, bx) for region in self.regions]
         vs = [region.forward_variance(az, bz, ax, bx) for region in self.regions]
-        As = [region.log_partition(az, bz, ax, bx) for region in self.regions]
+        As = [region.log_partitions(az, bz, ax, bx) for region in self.regions]
         r, v = self.merge_estimates(rs, vs, As)
         return r, v
 
     def compute_backward_posterior(self, az, bz, ax, bx):
         rs = [region.backward_mean(az, bz, ax, bx) for region in self.regions]
         vs = [region.backward_variance(az, bz, ax, bx) for region in self.regions]
-        As = [region.log_partition(az, bz, ax, bx) for region in self.regions]
+        As = [region.log_partitions(az, bz, ax, bx) for region in self.regions]
         r, v = self.merge_estimates(rs, vs, As)
         return r, v
 
     def log_partition(self, az, bz, ax, bx):
-        As = [region.log_partition(az, bz, ax, bx) for region in self.regions]
-        A = logsumexp(As)
-        return A
+        As = [region.log_partitions(az, bz, ax, bx) for region in self.regions]
+        A = logsumexp(As, axis=0)
+        return A.sum()
 
     def beliefs_measure(self, az, ax, tau_z, f):
         mu = sum(

@@ -59,7 +59,7 @@ class Channel(Factor):
     def mutual_information(self, az, ax, tau_z, alpha = 1):
         tau_x = self.second_moment(tau_z)
         A = self.free_energy(az, ax, tau_z)
-        I = 0.5*(az*tau_z + alpha*ax*tau_x) - A + 0.5*np.log(2*pi*tau_z/np.e)
+        I = 0.5*(az*tau_z + alpha*ax*tau_x) - A + 0.5*np.log(2*np.pi*tau_z/np.e)
         return A
 
 class SIFactor(Factor):

@@ -3,7 +3,7 @@ from scipy.integrate import quad
 from ..base import ReprMixin
 from .truncated_normal import (
     truncated_normal_mean, truncated_normal_var, truncated_normal_logZ,
-    truncated_normal_log_proba
+    truncated_normal_proba
 )
 from .integration import gaussian_measure_2d, gaussian_measure_2d_full
 
@@ -57,11 +57,12 @@ class LinearRegion(ReprMixin):
         vx = self.slope**2 * vz
         return vx
 
-    def log_partition(self, az, bz, ax, bx):
+    def log_partitions(self, az, bz, ax, bx):
+        "Element-wise log_partition"
         r0, v0 = self.get_r0_v0(az, bz, ax, bx)
-        logZ = truncated_normal_logZ(r0, v0, self.zmin, self.zmax)
-        A = logZ - 0.5*ax*self.x0**2 + bx*self.x0
-        return A
+        trunc_logZ = truncated_normal_logZ(r0, v0, self.zmin, self.zmax)
+        logZ = trunc_logZ  - 0.5*ax*self.x0**2 + bx*self.x0
+        return logZ
 
     def second_moment(self, tau_z):
         rz = truncated_normal_mean(0, tau_z, self.zmin, self.zmax)
@@ -72,13 +73,13 @@ class LinearRegion(ReprMixin):
         return tau_x
 
     def proba_tau(self, tau_z):
-        log_proba = truncated_normal_log_proba(0, tau_z, self.zmin, self.zmax)
-        return np.exp(log_proba)
+        p = truncated_normal_proba(0, tau_z, self.zmin, self.zmax)
+        return p
 
     def proba_ab(self, az, bz, ax, bx):
         r0, v0 = self.get_r0_v0(az, bz, ax, bx)
-        log_proba = truncated_normal_log_proba(r0, v0, self.zmin, self.zmax)
-        return np.exp(log_proba)
+        p = truncated_normal_proba(r0, v0, self.zmin, self.zmax)
+        return p
 
     def beliefs_measure(self, az, ax, tau_z, f):
         u_eff = np.maximum(0, az * tau_z - 1)
@@ -88,13 +89,13 @@ class LinearRegion(ReprMixin):
             return self.proba_ab(az, bz, ax, bx) * f(bz, bx)
 
         if ax == 0 or u_eff == 0 or self.slope == 0:
-            sx_eff = np.sqrt(ax * (self.slope**2 * ax * tau_z + 1))
             sz_eff = np.sqrt(az * u_eff)
+            sx_eff = np.sqrt(ax * (self.slope**2 * ax * tau_z + 1))
             mu = gaussian_measure_2d(0, sz_eff, mean_x, sx_eff, integrand)
         else:
             cov = np.array([
-                [ax * (self.slope**2 * ax * tau_z + 1), self.slope * ax * u_eff],
-                [self.slope * ax * u_eff, az * u_eff]
+                [az * u_eff, self.slope * ax * u_eff],
+                [self.slope * ax * u_eff, ax * (self.slope**2 * ax * tau_z + 1)]
             ])
             mean = np.array([0, mean_x])
             mu = gaussian_measure_2d_full(cov, mean, integrand)
@@ -112,15 +113,3 @@ class LinearRegion(ReprMixin):
         if inter_min >= inter_max:
             return 0
         return quad(integrand, inter_min, inter_max)[0]
-
-    def forward(self, az, bz, ax, bx):
-        r = self.forward_mean(az, bz, ax, bx)
-        v = self.forward_variance(az, bz, ax, bx)
-        A = self.log_partition(az, bz, ax, bx)
-        return r, v, A
-
-    def backward(self, az, bz, ax, bx):
-        r = self.backward_mean(az, bz, ax, bx)
-        v = self.backward_variance(az, bz, ax, bx)
-        A = self.log_partition(az, bz, ax, bx)
-        return r, v, A

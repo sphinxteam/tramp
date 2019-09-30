@@ -8,6 +8,7 @@ Computes the mean and variance of a truncated normal distribution.
 
 import numpy as np
 from scipy.special import erf, erfc, erfcx
+from .misc import norm_cdf
 
 
 def switch(x, y):
@@ -15,6 +16,17 @@ def switch(x, y):
     x_new = np.where(np.abs(x) > np.abs(y), y, x)
     y_new = np.where(np.abs(x) > np.abs(y), x, y)
     return x_new, y_new
+
+
+def log_Phi_nonzero(x):
+    return np.log(0.5 * erfcx(-x / np.sqrt(2)))-0.5*x**2
+
+
+def log_Phi(x):
+    y = np.zeros_like(x, dtype=float)
+    nonzero = (x < 30)
+    y[nonzero] = log_Phi_nonzero(x[nonzero])
+    return y
 
 
 def F0_inf(x, y):
@@ -205,7 +217,8 @@ def G2(x, y):
 
 def G0_inf(x, s):
     "Computes G0(x, +inf) or G0(x, -inf)"
-    return np.log(0.5) + F0_inf(x/np.sqrt(2), s)
+    # return np.log(0.5) + F0_inf(x/np.sqrt(2), s)
+    return log_Phi(-s*x)
 
 
 def G1_inf(x, s):
@@ -254,7 +267,7 @@ def truncated_normal_var(r0, v0, zmin, zmax):
 
 
 def truncated_normal_log_proba(r0, v0, zmin, zmax):
-    "Proba of z in [zmin, zmin] for N(z | r0 v0)"
+    "Log proba of z in [zmin, zmin] for N(z | r0 v0)"
     assert zmin < zmax
     s0 = np.sqrt(v0)
     ymin = (zmin - r0) / s0
@@ -268,8 +281,18 @@ def truncated_normal_log_proba(r0, v0, zmin, zmax):
     return g0
 
 
+def truncated_normal_proba(r0, v0, zmin, zmax):
+    "Proba of z in [zmin, zmin] for N(z | r0 v0)"
+    assert zmin < zmax
+    s0 = np.sqrt(v0)
+    ymin = -np.inf if zmin == -np.inf else (zmin - r0) / s0
+    ymax = +np.inf if zmax == +np.inf else (zmax - r0) / s0
+    p = norm_cdf(ymax) - norm_cdf(ymin)
+    return p
+
+
 def truncated_normal_logZ(r0, v0, zmin, zmax):
     "Log Partition of N(z | r0 v0) delta_[zmin, zmin](z)"
     g0 = truncated_normal_log_proba(r0, v0, zmin, zmax)
-    logZ = 0.5*np.sqrt(2*np.pi*v0) + 0.5*r0**2/v0 + g0
+    logZ = 0.5*np.log(2*np.pi*v0) + 0.5*r0**2/v0 + g0
     return logZ
