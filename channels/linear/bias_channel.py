@@ -35,7 +35,7 @@ class BiasChannel(Channel):
         az_new = ax
         return az_new
 
-    def log_partition(self, az, bz, ax, bx):
+    def compute_log_partition(self, az, bz, ax, bx):
         b = bx + bz - ax*self.bias
         a = ax + az
         logZ = 0.5 * np.sum(
@@ -43,13 +43,13 @@ class BiasChannel(Channel):
         )
         return logZ
 
-    def mutual_information(self, az, ax, tau_z):
+    def compute_mutual_information(self, az, ax, tau_z):
         a = ax + az
         I = 0.5*np.log(a*tau_z)
         return I
 
-    def free_energy(self, az, ax, tau_z):
+    def compute_free_energy(self, az, ax, tau_z):
         tau_x = self.second_moment(tau_z)
-        I = self.mutual_information(az, ax, tau_z)
+        I = self.compute_mutual_information(az, ax, tau_z)
         A = 0.5*(az*tau_z + ax*tau_x) - I + 0.5*np.log(2*np.pi*tau_z/np.e)
         return A

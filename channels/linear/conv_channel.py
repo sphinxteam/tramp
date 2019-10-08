@@ -6,6 +6,8 @@ from tramp.utils.conv_filters import (
 )
 from tramp.utils.misc import complex2array, array2complex
 import logging
+logger = logging.getLogger(__name__)
+
 
 
 class ConvChannel(Channel):
@@ -69,10 +71,10 @@ class ConvChannel(Channel):
     def compute_n_eff(self, az, ax):
         "Effective number of parameters = overlap in z"
         if ax == 0:
-            logging.info(f"ax=0 in {self} compute_n_eff")
+            logger.info(f"ax=0 in {self} compute_n_eff")
             return 0.
         if az / ax == 0:
-            logging.info(f"az/ax=0 in {self} compute_n_eff")
+            logger.info(f"az/ax=0 in {self} compute_n_eff")
             return 1.
         n_eff = np.mean(self.spectrum / (az / ax + self.spectrum))
         return n_eff
@@ -140,7 +142,7 @@ class ConvChannel(Channel):
         vx = self.compute_forward_variance(az, ax)
         return vx
 
-    def log_partition(self, az, bz, ax, bx):
+    def compute_log_partition(self, az, bz, ax, bx):
         rz = self.compute_backward_mean(az, bz, ax, bx)
         rx = self.compute_forward_mean(az, bz, ax, bx)
         a = az + ax * self.spectrum
@@ -151,14 +153,14 @@ class ConvChannel(Channel):
         )
         return logZ
 
-    def mutual_information(self, az, ax, tau_z):
+    def compute_mutual_information(self, az, ax, tau_z):
         I = 0.5*np.log((az + ax * self.spectrum)*tau_z)
         I = I.mean()
         return I
 
-    def free_energy(self, az, ax, tau_z):
+    def compute_free_energy(self, az, ax, tau_z):
         tau_x = self.second_moment(tau_z)
-        I = self.mutual_information(az, ax, tau_z)
+        I = self.compute_mutual_information(az, ax, tau_z)
         A = 0.5*(az*tau_z + ax*tau_x) - I + 0.5*np.log(2*np.pi*tau_z/np.e)
         return A
 

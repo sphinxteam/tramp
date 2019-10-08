@@ -72,7 +72,7 @@ class ConcatChannel(SOFactor):
         vz = [1 / ak for a in ak]
         return vz
 
-    def log_partition(self, az, bz, ax, bx):
+    def compute_log_partition(self, az, bz, ax, bx):
         ak, bk = self._compute_ak_bk(az, bz, ax, bx)
         logZ = sum([
             0.5 * np.sum(b**2 / a + np.log(2 * np.pi / a))
@@ -80,5 +80,5 @@ class ConcatChannel(SOFactor):
         ])
         return logZ
 
-    def free_energy(self, az, ax, tau_z):
+    def compute_free_energy(self, az, ax, tau_z):
         raise NotImplementedError

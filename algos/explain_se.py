@@ -5,11 +5,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class ExplainMessagePassing(MessagePassing):
+class ExplainStateEvolution(MessagePassing):
     def __init__(self, model, keys=[],
                  print_incoming=True, print_outcoming=True):
-        model.init_shapes()
-        super().__init__(model, message_keys=["a", "b"])
+        model.init_second_moments()
+        super().__init__(model, message_keys=["a"])
         self.keys = keys
         self.print_incoming = print_incoming
         self.print_outcoming = print_outcoming
@@ -18,7 +18,7 @@ class ExplainMessagePassing(MessagePassing):
         if self.print_incoming:
             print(f"{node}: incoming message")
             print(info_message(message, self.keys))
-        new_message = node.forward_message(message)
+        new_message = node.forward_state_evolution(message)
         if self.print_outcoming:
             print(f"{node}: outgoing message")
             print(info_message(new_message, self.keys))
@@ -28,15 +28,15 @@ class ExplainMessagePassing(MessagePassing):
         if self.print_incoming:
             print(f"{node}: incoming message")
             print(info_message(message, self.keys))
-        new_message = node.backward_message(message)
+        new_message = node.backward_state_evolution(message)
         if self.print_outcoming:
             print(f"{node}: outgoing message")
             print(info_message(new_message, self.keys))
         return new_message
 
     def update(self, variable, message):
-        r, v = variable.posterior_rv(message)
-        return dict(r=r, v=v)
+        v = variable.posterior_v(message)
+        return dict(v=v)
 
     def run(self, n_iter=1, initializer=None):
         initializer = initializer or ConstantInit(a=0, b=0)

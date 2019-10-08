@@ -39,7 +39,7 @@ class AbsLikelihood(Likelihood):
     def measure(self, y, f):
         return f(+y) + f(-y)
 
-    def log_partition(self, az, bz, y):
+    def compute_log_partition(self, az, bz, y):
         logZ = np.sum(
             -0.5*az*(y**2) + np.logaddexp(bz*y, -bz*y)
         )

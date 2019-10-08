@@ -7,7 +7,7 @@ class Likelihood(Factor):
 
     def get_size(self, y):
         if y is None:
-            size =  None
+            size = None
         elif len(y.shape) == 1:
             size = y.shape[0]
         else:
@@ -36,13 +36,13 @@ class Likelihood(Factor):
         mz = tau_z - vz
         return mz
 
-    def free_energy(self, az, tau_z):
+    def compute_free_energy(self, az, tau_z):
         def log_partition(bz, y):
             return self.log_partition(az, bz, y)
         A = self.beliefs_measure(az, tau_z, f=log_partition)
         return A
 
-    def mutual_information(self, az, tau_z):
-        A = self.free_energy(az, ax, tau_z)
+    def compute_mutual_information(self, az, tau_z):
+        A = self.compute_free_energy(az, ax, tau_z)
         I = 0.5*az*tau_z - A + 0.5*np.log(2*pi*tau_z/np.e)
         return A

@@ -55,7 +55,7 @@ class GaussBernouilliPrior(Prior):
         g = gaussian_measure(self.mean, self.sigma, f)
         return (1 - self.rho) * f(0) + self.rho * g
 
-    def log_partition(self, ax, bx):
+    def compute_log_partition(self, ax, bx):
         a = ax + self.a
         b = bx + self.b
         A = 0.5 * (

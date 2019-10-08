@@ -15,3 +15,16 @@ class ExpectationPropagation(MessagePassing):
     def update(self, variable, message):
         r, v = variable.posterior_rv(message)
         return dict(r=r, v=v)
+
+    def node_objective(self, node, message):
+        return node.log_partition(message)
+
+    def log_evidence(self, update=True):
+        if update:
+            self.update_objective()
+        return self.A_model
+
+    def surprisal(self, update=True):
+        if update:
+            self.update_objective()
+        return -self.A_model

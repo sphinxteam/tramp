@@ -5,12 +5,14 @@ from ..utils.misc import complex2array, array2complex
 def mean_squared_error(x_true, x_pred):
     return np.mean((x_true - x_pred)**2)
 
+
 def sign_symmetric_mse(x_true, x_pred):
     "Mean squared error up to a global sign"
     mse_pos = np.mean((x_true - x_pred) ** 2)
     mse_neg = np.mean((x_true + x_pred) ** 2)
     mse = min(mse_pos, mse_neg)
     return mse
+
 
 def phase_symmetric_mse(x_true, x_pred):
     "Mean squared error up to a global phase"
@@ -20,6 +22,7 @@ def phase_symmetric_mse(x_true, x_pred):
         mses.append(mean_squared_error(x_true, x_phase))
     mse = min(mses)
     return mse
+
 
 def overlap(x_true, x_pred):
     return np.mean(x_true * x_pred)

@@ -28,21 +28,23 @@ class SgnLikelihood(Likelihood):
     def beliefs_measure(self, az, tau_z, f):
         u_eff = np.maximum(0, az * tau_z - 1)
         sz_eff = np.sqrt(az * u_eff)
+
         def f_pos(bz):
             return norm_cdf(+bz / np.sqrt(az)) * f(bz, +1)
+
         def f_neg(bz):
             return norm_cdf(-bz / np.sqrt(az)) * f(bz, -1)
         mu_pos = gaussian_measure(0, sz_eff, f_pos)
         mu_neg = gaussian_measure(0, sz_eff, f_neg)
         return mu_pos + mu_neg
 
-    def measure(self, y, f, max = 10):
-        if (y>0):
+    def measure(self, y, f, max=10):
+        if (y > 0):
             return quad(f, 0, max)[0]
         else:
             return quad(f, -max, 0)[0]
 
-    def log_partition(self, az, bz, y):
+    def compute_log_partition(self, az, bz, y):
         logZ = np.sum(
             phi_0(y*bz/np.sqrt(az)) + 0.5*np.log(2*np.pi/az)
         )

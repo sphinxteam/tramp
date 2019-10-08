@@ -27,6 +27,7 @@ def filter_to_conv_weights(f, real=True, axes=None):
         w = np.real(w)
     return w
 
+
 def first_derivative_filter(N):
     "Forward first derivative filter"
     f = np.zeros(N)
@@ -87,6 +88,7 @@ def differential_filter(shape, D1, D2=None):
         D2[axis]*second_derivative_along_axis(axis, shape) for axis in range(d)
     )
     return D
+
 
 def laplacian_filter(shape):
     "Laplacian filter"

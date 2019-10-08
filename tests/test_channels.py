@@ -23,12 +23,16 @@ def explicit_integral(az, bz, ax, bx, channel):
     def belief(z, x):
         L = -0.5 * ax * (x**2) + bx * x - 0.5 * az * (z**2) + bz * z
         return np.exp(L)
+
     def z_belief(z, x):
         return z * belief(z, x)
+
     def z2_belief(z, x):
         return (z**2) * belief(z, x)
+
     def x_belief(z, x):
         return x * belief(z, x)
+
     def x2_belief(z, x):
         return (x**2) * belief(z, x)
 
@@ -44,6 +48,7 @@ def explicit_integral(az, bz, ax, bx, channel):
     vz = z2 - rz**2
 
     return rz, vz, rx, vx
+
 
 class ChannelsTest(unittest.TestCase):
     def setUp(self):
@@ -79,7 +84,7 @@ class ChannelsTest(unittest.TestCase):
     def _test_function_proba(self, channel, records, places=12):
         for record in records:
             az, ax, tau_z = record["az"], record["ax"], record["tau_z"]
-            one = lambda bz, bx: 1
+            def one(bz, bx): return 1
             sum_proba = channel.beliefs_measure(az, ax, tau_z, f=one)
             msg = f"record={record}"
             self.assertAlmostEqual(sum_proba, 1., places=places, msg=msg)
@@ -139,6 +144,7 @@ class ChannelsTest(unittest.TestCase):
     def test_leaky_relu_proba(self):
         channel = LeakyReluChannel(slope=0.1)
         self._test_function_proba(channel, self.records)
+
 
 if __name__ == "__main__":
     unittest.main()

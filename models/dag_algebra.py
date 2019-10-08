@@ -260,7 +260,7 @@ class ModelDAG(DAG):
                 pass
             elif is_likelihood(target):
                 observation_ids = get_observation_ids(target)
-                if len(observation_ids)!=1:
+                if len(observation_ids) != 1:
                     raise ValueError(f"cannot convert {target} to likelihood")
                 observation_id = observation_ids[0]
                 observation = observations[observation_id]

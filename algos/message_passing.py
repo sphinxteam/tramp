@@ -1,10 +1,11 @@
+from .callbacks import EarlyStopping
+from .initial_conditions import ConstantInit
+from ..models import Model
+from ..base import Variable, Factor
 import numpy as np
 import networkx as nx
 import logging
-from ..base import Variable, Factor
-from ..models import Model
-from .initial_conditions import ConstantInit
-from .callbacks import EarlyStopping
+logger = logging.getLogger(__name__)
 
 
 def get_size(x):
@@ -43,8 +44,9 @@ def find_variable_in_nodes(id, nodes):
         node for node in nodes
         if isinstance(node, Variable) and node.id == id
     ]
-    assert len(matchs)==1
+    assert len(matchs) == 1
     return matchs[0]
+
 
 class MessagePassing():
 
@@ -71,9 +73,9 @@ class MessagePassing():
             variable = find_variable_in_nodes(id, self.message_dag.nodes())
             edges = self.message_dag.in_edges(variable, data=True)
             for source, target, data in edges:
-                if data["direction"]==direction:
+                if data["direction"] == direction:
                     data["damping"] = damping
-                    logging.info(f"damping {source}->{target} at {damping}")
+                    logger.info(f"damping {source}->{target} at {damping}")
 
     def damp_message(self, message):
         "Damp message in-place"
@@ -88,19 +90,19 @@ class MessagePassing():
         "Raise error on nan values"
         for source, target, data in new_message:
             if np.isnan(data['a']):
-                logging.error(
+                logger.error(
                     f"{source}->{target} a is nan\n" +
                     "incoming:\n" +
-                    info_message(old_message, keys=["n_iter","a","b"])
+                    info_message(old_message, keys=["n_iter", "a", "b"])
                 )
                 raise ValueError(f"{source}->{target} a is nan")
             if (data['a'] < 0):
-                logging.warning(f"{source}->{target} negative a {data['a']}")
+                logger.warning(f"{source}->{target} negative a {data['a']}")
             if ('b' in data) and np.isnan(data['b']).any():
-                logging.error(
+                logger.error(
                     f"{source}->{target} b is nan\n" +
                     "incoming:\n" +
-                    info_message(old_message, keys=["n_iter","a","b"])
+                    info_message(old_message, keys=["n_iter", "a", "b"])
                 )
                 raise ValueError(f"{source}->{target} b is nan")
 
@@ -109,19 +111,21 @@ class MessagePassing():
         message_dag.add_nodes_from(self.model_dag.nodes(data=True))
         message_dag.add_edges_from(
             self.model_dag.edges(data=True), direction="fwd",
-            damping = None, n_iter = 0
+            damping=None, n_iter=0
         )
         message_dag.add_edges_from(
             self.model_dag.reverse().edges(data=True), direction="bwd",
-            damping = None, n_iter = 0
+            damping=None, n_iter=0
         )
         for source, target, data in message_dag.edges(data=True):
-            if data["direction"] == "fwd" and isinstance(source, Variable):
-                data["tau"] = self.model_dag.node[source].get("tau")
             variable = source if isinstance(source, Variable) else target
+            x_data = self.model_dag.node[variable]
+            data["tau"] = x_data.get("tau")
+            data["shape"] = x_data.get("shape")
             for message_key in self.message_keys:
-                shape = self.model_dag.node[variable].get("shape")
-                data[message_key] = initializer.init(message_key, shape)
+                data[message_key] = initializer.init(
+                    message_key, data["shape"], variable.id, data["direction"]
+                )
         self.message_dag = message_dag
         nx.freeze(self.message_dag)
 
@@ -163,15 +167,39 @@ class MessagePassing():
     def get_variables_data(self, ids="all"):
         data = {}
         for variable in self.variables:
-            if ids=="all" or variable.id in ids:
+            if ids == "all" or variable.id in ids:
                 data[variable.id] = self.message_dag.node[variable].copy()
         return data
 
     def get_variable_data(self, id):
         for variable in self.variables:
-            if variable.id==id:
+            if variable.id == id:
                 return self.message_dag.node[variable].copy()
         raise ValueError(f"id={id} not in variables")
+
+    def update_objective(self):
+        for node in self.forward_ordering:
+            message = self.message_dag.in_edges(node, data=True)
+            A = self.node_objective(node, message)
+            self.message_dag.node[node].update(A=A)
+        for source, target, data in message_dag.edges(data=True):
+            if data["direction"] == "fwd":
+                variable = source if isinstance(source, Variable) else target
+                message = [
+                    (source, target, data),
+                    (target, source, self.message_dag[target][source])
+                ]
+                A = self.node_objective(variable, message)
+                self.message_dag.node[source][target].update(A=A)
+                self.message_dag.node[target][source].update(A=A)
+        A_nodes = sum(
+            data["A"] for node, data in self.message_dag.nodes(data=True)
+        )
+        A_edges = sum(
+            data["A"] for s, t, data in self.message_dag.edges(data=True)
+            if data["direction"] == "fwd"  # avoid double counting !
+        )
+        self.A_model = A_nodes - A_edges
 
     def check_any_small(self):
         "Returns True if any v is below epsilon."
@@ -181,7 +209,7 @@ class MessagePassing():
             new_v = self.message_dag.node[variable]["v"]
             if new_v < epsilon:
                 any_small = True
-                logging.info(f"new_v={new_v}<epsilon={epsilon} for {variable}")
+                logger.info(f"new_v={new_v}<epsilon={epsilon} for {variable}")
         return any_small
 
     def check_any_nan(self):
@@ -191,7 +219,7 @@ class MessagePassing():
             new_v = self.message_dag.node[variable]["v"]
             if np.isnan(new_v):
                 any_nan = True
-                logging.info(f"new_v is nan for {variable}")
+                logger.info(f"new_v is nan for {variable}")
         return any_nan
 
     def check_any_increasing(self, old_message_dag):
@@ -205,52 +233,52 @@ class MessagePassing():
             new_v = self.message_dag.node[variable]["v"]
             if new_v > old_v:
                 any_increasing = True
-                logging.info(f"new_v={new_v}>old_v={old_v} for {variable}")
+                logger.info(f"new_v={new_v}>old_v={old_v} for {variable}")
         return any_increasing
 
     def iterate(self, max_iter,
                 callback=None, initializer=None, warm_start=False,
                 check_nan=True, check_decreasing=True,
-                variables_damping = None):
+                variables_damping=None):
         initializer = initializer or ConstantInit(a=0, b=0)
         callback = callback or EarlyStopping(tol=1e-6, min_variance=1e-12)
         if warm_start:
             if not hasattr(self, "message_dag"):
                 raise ValueError("message dag was not initialized")
-            logging.info(f"warm start with n_iter={self.n_iter} - no initialization")
+            logger.info(f"warm start with n_iter={self.n_iter} - no initialization")
         else:
-            logging.info(f"init message dag with {initializer}")
+            logger.info(f"init message dag with {initializer}")
             self.n_iter = 0
             self.init_message_dag(initializer)
         if variables_damping:
             self.configure_variables_damping(variables_damping)
         for i in range(max_iter):
             # backup message_dag
-            if (i>0) and (check_nan or check_decreasing):
+            if (i > 0) and (check_nan or check_decreasing):
                 old_message_dag = self.message_dag.copy()
             # forward, backward, update pass
             self.forward_message()
             self.backward_message()
             self.update_variables()
             # early stoppings with restoring message_dag
-            if (i>0) and check_nan:
+            if (i > 0) and check_nan:
                 any_nan = self.check_any_nan()
                 if any_nan:
-                    logging.warn("nan v: restoring old message dag")
+                    logger.warn("nan v restoring old message dag")
                     self.reset_message_dag(old_message_dag)
-                    logging.info(f"terminated after n_iter={self.n_iter} iterations")
+                    logger.info(f"terminated after n_iter={self.n_iter} iterations")
                     return
-            if (i>0) and check_decreasing:
+            if (i > 0) and check_decreasing:
                 any_increasing = self.check_any_increasing(old_message_dag)
                 if any_increasing:
-                    logging.warn("increasing v: restoring old message dag")
+                    logger.warn("increasing v restoring old message dag")
                     self.reset_message_dag(old_message_dag)
-                    logging.info(f"terminated after n_iter={self.n_iter} iterations")
+                    logger.info(f"terminated after n_iter={self.n_iter} iterations")
                     return
             # callbacks
             self.n_iter += 1
             stop = callback(self, i, max_iter)
-            logging.debug(f"n_iter={self.n_iter}")
+            logger.debug(f"n_iter={self.n_iter}")
             if stop:
-                logging.info(f"terminated after n_iter={self.n_iter} iterations")
+                logger.info(f"terminated after n_iter={self.n_iter} iterations")
                 return

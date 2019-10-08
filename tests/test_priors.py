@@ -12,6 +12,7 @@ def empirical_second_moment(prior):
     tau_x = (X**2).mean()
     return tau_x
 
+
 def explicit_integral(ax, bx, prior):
     """
     Compute rx, vx for prior p(x) by integration.
@@ -19,8 +20,10 @@ def explicit_integral(ax, bx, prior):
     def belief(x):
         L = -0.5 * ax * (x**2) + bx * x
         return np.exp(L)
+
     def x_belief(x):
         return x*belief(x)
+
     def x2_belief(x):
         return (x**2)*belief(x)
 
@@ -29,6 +32,7 @@ def explicit_integral(ax, bx, prior):
     x2 = prior.measure(x2_belief) / Z
     vx = x2 - rx**2
     return rx, vx
+
 
 class PriorsTest(unittest.TestCase):
     def setUp(self):
@@ -59,19 +63,18 @@ class PriorsTest(unittest.TestCase):
     def _test_function_proba(self, prior, records, places=12):
         for record in records:
             ax = record["ax"]
-            one = lambda bx: 1
-            sum_proba = prior.beliefs_measure(ax, f = one)
+            def one(bx): return 1
+            sum_proba = prior.beliefs_measure(ax, f=one)
             msg = f"record={record} prior={prior}"
             self.assertAlmostEqual(sum_proba, 1., places=places, msg=msg)
 
     def test_gaussian_posterior(self):
         priors = [
-            GaussianPrior(size=1, mean=0.5, var = 1.0),
-            GaussianPrior(size=1, mean=-2.5, var = 10.0)
+            GaussianPrior(size=1, mean=0.5, var=1.0),
+            GaussianPrior(size=1, mean=-2.5, var=10.0)
         ]
         for prior in priors:
             self._test_function_posterior(prior, self.records)
-
 
     def test_binary_posterior(self):
         priors = [
@@ -91,8 +94,8 @@ class PriorsTest(unittest.TestCase):
 
     def test_gaussian_second_moment(self):
         priors = [
-            GaussianPrior(size=1, mean=0.5, var = 1.0),
-            GaussianPrior(size=1, mean=-0.3, var = 0.5)
+            GaussianPrior(size=1, mean=0.5, var=1.0),
+            GaussianPrior(size=1, mean=-0.3, var=0.5)
         ]
         for prior in priors:
             self._test_function_second_moment(prior)
@@ -128,6 +131,7 @@ class PriorsTest(unittest.TestCase):
         ]
         for prior in priors:
             self._test_function_proba(prior, self.records)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,6 +1,8 @@
 import numpy as np
 from ..base_channel import Channel
 import logging
+logger = logging.getLogger(__name__)
+
 
 
 def svd(X):
@@ -56,10 +58,10 @@ class LinearChannel(Channel):
     def compute_n_eff(self, az, ax):
         "Effective number of parameters = overlap in z"
         if ax == 0:
-            logging.info(f"ax=0 in {self} compute_n_eff")
+            logger.info(f"ax=0 in {self} compute_n_eff")
             return 0.
         if az / ax == 0:
-            logging.info(f"az/ax=0 in {self} compute_n_eff")
+            logger.info(f"az/ax=0 in {self} compute_n_eff")
             return self.rank / self.Nz
         n_eff_trace = np.sum(self.singular / (az / ax + self.singular))
         return n_eff_trace / self.Nz
@@ -86,7 +88,7 @@ class LinearChannel(Channel):
 
     def compute_backward_variance(self, az, ax):
         if az==0:
-            logging.info(f"az=0 in {self} compute_backward_variance, clipping to 1e-11")
+            logger.info(f"az=0 in {self} compute_backward_variance, clipping to 1e-11")
         az = np.maximum(1e-11, az)
         n_eff = self.compute_n_eff(az, ax)
         vz = (1 - n_eff) / az
@@ -120,20 +122,20 @@ class LinearChannel(Channel):
         vx = self.compute_forward_variance(az, ax)
         return vx
 
-    def log_partition(self, az, bz, ax, bx):
+    def compute_log_partition(self, az, bz, ax, bx):
         rz = self.compute_backward_mean(az, bz, ax, bx)
         b = bz + self.W.T @ bx
         a = az + ax * self.spectrum
         logZ = 0.5 * np.sum(b * rz) + 0.5 * np.sum(np.log(2 * np.pi / a))
         return logZ
 
-    def mutual_information(self, az, ax, tau_z):
+    def compute_mutual_information(self, az, ax, tau_z):
         I = 0.5*np.log((az + ax * self.spectrum)*tau_z)
         I = I.mean()
         return I
 
-    def free_energy(self, az, ax, tau_z):
+    def compute_free_energy(self, az, ax, tau_z):
         tau_x = self.second_moment(tau_z)
-        I = self.mutual_information(az, ax, tau_z)
+        I = self.compute_mutual_information(az, ax, tau_z)
         A = 0.5*(az*tau_z + self.alpha*ax*tau_x) - I + 0.5*np.log(2*np.pi*tau_z/np.e)
         return A

@@ -2,6 +2,8 @@ import numpy as np
 from ..base_channel import Channel
 from tramp.ensembles import MarchenkoPasturEnsemble
 import logging
+logger = logging.getLogger(__name__)
+
 
 class AnalyticalLinearChannel(Channel):
     def __init__(self, ensemble, W_name="W"):
@@ -26,10 +28,10 @@ class AnalyticalLinearChannel(Channel):
     def compute_n_eff(self, az, ax):
         "Effective number of parameters"
         if ax == 0:
-            logging.info(f"ax=0 in {self} compute_n_eff")
+            logger.info(f"ax=0 in {self} compute_n_eff")
             return 0.
         if az / ax == 0:
-            logging.info(f"az/ax=0 in {self} compute_n_eff")
+            logger.info(f"az/ax=0 in {self} compute_n_eff")
             return min(1, self.alpha)
         gamma = ax / az
         n_eff = 1 - self.ensemble.eta_transform(gamma)
@@ -37,7 +39,7 @@ class AnalyticalLinearChannel(Channel):
 
     def compute_backward_error(self, az, ax, tau_z):
         if az==0:
-            logging.info(f"az=0 in {self} compute_backward_error")
+            logger.info(f"az=0 in {self} compute_backward_error")
         az = np.maximum(1e-11, az)
         n_eff = self.compute_n_eff(az, ax)
         vz = (1 - n_eff) / az
@@ -50,15 +52,15 @@ class AnalyticalLinearChannel(Channel):
         vx = n_eff / (self.alpha * ax)
         return vx
 
-    def mutual_information(self, az, ax, tau_z):
+    def compute_mutual_information(self, az, ax, tau_z):
         gamma = ax / az
         S = self.ensemble.shannon_transform(gamma)
         I = 0.5*np.log(az*tau_z) + 0.5*S
         return I
 
-    def free_energy(self, az, ax, tau_z):
+    def compute_free_energy(self, az, ax, tau_z):
         tau_x = self.second_moment(tau_z)
-        I = self.mutual_information(az, ax, tau_z)
+        I = self.compute_mutual_information(az, ax, tau_z)
         A = 0.5*(az*tau_z + self.alpha*ax*tau_x) - I + 0.5*np.log(2*np.pi*tau_z/np.e)
         return A
 

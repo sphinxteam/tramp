@@ -74,7 +74,7 @@ class DFTChannel(Channel):
         az_new = ax
         return az_new
 
-    def log_partition(self, az, bz, ax, bx):
+    def compute_log_partition(self, az, bz, ax, bx):
         _, bz_new = self.compute_backward_mean(az, bz, ax, bx)
         b = bz + bz_new
         a = az + ax
@@ -82,13 +82,13 @@ class DFTChannel(Channel):
         logZ = 0.5 * np.sum(b**2 / a) + coef * self.N * np.log(2 * np.pi / a)
         return logZ
 
-    def mutual_information(self, az, ax, tau_z):
+    def compute_mutual_information(self, az, ax, tau_z):
         a = ax + az
         I = 0.5*np.log(a*tau_z)
         return I
 
-    def free_energy(self, az, ax, tau_z):
+    def compute_free_energy(self, az, ax, tau_z):
         tau_x = self.second_moment(tau_z)
-        I = self.mutual_information(az, ax, tau_z)
+        I = self.compute_mutual_information(az, ax, tau_z)
         A = 0.5*(az*tau_z + ax*tau_x) - I + 0.5*np.log(2*np.pi*tau_z/np.e)
         return A

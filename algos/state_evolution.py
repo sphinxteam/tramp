@@ -15,3 +15,11 @@ class StateEvolution(MessagePassing):
     def update(self, variable, message):
         v = variable.posterior_v(message)
         return dict(v=v)
+
+    def node_objective(self, node, message):
+        return node.free_energy(message)
+
+    def entropy(self, update=True):
+        if update:
+            self.update_objective()
+        return -self.A_model

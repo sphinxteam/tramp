@@ -47,7 +47,7 @@ class GaussianPrior(Prior):
     def measure(self, f):
         return gaussian_measure(self.mean, self.sigma, f)
 
-    def log_partition(self, ax, bx):
+    def compute_log_partition(self, ax, bx):
         a = ax + self.a
         b = bx + self.b
         logZ = 0.5 * np.sum(
@@ -55,13 +55,13 @@ class GaussianPrior(Prior):
         )
         return logZ
 
-    def mutual_information(self, ax):
+    def compute_mutual_information(self, ax):
         a = ax + self.a
         I = 0.5*np.log(a*self.var)
         return I
 
-    def free_energy(self, ax):
+    def compute_free_energy(self, ax):
         tau_x = self.second_moment()
-        I = self.mutual_information(ax)
+        I = self.compute_mutual_information(ax)
         A = 0.5*ax*tau_x - I
         return A

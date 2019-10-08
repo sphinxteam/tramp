@@ -25,6 +25,7 @@ class ModulusLikelihood(Likelihood):
     - input  of sample(): Z array of shape (2, z.shape)
     - message bz, posterior rz: real arrays of shape (2, z.shape)
     """
+
     def __init__(self, y, y_name="y"):
         self.y_name = y_name
         self.size = self.get_size(y)
@@ -64,6 +65,7 @@ class ModulusLikelihood(Likelihood):
             return gaussian_measure(0, 1, f_scaled_y)
         # typical case u_eff > 0
         sz_eff = np.sqrt(az * u_eff)
+
         def f_scaled(xi_b, xi_y):
             b = sz_eff * xi_b
             y = b / az + xi_y / np.sqrt(az)
@@ -77,7 +79,7 @@ class ModulusLikelihood(Likelihood):
             return y * f(y * np.exp(theta * 1j))
         return quad(polar_f, 0, 2 * np.pi)[0]
 
-    def log_partition(self, az, bz, y):
+    def compute_log_partition(self, az, bz, y):
         b = np.absolute(bz)
         I0 = ive(0, b*y)
         logZ = np.sum(

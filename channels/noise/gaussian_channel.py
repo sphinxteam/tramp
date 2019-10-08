@@ -42,7 +42,7 @@ class GaussianChannel(Channel):
         az_new = kx * ax
         return az_new
 
-    def log_partition(self, az, bz, ax, bx):
+    def compute_log_partition(self, az, bz, ax, bx):
         az_new, bz_new = self.compute_backward_message(az, bz, ax, bx)
         rz = (bz_new + bz) / (az_new + az)
         ax_new, bx_new = self.compute_forward_message(az, bz, ax, bx)
@@ -51,13 +51,13 @@ class GaussianChannel(Channel):
         logZ = 0.5 * np.sum(rz*bz + rx*bx + np.log(2 * np.pi / d))
         return logZ
 
-    def mutual_information(self, az, ax, tau_z):
+    def compute_mutual_information(self, az, ax, tau_z):
         a = ax + az + ax*az/self.a
         I = 0.5*np.log(a*tau_z)
         return I
 
-    def free_energy(self, az, ax, tau_z):
+    def compute_free_energy(self, az, ax, tau_z):
         tau_x = self.second_moment(tau_z)
-        I = self.mutual_information(az, ax, tau_z)
+        I = self.compute_mutual_information(az, ax, tau_z)
         A = 0.5*(az*tau_z + ax*tau_x) - I + 0.5*np.log(2*np.pi*tau_z/np.e)
         return A

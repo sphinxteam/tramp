@@ -28,14 +28,14 @@ class Prior(Factor):
         mx = tau_x - vx
         return mx
 
-    def free_energy(self, ax):
+    def compute_free_energy(self, ax):
         def log_partition(bx):
             return self.log_partition(ax, bx)
         A = self.beliefs_measure(ax, f=log_partition)
         return A
 
-    def mutual_information(self, ax):
+    def compute_mutual_information(self, ax):
         tau_x = self.second_moment()
-        A = self.free_energy(ax)
+        A = self.compute_free_energy(ax)
         I = 0.5*ax*tau_x - A
         return A

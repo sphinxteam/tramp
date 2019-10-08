@@ -1,7 +1,7 @@
 from .multi_layer_model import MultiLayerModel
 from .generalized_linear_model import (
-     GaussianDenoiser, GeneralizedLinearModel, SparseRegression,
-     RidgeRegression, SgnRetrieval, PhaseRetrieval, Perceptron
+    GaussianDenoiser, GeneralizedLinearModel, SparseRegression,
+    RidgeRegression, SgnRetrieval, PhaseRetrieval, Perceptron
 )
 from .total_variation_model import (
     SparseGradientRegression, SparseGradientClassification,

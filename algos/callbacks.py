@@ -1,8 +1,9 @@
+from .metrics import METRICS
+import pandas as pd
+import numpy as np
 from ..base import ReprMixin
 import logging
-import numpy as np
-import pandas as pd
-from .metrics import METRICS
+logger = logging.getLogger(__name__)
 
 
 class Callback(ReprMixin):
@@ -39,9 +40,9 @@ class LogProgress(Callback):
     def __call__(self, algo,  i, max_iter):
         if (i % self.every == 0):
             variables_data = algo.get_variables_data(self.ids)
-            logging.info(f"iteration={i+1}/{max_iter}")
+            logger.info(f"iteration={i+1}/{max_iter}")
             for variable_id, data in variables_data.items():
-                logging.info(f"id={variable_id} v={data['v']:.3f}")
+                logger.info(f"id={variable_id} v={data['v']:.3f}")
 
 
 class TrackEvolution(Callback):
@@ -110,19 +111,19 @@ class EarlyStopping(Callback):
         variables_data = algo.get_variables_data(self.ids)
         new_vs = [data["v"] for variable_id, data in variables_data.items()]
         if any(v < self.min_variance for v in new_vs):
-            logging.info(f"early stopping: min variance {min(new_vs)}")
+            logger.info(f"early stopping min variance {min(new_vs)}")
             return True
         if any(np.isnan(v) for v in new_vs):
-            logging.info(f"early stopping: nan values")
+            logger.info(f"early stopping nan values")
             return True
         if self.old_vs:
             tols = [
                 np.abs(old_v - new_v)
                 for old_v, new_v in zip(self.old_vs, new_vs)
             ]
-            logging.debug(f"tolerances max={max(tols):.2e} min={min(tols):.2e}")
+            logger.debug(f"tolerances max={max(tols):.2e} min={min(tols):.2e}")
             if max(tols) < self.tol:
-                logging.info(f"early stopping: all tolerances are below tol={self.tol:.2e}")
+                logger.info(f"early stopping all tolerances are below tol={self.tol:.2e}")
                 return True
         # for next iteration
         self.old_vs = new_vs

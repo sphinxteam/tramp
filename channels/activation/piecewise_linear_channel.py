@@ -50,7 +50,7 @@ class PiecewiseLinearChannel(Channel):
         r, v = self.merge_estimates(rs, vs, As)
         return r, v
 
-    def log_partition(self, az, bz, ax, bx):
+    def compute_log_partition(self, az, bz, ax, bx):
         As = [region.log_partitions(az, bz, ax, bx) for region in self.regions]
         A = logsumexp(As, axis=0)
         return A.sum()

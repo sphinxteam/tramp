@@ -11,6 +11,7 @@ LIKELIHOOD_CLASSES = {
     "modulus": ModulusLikelihood
 }
 
+
 def get_likelihood(y, likelihood_type):
     likelihood = LIKELIHOOD_CLASSES[likelihood_type](y=y)
     return likelihood

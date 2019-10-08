@@ -41,11 +41,11 @@ class DuplicateChannel(SIFactor):
         vz = 1. / a
         return vz
 
-    def log_partition(self, az, bz, ax, bx):
+    def compute_log_partition(self, az, bz, ax, bx):
         a = az + sum(ax)
         b = bz + sum(bx)
         logZ = 0.5 * np.sum(b**2 / a + np.log(2 * np.pi / a))
         return logZ
 
-    def free_energy(self, az, ax, tau_z):
+    def compute_free_energy(self, az, ax, tau_z):
         raise NotImplementedError

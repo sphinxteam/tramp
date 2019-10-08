@@ -39,8 +39,9 @@ class MultiLayerModel(Model):
         self.layers = layers
         self.ids = ids
         self.repr_init(pad="  ")
+
         def get_variable(l):
-            V = SILeafVariable if l==n_layers-1 else SISOVariable
+            V = SILeafVariable if l == n_layers-1 else SISOVariable
             return V(id=ids[l])
         dag = layers[0] @ get_variable(0)
         for l in range(1, n_layers):

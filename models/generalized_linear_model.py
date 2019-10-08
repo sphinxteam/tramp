@@ -31,6 +31,7 @@ class GeneralizedLinearModel(MultiLayerModel):
             ids=["x", "z", "y"]
         )
 
+
 class PhaseRetrieval(MultiLayerModel):
     def __init__(self, N, alpha, ensemble_type, prior_type, **kwargs):
         # sensing matrix
@@ -38,7 +39,7 @@ class PhaseRetrieval(MultiLayerModel):
         self.ensemble = get_ensemble(ensemble_type, M=M, N=N)
         F = self.ensemble.generate()
         # model
-        x_size = (2, N) # complex signal x
+        x_size = (2, N)  # complex signal x
         self.prior = get_prior(x_size, prior_type, **kwargs)
         self.linear = ComplexLinearChannel(F, W_name="F")
         self.output = ModulusChannel()
@@ -67,6 +68,7 @@ class RidgeRegression(GeneralizedLinearModel):
             N, alpha, ensemble_type, prior_type, output_type,
             var_noise=var_noise
         )
+
 
 class SgnRetrieval(GeneralizedLinearModel):
     def __init__(self, N, alpha, ensemble_type, mean_prior):

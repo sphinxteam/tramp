@@ -1,9 +1,10 @@
-import logging
-import pandas as pd
-from ..algos import ExpectationPropagation, StateEvolution
-from ..algos import TrackErrors, TrackEvolution, EarlyStopping, JoinCallback
-from ..models import Model
 from ..algos.metrics import METRICS
+from ..models import Model
+from ..algos import TrackErrors, TrackEvolution, EarlyStopping, JoinCallback
+from ..algos import ExpectationPropagation, StateEvolution
+import pandas as pd
+import logging
+logger = logging.getLogger(__name__)
 
 
 class TeacherStudentScenario():
@@ -70,7 +71,7 @@ class TeacherStudentScenario():
                 variables_damping=variables_damping
             )
         except Exception as e:
-            logging.error(e)
+            logger.error(e)
         df = pd.merge(
             track.get_dataframe(), evo.get_dataframe(), on=["id", "iter"]
         )

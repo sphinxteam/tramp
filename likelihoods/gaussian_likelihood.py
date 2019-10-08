@@ -45,7 +45,7 @@ class GaussianLikelihood(Likelihood):
     def measure(self, y, f):
         return gaussian_measure(y, self.sigma, f)
 
-    def log_partition(self, az, bz, y):
+    def compute_log_partition(self, az, bz, y):
         ay, by = self.a, self.a*y
         a = az + ay
         b = bz + by
@@ -54,13 +54,13 @@ class GaussianLikelihood(Likelihood):
         )
         return logZ
 
-    def mutual_information(self, az, tau_z):
+    def compute_mutual_information(self, az, tau_z):
         a = az + self.a
         H = 0.5*np.log(2*np.pi*np.e*self.var)
         I = 0.5*np.log(a*tau_z) + H
         return I
 
-    def free_energy(self, az, tau_z):
-        I = self.mutual_information(az, tau_z)
+    def compute_free_energy(self, az, tau_z):
+        I = self.compute_mutual_information(az, tau_z)
         A = 0.5*az*tau_z - I + 0.5*np.log(2*np.pi*tau_z/np.e)
         return A

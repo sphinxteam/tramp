@@ -5,6 +5,7 @@ Base classes.
 import numpy as np
 from scipy.integrate import quad, dblquad
 import logging
+logger = logging.getLogger(__name__)
 
 
 class ReprMixin():
@@ -122,6 +123,23 @@ class Variable(ReprMixin):
             l_source = l_source[0]
         return k_source, l_source, ak, al
 
+    def _parse_tau(self, message):
+        source, target, data = message[0]
+        return data["tau"]
+
+    def compute_mutual_information(self, ax, tau_x):
+        I = 0.5*np.log(ax*tau_x)
+        return I
+
+    def compute_free_energy(self, ax, tau_x):
+        I = self.compute_mutual_information(ax, tau_x)
+        A = 0.5*ax*tau_x - I + 0.5*np.log(2*np.pi*tau_x/np.e)
+        return A
+
+    def compute_log_partition(self, ax, bx):
+        logZ = 0.5 * np.sum(bx**2 / ax + np.log(2*np.pi/ax))
+        return logZ
+
     def posterior_ab(self, message):
         a_hat = sum(data["a"] for source, target, data in message)
         b_hat = sum(data["b"] for source, target, data in message)
@@ -142,13 +160,15 @@ class Variable(ReprMixin):
         v_hat = 1. / a_hat
         return v_hat
 
-    def mutual_information(self, ax, tau_x):
-        I = 0.5*np.log(ax*tau_x)
-        return I
+    def log_partition(self, message):
+        ax, bx = self.posterior_ab(message)
+        logZ = self.compute_log_partition(ax, bx)
+        return logZ
 
-    def free_energy(self, ax, tau_x):
-        I = self.mutual_information(ax, tau_x)
-        A = 0.5*ax*tau_x - I + 0.5*np.log(2*np.pi*tau_x/np.e)
+    def free_energy(self, message):
+        ax = self.posterior_a(message)
+        tau_x = self._parse_tau(message)
+        A = self.compute_free_energy(ax, tau_x)
         return A
 
     def forward_message(self, message):
@@ -209,7 +229,7 @@ class Factor(ReprMixin):
     AMAX = 1e+11
     AMIN = 1e-11
 
-    def reset_precision_bounds(AMIN, AMAX):
+    def reset_precision_bounds(self, AMIN, AMAX):
         self.AMIN = AMIN
         self.AMAX = AMAX
 
@@ -328,6 +348,16 @@ class Factor(ReprMixin):
             ]
         return new_message
 
+    def log_partition(self, message):
+        z_source, x_source, az, bz, ax, bx = self._parse_message_ab(message)
+        if self.n_prev == 0:
+            logZ = self.compute_log_partition(ax, bx)
+        elif self.n_next == 0:
+            logZ = self.compute_log_partition(az, bz)
+        else:
+            logZ = self.compute_log_partition(az, bz, ax, bx)
+        return logZ
+
     def forward_state_evolution(self, message):
         if self.n_next == 0:
             return []
@@ -366,6 +396,16 @@ class Factor(ReprMixin):
             ]
         return new_message
 
+    def free_energy(self, message):
+        z_source, x_source, az, ax, tau_z = self._parse_message_a(message)
+        if self.n_prev == 0:
+            logZ = self.compute_free_energy(ax)
+        elif self.n_next == 0:
+            logZ = self.compute_free_energy(az, tau_z)
+        else:
+            logZ = self.compute_free_energy(az, ax, tau_z)
+        return logZ
+
     def compute_forward_message(self, az, bz, ax, bx):
         rx, vx = self.compute_forward_posterior(az, bz, ax, bx)
         ab_new = [
@@ -398,7 +438,7 @@ class Factor(ReprMixin):
 
     def compute_forward_overlap(self, az, ax, tau_z):
         vx = self.compute_forward_error(az, ax, tau_z)
-        tau_x  = self.second_moment(tau_z)
+        tau_x = self.second_moment(tau_z)
         mx = [tau_k - vk for tau_k, vk in zip(tau_x, vx)]
         return mx
 

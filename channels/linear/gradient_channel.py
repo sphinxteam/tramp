@@ -3,6 +3,8 @@ from numpy.fft import fftn, ifftn
 from ..base_channel import Channel
 from tramp.utils.conv_filters import gradient_filters
 import logging
+logger = logging.getLogger(__name__)
+
 
 
 class GradientChannel(Channel):
@@ -43,10 +45,10 @@ class GradientChannel(Channel):
     def compute_n_eff(self, az, ax):
         "Effective number of parameters = overlap in z"
         if ax == 0:
-            logging.info(f"ax=0 in {self} compute_n_eff")
+            logger.info(f"ax=0 in {self} compute_n_eff")
             return 0.
         if az / ax == 0:
-            logging.info(f"az/ax=0 in {self} compute_n_eff")
+            logger.info(f"az/ax=0 in {self} compute_n_eff")
             return 1.
         n_eff = np.mean(self.spectrum / (az / ax + self.spectrum))
         return n_eff

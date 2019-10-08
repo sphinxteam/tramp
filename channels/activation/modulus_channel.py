@@ -2,6 +2,8 @@ import numpy as np
 from ..base_channel import Channel
 from tramp.utils.misc import complex2array, array2complex
 import logging
+logger = logging.getLogger(__name__)
+
 
 
 class ModulusChannel(Channel):

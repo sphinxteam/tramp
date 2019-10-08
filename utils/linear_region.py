@@ -57,11 +57,11 @@ class LinearRegion(ReprMixin):
         vx = self.slope**2 * vz
         return vx
 
-    def log_partitions(self, az, bz, ax, bx):
+    def compute_log_partitions(self, az, bz, ax, bx):
         "Element-wise log_partition"
         r0, v0 = self.get_r0_v0(az, bz, ax, bx)
         trunc_logZ = truncated_normal_logZ(r0, v0, self.zmin, self.zmax)
-        logZ = trunc_logZ  - 0.5*ax*self.x0**2 + bx*self.x0
+        logZ = trunc_logZ - 0.5*ax*self.x0**2 + bx*self.x0
         return logZ
 
     def second_moment(self, tau_z):

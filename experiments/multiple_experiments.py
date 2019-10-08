@@ -1,11 +1,12 @@
-import logging
-import itertools
-import numpy as np
 import pandas as pd
+import numpy as np
+import itertools
+import logging
+logger = logging.getLogger(__name__)
 
 
 def log_on_progress(i, total):
-    logging.info(f"experiment {i}/{total}")
+    logger.info(f"experiment {i}/{total}")
 
 
 def as_list(x):
@@ -39,7 +40,7 @@ def run_experiments(run, on_progress=None, **kwargs):
             record.update(result)
             records.append(record)
         except Exception as e:
-            logging.error(f"Experiment {experiment} failed\n{e}")
+            logger.error(f"Experiment {experiment} failed\n{e}")
         on_progress(idx + 1, n_experiments)
     df = pd.DataFrame(records)
     return df
