@@ -6,8 +6,8 @@ from tramp.utils.linear_region import LinearRegion
 
 class PiecewiseLinearChannel(Channel):
     def __init__(self, name, regions):
-        self.name = name
         self.repr_init()
+        self.name = name
         self.regions = [LinearRegion(**region) for region in regions]
         self.n_regions = len(regions)
 
@@ -70,40 +70,35 @@ class PiecewiseLinearChannel(Channel):
 class LeakyReluChannel(PiecewiseLinearChannel):
     def __init__(self, slope):
         self.slope = slope
-        self.repr_init()
-        pos = dict(zmin=-np.inf, zmax=0, slope=slope, x0=0)
-        neg = dict(zmin=0, zmax=np.inf, slope=1, x0=0)
+        neg = dict(zmin=-np.inf, zmax=0, slope=slope, x0=0)
+        pos = dict(zmin=0, zmax=np.inf, slope=1, x0=0)
         super().__init__(name="l-relu", regions=[pos, neg])
 
 
 class SgnChannel(PiecewiseLinearChannel):
     def __init__(self):
-        self.repr_init()
-        pos = dict(zmin=-np.inf, zmax=0, slope=0, x0=-1)
-        neg = dict(zmin=0, zmax=+np.inf, slope=0, x0=+1)
+        neg = dict(zmin=-np.inf, zmax=0, slope=0, x0=-1)
+        pos = dict(zmin=0, zmax=+np.inf, slope=0, x0=+1)
         super().__init__(name="sgn", regions=[pos, neg])
 
 
 class AbsChannel(PiecewiseLinearChannel):
     def __init__(self):
-        self.repr_init()
-        pos = dict(zmin=-np.inf, zmax=0, slope=-1, x0=0)
-        neg = dict(zmin=0, zmax=+np.inf, slope=+1, x0=0)
+        neg = dict(zmin=-np.inf, zmax=0, slope=-1, x0=0)
+        pos = dict(zmin=0, zmax=+np.inf, slope=+1, x0=0)
         super().__init__(name="abs", regions=[pos, neg])
 
 
 class ReluChannel(PiecewiseLinearChannel):
     def __init__(self):
-        self.repr_init()
-        pos = dict(zmin=-np.inf, zmax=0, slope=0, x0=0)
-        neg = dict(zmin=0, zmax=+np.inf, slope=1, x0=0)
+        neg = dict(zmin=-np.inf, zmax=0, slope=0, x0=0)
+        pos = dict(zmin=0, zmax=+np.inf, slope=1, x0=0)
         super().__init__(name="relu", regions=[pos, neg])
 
 
 class HardTanhChannel(PiecewiseLinearChannel):
     def __init__(self):
-        self.repr_init()
-        pos = dict(zmin=-np.inf, zmax=-1, slope=0, x0=-1)
+        neg = dict(zmin=-np.inf, zmax=-1, slope=0, x0=-1)
         mid = dict(zmin=-1, zmax=+1, slope=1, x0=0)
-        neg = dict(zmin=1, zmax=np.inf, slope=0, x0=1)
+        pos = dict(zmin=1, zmax=np.inf, slope=0, x0=1)
         super().__init__(name="h-tanh", regions=[pos, mid, neg])

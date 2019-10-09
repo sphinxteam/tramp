@@ -38,7 +38,7 @@ class Likelihood(Factor):
 
     def compute_free_energy(self, az, tau_z):
         def log_partition(bz, y):
-            return self.log_partition(az, bz, y)
+            return self.compute_log_partition(az, bz, y)
         A = self.beliefs_measure(az, tau_z, f=log_partition)
         return A
 

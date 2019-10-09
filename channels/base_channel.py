@@ -52,7 +52,7 @@ class Channel(Factor):
 
     def compute_free_energy(self, az, ax, tau_z):
         def log_partition(bz, bx):
-            return self.log_partition(az, bz, ax, bx)
+            return self.compute_log_partition(az, bz, ax, bx)
         A = self.beliefs_measure(az, ax, tau_z, f=log_partition)
         return A
 
