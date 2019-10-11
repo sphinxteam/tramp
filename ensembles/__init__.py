@@ -12,18 +12,11 @@ ENSEMBLE_CLASSES = {
     "rotation": RotationEnsemble,
     "unitary": UnitaryEnsemble,
     "binary": BinaryEnsemble,
-    "ternary": TernaryEnsemble
+    "ternary": TernaryEnsemble,
+    "marchenko": MarchenkoPasturEnsemble
 }
 
 
 def get_ensemble(ensemble_type, **kwargs):
-    ensemble_kwargs = dict(N=kwargs["N"])
-    if ensemble_type in ["gaussian", "complex_gaussian", "binary", "ternary"]:
-        ensemble_kwargs["M"] = kwargs["M"]
-    if ensemble_type == "binary":
-        ensemble_kwargs["p_pos"] = kwargs["p_pos"]
-    if ensemble_type == "ternary":
-        ensemble_kwargs["p_pos"] = kwargs["p_pos"]
-        ensemble_kwargs["p_neg"] = kwargs["p_neg"]
-    ensemble = ENSEMBLE_CLASSES[ensemble_type](**ensemble_kwargs)
+    ensemble = ENSEMBLE_CLASSES[ensemble_type](**kwargs)
     return ensemble

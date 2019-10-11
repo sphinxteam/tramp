@@ -17,7 +17,7 @@ class UnitaryChannel(Channel):
     Parameters
     ----------
     - U: unitary matrix
-    - U_name: str
+    - name: str
         name of unitary matrix U for display
 
     Notes
@@ -32,9 +32,9 @@ class UnitaryChannel(Channel):
     - message bx, posterior rx: real arrays of shape (2, x.shape)
     """
 
-    def __init__(self, U, U_name="U"):
+    def __init__(self, U, name="U"):
         check_unitary(U)
-        self.U_name = U_name
+        self.name = name
         self.N = U.shape[0]
         self.repr_init()
         self.U = U
@@ -48,7 +48,7 @@ class UnitaryChannel(Channel):
         return X
 
     def math(self):
-        return r"$"+self.U_name+"$"
+        return r"$"+self.name+"$"
 
     def second_moment(self, tau_z):
         return tau_z

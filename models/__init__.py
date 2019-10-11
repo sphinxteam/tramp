@@ -1,12 +1,9 @@
 from .multi_layer_model import MultiLayerModel
-from .generalized_linear_model import (
-    GaussianDenoiser, GeneralizedLinearModel, SparseRegression,
-    RidgeRegression, SgnRetrieval, PhaseRetrieval, Perceptron
-)
+from .generalized_linear_model import glm_generative, glm_state_evo
 from .total_variation_model import (
-    SparseGradientRegression, SparseGradientClassification,
-    TVRegression, TVClassification
+    sparse_gradient_regression, sparse_gradient_classification,
+    tv_regression, tv_classification
 )
-from .committee_model import Committee, SgnCommittee, SoftCommittee
+from .committee_model import committee, sgn_committee, soft_committee
 from .factor_model import FactorModel
 from .base_model import Model

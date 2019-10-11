@@ -3,7 +3,6 @@ from ..channels.base_channel import Channel
 from ..likelihoods.base_likelihood import Likelihood
 from ..variables import SISOVariable, SILeafVariable
 from .base_model import Model
-import networkx as nx
 
 
 def check_layers(layers):

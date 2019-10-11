@@ -6,8 +6,8 @@ logger = logging.getLogger(__name__)
 
 
 class AnalyticalLinearChannel(Channel):
-    def __init__(self, ensemble, W_name="W"):
-        self.W_name = W_name
+    def __init__(self, ensemble, name="W"):
+        self.name = name
         self.alpha = ensemble.alpha
         self.repr_init()
         self.ensemble = ensemble
@@ -19,7 +19,7 @@ class AnalyticalLinearChannel(Channel):
         return X
 
     def math(self):
-        return r"$"+self.W_name+"$"
+        return r"$"+self.name+"$"
 
     def second_moment(self, tau_z):
         tau_x = tau_z * (self.ensemble.mean_spectrum / self.alpha)
@@ -66,6 +66,6 @@ class AnalyticalLinearChannel(Channel):
 
 
 class MarchenkoPasturChannel(AnalyticalLinearChannel):
-    def __init__(self, alpha, W_name = "W"):
+    def __init__(self, alpha, name = "W"):
         ensemble=MarchenkoPasturEnsemble(alpha = alpha)
-        super().__init__(ensemble = ensemble, W_name = W_name)
+        super().__init__(ensemble = ensemble, name = name)

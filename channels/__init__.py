@@ -33,11 +33,13 @@ from .low_rank.low_rank_factorization import LowRankFactorization
 
 
 CHANNEL_CLASSES = {
-    "sum": SumChannel,
-    "dft": DFTChannel,
+    "gaussian": GaussianChannel,
     "concat": ConcatChannel,
     "duplicate": DuplicateChannel,
-    "gaussian": GaussianChannel,
+    "reshape": ReshapeChannel,
+    "sum": SumChannel,
+    "dft": DFTChannel,
+    "bias": BiasChannel,
     "rotation": RotationChannel,
     "unitary": UnitaryChannel,
     "linear": LinearChannel,
@@ -48,15 +50,17 @@ CHANNEL_CLASSES = {
     "diff": DifferentialChannel,
     "laplacian": LaplacianChannel,
     "gradient": GradientChannel,
+    "analytical": AnalyticalLinearChannel,
+    "marchenko": MarchenkoPasturChannel,
     "sgn": SgnChannel,
     "abs": AbsChannel,
-    "relu": ReluChannel
+    "relu": ReluChannel,
+    "l-relu": LeakyReluChannel,
+    "h-tanh": HardTanhChannel,
+    "modulus": ModulusChannel
 }
 
 
 def get_channel(channel_type, **kwargs):
-    channel_kwargs = {}
-    if channel_type == "gaussian":
-        channel_kwargs["var"] = kwargs["var_noise"]
-    channel = CHANNEL_CLASSES[channel_type](**channel_kwargs)
+    channel = CHANNEL_CLASSES[channel_type](**kwargs)
     return channel

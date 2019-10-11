@@ -1,6 +1,5 @@
 import numpy as np
-from .base_model import Model
-from ..variables import SISOVariable, SIMOVariable, MILeafVariable
+from ..variables import SISOVariable as V, SIMOVariable, MILeafVariable
 from ..channels import (
     LinearChannel, GaussianChannel, GradientChannel, ReshapeChannel
 )
@@ -8,129 +7,75 @@ from ..priors import GaussianPrior, GaussBernouilliPrior, MAP_L21NormPrior
 from ..likelihoods import GaussianLikelihood, SgnLikelihood
 
 
-class SparseGradientRegression(Model):
-    def __init__(self, A, y, x_shape, rho_grad, var_noise, var_prior):
-        M, N = A.shape
-        if len(y) != M:
-            raise ValueError(f"Bad shape y: {len(y)} A: {A.shape}")
-        if np.product(x_shape) != N:
-            raise ValueError(f"Bad shape x: {x_shape} A: {A.shape}")
-        d = len(x_shape)
-        grad_shape = (d,) + x_shape
-        self.x_shape = x_shape
-        self.rho_grad = rho_grad
-        self.var_noise = var_noise
-        self.var_prior = var_prior
-        self.repr_init()
-        model_dag = (
-            GaussianPrior(size=x_shape, var=var_prior) @
-            SIMOVariable(id="x", n_next=2) @ (
-                ReshapeChannel(prev_shape=x_shape, next_shape=N) @
-                SISOVariable(id="x_v") @
-                LinearChannel(A, W_name="A") @
-                SISOVariable(id="z") @
-                GaussianLikelihood(y, var=var_noise) + (
-                    GradientChannel(shape=x_shape) +
-                    GaussBernouilliPrior(size=grad_shape, rho=rho_grad)
-                ) @
-                MILeafVariable(id="x'", n_prev=2)
-            )
-        ).to_model_dag()
-        Model.__init__(self, model_dag)
+def sparse_gradient_block(x_shape, prior_var, grad_rho):
+    d = len(x_shape)
+    grad_shape = (d,) + x_shape
+    N = np.product(x_shape)
+    block = (
+        GaussianPrior(size=x_shape, var=prior_var) @
+        SIMOVariable(id="x", n_next=2) @ ((
+                GradientChannel(shape=x_shape) +
+                GaussBernouilliPrior(size=grad_shape, rho=grad_rho)
+            ) @ MILeafVariable(id="x'", n_prev=2)
+        )
+    ) @ ReshapeChannel(prev_shape=x_shape, next_shape=N)
+    return block
 
 
-class SparseGradientClassification(Model):
-    def __init__(self, A, y, x_shape, rho_grad, var_noise, var_prior):
-        M, N = A.shape
-        if len(y) != M:
-            raise ValueError(f"Bad shape y: {len(y)} A: {A.shape}")
-        if np.product(x_shape) != N:
-            raise ValueError(f"Bad shape x: {x_shape} A: {A.shape}")
-        d = len(x_shape)
-        grad_shape = (d,) + x_shape
-        self.x_shape = x_shape
-        self.rho_grad = rho_grad
-        self.var_noise = var_noise
-        self.var_prior = var_prior
-        self.repr_init()
-        model_dag = (
-            GaussianPrior(size=x_shape, var=var_prior) @
-            SIMOVariable(id="x", n_next=2) @ (
-                ReshapeChannel(prev_shape=x_shape, next_shape=N) @
-                SISOVariable(id="x_v") @
-                LinearChannel(A, W_name="A") @
-                SISOVariable(id="z") @
-                GaussianChannel(var=var_noise) @
-                SISOVariable(id="a") @
-                SgnLikelihood(y) + (
-                    GradientChannel(shape=x_shape) +
-                    GaussBernouilliPrior(size=grad_shape, rho=rho_grad)
-                ) @
-                MILeafVariable(id="x'", n_prev=2)
-            )
-        ).to_model_dag()
-        Model.__init__(self, model_dag)
+def tv_block(x_shape, prior_var, grad_scale):
+    d = len(x_shape)
+    grad_shape = (d,) + x_shape
+    N = np.product(x_shape)
+    block = (
+        GaussianPrior(size=x_shape, var=prior_var) @
+        SIMOVariable(id="x", n_next=2) @ ((
+                GradientChannel(shape=x_shape) +
+                MAP_L21NormPrior(size=grad_shape, scale=grad_scale, axis=0)
+            ) @ MILeafVariable(id="x'", n_prev=2)
+        )
+    ) @ ReshapeChannel(prev_shape=x_shape, next_shape=N)
+    return block
 
 
-class TVRegression(Model):
-    def __init__(self, A, y, x_shape, scale_grad, var_noise, var_prior):
-        M, N = A.shape
-        if len(y) != M:
-            raise ValueError(f"Bad shape y: {len(y)} A: {A.shape}")
-        if np.product(x_shape) != N:
-            raise ValueError(f"Bad shape x: {x_shape} A: {A.shape}")
-        d = len(x_shape)
-        grad_shape = (d,) + x_shape
-        self.x_shape = x_shape
-        self.scale_grad = scale_grad
-        self.var_noise = var_noise
-        self.var_prior = var_prior
-        self.repr_init()
-        model_dag = (
-            GaussianPrior(size=x_shape, var=var_prior) @
-            SIMOVariable(id="x", n_next=2) @ (
-                ReshapeChannel(prev_shape=x_shape, next_shape=N) @
-                SISOVariable(id="x_v") @
-                LinearChannel(A, W_name="A") @
-                SISOVariable(id="z") @
-                GaussianLikelihood(y, var=var_noise) + (
-                    GradientChannel(shape=x_shape) +
-                    MAP_L21NormPrior(size=grad_shape, scale=scale_grad, axis=0)
-                ) @
-                MILeafVariable(id="x'", n_prev=2)
-            )
-        ).to_model_dag()
-        Model.__init__(self, model_dag)
+def regression_block(A, y, noise_var):
+    block = (
+        LinearChannel(A, name="A") @ V(id="z") @
+        GaussianLikelihood(y, var=noise_var)
+    )
+    return block
 
 
-class TVClassification(Model):
-    def __init__(self, A, y, x_shape, scale_grad, var_noise, var_prior):
-        M, N = A.shape
-        if len(y) != M:
-            raise ValueError(f"Bad shape y: {len(y)} A: {A.shape}")
-        if np.product(x_shape) != N:
-            raise ValueError(f"Bad shape x: {x_shape} A: {A.shape}")
-        d = len(x_shape)
-        grad_shape = (d,) + x_shape
-        self.x_shape = x_shape
-        self.scale_grad = scale_grad
-        self.var_noise = var_noise
-        self.var_prior = var_prior
-        self.repr_init()
-        model_dag = (
-            GaussianPrior(size=x_shape, var=var_prior) @
-            SIMOVariable(id="x", n_next=2) @ (
-                ReshapeChannel(prev_shape=x_shape, next_shape=N) @
-                SISOVariable(id="x_v") @
-                LinearChannel(A, W_name="A") @
-                SISOVariable(id="z") @
-                GaussianChannel(var=var_noise) @
-                SISOVariable(id="a") @
-                SgnLikelihood(y) + (
-                    GradientChannel(shape=x_shape) +
-                    MAP_L21NormPrior(size=grad_shape, scale=scale_grad, axis=0)
-                ) @
-                MILeafVariable(id="x'", n_prev=2)
-            )
-        ).to_model_dag()
-        Model.__init__(self, model_dag)
+def classification_block(A, y, noise_var):
+    block = (
+        LinearChannel(A, name="A") @ V(id="z") @
+        GaussianChannel(var=noise_var) @ V(id="a") @ SgnLikelihood(y)
+    )
+    return block
+
+
+def sparse_gradient_regression(A, y, x_shape, grad_rho, noise_var, prior_var):
+    sparse_grad = sparse_gradient_block(x_shape, prior_var, grad_rho)
+    reg = regression_block(A, y, noise_var)
+    model = (sparse_grad @ V(id="r") @ reg).to_model()
+    return model
+
+
+def sparse_gradient_classification(A, y, x_shape, grad_rho, noise_var, prior_var):
+    sparse_grad = sparse_gradient_block(x_shape, prior_var, grad_rho)
+    clf = classification_block(A, y, noise_var)
+    model = (sparse_grad @ V(id="r") @ clf).to_model()
+    return model
+
+
+def tv_regression(A, y, x_shape, grad_scale, noise_var, prior_var):
+    tv = tv_block(x_shape, prior_var, grad_scale)
+    reg = regression_block(A, y, noise_var)
+    model = (tv @ V(id="r") @ reg).to_model()
+    return model
+
+
+def tv_classification(A, y, x_shape, grad_scale, noise_var, prior_var):
+    tv = tv_block(x_shape, prior_var, grad_scale)
+    clf = classification_block(A, y, noise_var)
+    model = (tv @ V(id="r") @ clf).to_model()
+    return model

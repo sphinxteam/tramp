@@ -1,90 +1,53 @@
-from .multi_layer_model import MultiLayerModel
-from ..channels import (
-    get_channel, GaussianChannel, LinearChannel,
-    ComplexLinearChannel, ModulusChannel
-)
+from ..channels import get_channel
 from ..priors import get_prior
 from ..ensembles import get_ensemble
+from ..likelihoods import get_likelihood
+from ..variables import SISOVariable as V, SILeafVariable as O
 
 
-class GaussianDenoiser(MultiLayerModel):
-    def __init__(self, N, prior_type, var_noise, **kwargs):
-        self.prior = get_prior(N, prior_type, **kwargs)
-        self.channel = GaussianChannel(var=var_noise)
-        self.repr_init(pad="  ")
-        super().__init__(layers=[self.prior, self.channel])
+def get_kwargs(target, kwargs):
+    n_char = len(target) + 1
+    target_kwargs = {
+        key[n_char:]:val for key, val in kwargs.items()
+        if key.startswith(target)
+    }
+    return target_kwargs
 
 
-class GeneralizedLinearModel(MultiLayerModel):
-    def __init__(self, N, alpha, ensemble_type, prior_type, output_type, **kwargs):
-        # sensing matrix
-        M = int(alpha * N)
-        self.ensemble = get_ensemble(ensemble_type, M=M, N=N)
-        F = self.ensemble.generate()
-        # model
-        self.prior = get_prior(N, prior_type, **kwargs)
-        self.linear = LinearChannel(F, W_name="F")
-        self.output = get_channel(output_type, **kwargs)
-        self.repr_init(pad="  ")
-        super().__init__(
-            layers=[self.prior, self.linear, self.output],
-            ids=["x", "z", "y"]
-        )
+def glm_generative(N, alpha, ensemble_type, prior_type, output_type, **kwargs):
+    "Build a generative Generalized Linear Model"
+    # sensing matrix
+    M = int(alpha * N)
+    ensemble = get_ensemble(ensemble_type=ensemble_type, M=M, N=N)
+    F = ensemble.generate()
+    # factors
+    prior_kwargs = get_kwargs("prior", kwargs)
+    prior = get_prior(size=N, prior_type=prior_type, **prior_kwargs)
+    linear_type = "complex_linear" if output_type=="modulus" else "linear"
+    linear = get_channel(linear_type, W=F, name="F")
+    output_kwargs = get_kwargs("output", kwargs)
+    output = get_channel(channel_type=output_type, **output_kwargs)
+    # model
+    model = (
+        prior @ V(id="x") @ linear @ V(id="z") @ output @ O(id="y")
+    ).to_model()
+    return model
 
-
-class PhaseRetrieval(MultiLayerModel):
-    def __init__(self, N, alpha, ensemble_type, prior_type, **kwargs):
-        # sensing matrix
-        M = int(alpha * N)
-        self.ensemble = get_ensemble(ensemble_type, M=M, N=N)
-        F = self.ensemble.generate()
-        # model
-        x_size = (2, N)  # complex signal x
-        self.prior = get_prior(x_size, prior_type, **kwargs)
-        self.linear = ComplexLinearChannel(F, W_name="F")
-        self.output = ModulusChannel()
-        self.repr_init(pad="  ")
-        super().__init__(
-            layers=[self.prior, self.linear, self.output],
-            ids=["x", "z", "y"]
-        )
-
-
-class SparseRegression(GeneralizedLinearModel):
-    def __init__(self, N, alpha, ensemble_type, rho, var_noise):
-        prior_type = "gauss_bernouilli"
-        output_type = "gaussian"
-        super().__init__(
-            N, alpha, ensemble_type, prior_type, output_type,
-            rho=rho, var_noise=var_noise
-        )
-
-
-class RidgeRegression(GeneralizedLinearModel):
-    def __init__(self, N, alpha, ensemble_type, var_noise):
-        prior_type = "gaussian"
-        output_type = "gaussian"
-        super().__init__(
-            N, alpha, ensemble_type, prior_type, output_type,
-            var_noise=var_noise
-        )
-
-
-class SgnRetrieval(GeneralizedLinearModel):
-    def __init__(self, N, alpha, ensemble_type, mean_prior):
-        prior_type = "gaussian"
-        output_type = "abs"
-        super().__init__(
-            N, alpha, ensemble_type, prior_type, output_type,
-            mean_prior=mean_prior
-        )
-
-
-class Perceptron(GeneralizedLinearModel):
-    def __init__(self, N, alpha, ensemble_type, p_pos):
-        prior_type = "binary"
-        output_type = "sgn"
-        super().__init__(
-            N, alpha, ensemble_type, prior_type, output_type,
-            p_pos=p_pos
-        )
+def glm_state_evo(alpha, prior_type, output_type, **kwargs):
+    """
+    Build a Generalized Linear Model to be used only for State Evolution. The
+    linear channels are Marchenko-Pastur.
+    """
+    # factors
+    prior_kwargs = get_kwargs("prior", kwargs)
+    prior = get_prior(size=None, prior_type=prior_type, **prior_kwargs)
+    linear = get_channel("marchenko", alpha=alpha, name="F")
+    output_kwargs = get_kwargs("output", kwargs)
+    output = get_likelihood(
+        y=None, y_name="y", likelihood_type=output_type, **output_kwargs
+    )
+    # model
+    model = (
+        prior @ V(id="x") @ linear @ V(id="z") @ output
+    ).to_model()
+    return model

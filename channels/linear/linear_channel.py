@@ -23,12 +23,12 @@ class LinearChannel(Channel):
     - W: array of shape (Nx, Nz)
     - precompute_svd: bool
         if True precompute SVD of W = U S V.T
-    - W_name: str
+    - name: str
         name of weight matrix W for display
     """
 
-    def __init__(self, W, precompute_svd=True, W_name="W"):
-        self.W_name = W_name
+    def __init__(self, W, precompute_svd=True, name="W"):
+        self.name = name
         self.Nx = W.shape[0]
         self.Nz = W.shape[1]
         self.precompute_svd = precompute_svd
@@ -50,7 +50,7 @@ class LinearChannel(Channel):
         return X
 
     def math(self):
-        return r"$" + self.W_name + "$"
+        return r"$" + self.name + "$"
 
     def second_moment(self, tau_z):
         return tau_z * self.spectrum.sum() / self.Nx
