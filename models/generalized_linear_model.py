@@ -33,7 +33,7 @@ def glm_generative(N, alpha, ensemble_type, prior_type, output_type, **kwargs):
     ).to_model()
     return model
 
-def glm_state_evo(alpha, prior_type, output_type, **kwargs):
+def glm_state_evolution(alpha, prior_type, output_type, **kwargs):
     """
     Build a Generalized Linear Model to be used only for State Evolution. The
     linear channels are Marchenko-Pastur.

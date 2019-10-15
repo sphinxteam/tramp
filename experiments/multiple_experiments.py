@@ -36,9 +36,12 @@ def run_experiments(run, on_progress=None, **kwargs):
     for idx, experiment in enumerate(experiments):
         record = experiment.copy()
         try:
-            result = run(**experiment)
-            record.update(result)
-            records.append(record)
+            results = run(**experiment)
+            if isinstance(results, dict):
+                results = [results]
+            for result in results:
+                result.update(record)
+            records.append(results)
         except Exception as e:
             logger.error(f"Experiment {experiment} failed\n{e}")
         on_progress(idx + 1, n_experiments)

@@ -236,7 +236,7 @@ class MessagePassing():
                 logger.info(f"new_v={new_v}>old_v={old_v} for {variable}")
         return any_increasing
 
-    def iterate(self, max_iter,
+    def iterate(self, max_iter=200,
                 callback=None, initializer=None, warm_start=False,
                 check_nan=True, check_decreasing=True,
                 variables_damping=None):
