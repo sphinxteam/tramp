@@ -41,7 +41,7 @@ def run_experiments(run, on_progress=None, **kwargs):
                 results = [results]
             for result in results:
                 result.update(record)
-            records.append(results)
+            records += results
         except Exception as e:
             logger.error(f"Experiment {experiment} failed\n{e}")
         on_progress(idx + 1, n_experiments)

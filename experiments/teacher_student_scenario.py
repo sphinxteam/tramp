@@ -113,7 +113,7 @@ class TeacherStudentScenario():
             df[y] = df[y].clip(0, 2)
         return df
 
-    def se_convergence(self, metrics, variables_damping=None):
+    def se_convergence(self, variables_damping=None):
         early = EarlyStopping(tol=1e-6, min_variance=1e-10)
         evo = TrackEvolution()
         callback = JoinCallback([evo, early])
@@ -125,8 +125,7 @@ class TeacherStudentScenario():
         except Exception as e:
             logger.error(e)
         df = evo.get_dataframe()
-        for y in ["v"] + metrics:
-            df[y] = df[y].clip(0, 2)
+        df["v"] = df["v"].clip(0, 2)
         return df
 
     def compute_score(self, x_pred, metrics=["mse"]):
