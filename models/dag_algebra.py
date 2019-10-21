@@ -2,9 +2,15 @@ from ..base import Variable, Factor, ReprMixin
 from ..likelihoods.base_likelihood import Likelihood
 from ..priors.base_prior import Prior
 from ..variables import SISOVariable, SILeafVariable
-from ..channels import GaussianChannel, AbsChannel, SgnChannel, ModulusChannel
+from ..channels import (
+    GaussianChannel, AbsChannel, SgnChannel, ReluChannel,
+    HardTanhChannel, HardSigmoidChannel, SymmetricDoorChannel,
+    ModulusChannel
+)
 from ..likelihoods import (
-    GaussianLikelihood, AbsLikelihood, SgnLikelihood, ModulusLikelihood
+    GaussianLikelihood, AbsLikelihood, SgnLikelihood, ReluLikelihood,
+    HardTanhLikelihood, HardSigmoidLikelihood, SymmetricDoorLikelihood,
+    ModulusLikelihood
 )
 from .dag_layout import Layout
 import networkx as nx
@@ -17,6 +23,14 @@ def channel2likelihood(channel, y, y_name):
         return AbsLikelihood(y=y, y_name=y_name)
     if isinstance(channel, SgnChannel):
         return SgnLikelihood(y=y, y_name=y_name)
+    if isinstance(channel, ReluChannel):
+        return ReluLikelihood(y=y, y_name=y_name)
+    if isinstance(channel, HardTanhChannel):
+        return HardTanhLikelihood(y=y, y_name=y_name)
+    if isinstance(channel, HardSigmoidChannel):
+        return HardSigmoidLikelihood(y=y, y_name=y_name)
+    if isinstance(channel, SymmetricDoorChannel):
+        return SymmetricDoorLikelihood(width=channel.width, y=y, y_name=y_name)
     if isinstance(channel, ModulusChannel):
         return ModulusLikelihood(y=y, y_name=y_name)
     raise NotImplementedError(f"cannot convert {channel} to likelihood")

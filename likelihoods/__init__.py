@@ -4,7 +4,7 @@ from .abs_likelihood import AbsLikelihood
 from .modulus_likelihood import ModulusLikelihood
 from .piecewise_linear_likelihood import (
     ReluLikelihood, LeakyReluLikelihood, AsymmetricAbsLikelihood,
-    SymmetricDoorLikelihood, HardTanhLikelihood
+    HardTanhLikelihood, HardSigmoidLikelihood, SymmetricDoorLikelihood
 )
 
 
@@ -16,6 +16,7 @@ LIKELIHOOD_CLASSES = {
     "relu": ReluLikelihood,
     "l-relu": LeakyReluLikelihood,
     "h-tanh": HardTanhLikelihood,
+    "h-sigm": HardSigmoidLikelihood,
     "a-abs": AsymmetricAbsLikelihood,
     "modulus": ModulusLikelihood
 }

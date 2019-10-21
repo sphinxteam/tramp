@@ -12,7 +12,7 @@ class MarchenkoPasturEnsemble(Ensemble):
         self.z_min = (1 - np.sqrt(alpha))**2
         self.mean_spectrum = self.measure(lambda z: z)
 
-    def generate(self, N):
+    def generate(self, N=1000):
         """Generate gaussian iid matrix of size N"
 
         Returns
