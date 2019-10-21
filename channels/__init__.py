@@ -57,7 +57,7 @@ CHANNEL_CLASSES = {
     "relu": ReluChannel,
     "l-relu": LeakyReluChannel,
     "h-tanh": HardTanhChannel,
-    "h-sigmoid": HardSigmoidChannel,
+    "h-sigm": HardSigmoidChannel,
     "modulus": ModulusChannel
 }
 
