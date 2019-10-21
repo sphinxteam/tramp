@@ -110,6 +110,6 @@ class HardSigmoidChannel(PiecewiseLinearChannel):
     def __init__(self):
         l = 2.5
         neg = dict(zmin=-np.inf, zmax=-l, slope=0, x0=0)
-        mid = dict(zmin=-l, zmax=+l, slope=1/(2*l), x0=0)
+        mid = dict(zmin=-l, zmax=+l, slope=1/(2*l), x0=0.5)
         pos = dict(zmin=l, zmax=np.inf, slope=0, x0=1)
         super().__init__(name="h-sigmoid", regions=[pos, mid, neg])
