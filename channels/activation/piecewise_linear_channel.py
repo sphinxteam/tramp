@@ -38,14 +38,16 @@ class PiecewiseLinearChannel(Channel):
 
     def compute_forward_posterior(self, az, bz, ax, bx):
         rs = [region.forward_mean(az, bz, ax, bx) for region in self.regions]
-        vs = [region.forward_variance(az, bz, ax, bx) for region in self.regions]
+        vs = [region.forward_variance(az, bz, ax, bx)
+              for region in self.regions]
         As = [region.log_partitions(az, bz, ax, bx) for region in self.regions]
         r, v = self.merge_estimates(rs, vs, As)
         return r, v
 
     def compute_backward_posterior(self, az, bz, ax, bx):
         rs = [region.backward_mean(az, bz, ax, bx) for region in self.regions]
-        vs = [region.backward_variance(az, bz, ax, bx) for region in self.regions]
+        vs = [region.backward_variance(az, bz, ax, bx)
+              for region in self.regions]
         As = [region.log_partitions(az, bz, ax, bx) for region in self.regions]
         r, v = self.merge_estimates(rs, vs, As)
         return r, v
@@ -102,3 +104,12 @@ class HardTanhChannel(PiecewiseLinearChannel):
         mid = dict(zmin=-1, zmax=+1, slope=1, x0=0)
         pos = dict(zmin=1, zmax=np.inf, slope=0, x0=1)
         super().__init__(name="h-tanh", regions=[pos, mid, neg])
+
+
+class HardSigmoidChannel(PiecewiseLinearChannel):
+    def __init__(self):
+        l = 2.5
+        neg = dict(zmin=-np.inf, zmax=-l, slope=0, x0=0)
+        mid = dict(zmin=-l, zmax=+l, slope=1/(2*l), x0=0)
+        pos = dict(zmin=l, zmax=np.inf, slope=0, x0=1)
+        super().__init__(name="h-sigmoid", regions=[pos, mid, neg])
