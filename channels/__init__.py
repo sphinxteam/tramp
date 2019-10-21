@@ -23,7 +23,7 @@ from .linear.analytical_linear_channel import (
 # activation
 from .activation.piecewise_linear_channel import (
     PiecewiseLinearChannel, SgnChannel, AbsChannel, ReluChannel,
-    LeakyReluChannel, HardTanhChannel, HardSigmoidChannel
+    LeakyReluChannel, HardTanhChannel, HardSigmoidChannel, SymmetricDoorChannel
 )
 from .activation.tanh_channel import TanhChannel
 from .activation.modulus_channel import ModulusChannel
@@ -58,6 +58,7 @@ CHANNEL_CLASSES = {
     "l-relu": LeakyReluChannel,
     "h-tanh": HardTanhChannel,
     "h-sigm": HardSigmoidChannel,
+    "door": SymmetricDoorChannel,
     "modulus": ModulusChannel
 }
 

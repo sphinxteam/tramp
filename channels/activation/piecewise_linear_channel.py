@@ -113,3 +113,12 @@ class HardSigmoidChannel(PiecewiseLinearChannel):
         mid = dict(zmin=-l, zmax=+l, slope=1/(2*l), x0=0.5)
         pos = dict(zmin=l, zmax=np.inf, slope=0, x0=1)
         super().__init__(name="h-sigm", regions=[pos, mid, neg])
+
+
+class SymmetricDoorChannel(PiecewiseLinearChannel):
+    def __init__(self, width):
+        self.width = width
+        neg = dict(zmin=-np.inf, zmax=-width, slope=0, x0=+1)
+        mid = dict(zmin=-width, zmax=+width, slope=0, x0=-1)
+        pos = dict(zmin=+width, zmax=+np.inf, slope=0, x0=+1)
+        super().__init__(name="door", regions=[pos, mid, neg])

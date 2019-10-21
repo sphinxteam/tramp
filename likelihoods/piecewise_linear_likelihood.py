@@ -101,11 +101,23 @@ class HardTanhLikelihood(PiecewiseLinearLikelihood):
             name="h-tanh", regions=[pos, mid, neg], y=y, y_name=y_name
         )
 
+
+class HardSigmoidLikelihood(PiecewiseLinearLikelihood):
+    def __init__(self, y, y_name="y"):
+        l = 2.5
+        neg = dict(zmin=-np.inf, zmax=-l, slope=0, x0=0)
+        mid = dict(zmin=-l, zmax=+l, slope=1/(2*l), x0=0.5)
+        pos = dict(zmin=l, zmax=np.inf, slope=0, x0=1)
+        super().__init__(
+            name="h-sigm", regions=[pos, mid, neg], y=y, y_name=y_name
+        )
+
+
 class SymmetricDoorLikelihood(PiecewiseLinearLikelihood):
     def __init__(self, width, y, y_name="y"):
         self.width = width
         neg = dict(zmin=-np.inf, zmax=-width, slope=0, x0=+1)
-        mid = dict(zmin=-width, zmax=+width, slope=0, x0=0)
+        mid = dict(zmin=-width, zmax=+width, slope=0, x0=-1)
         pos = dict(zmin=+width, zmax=+np.inf, slope=0, x0=+1)
         super().__init__(
             name="door", regions=[pos, mid, neg], y=y, y_name=y_name
