@@ -58,8 +58,10 @@ class Model(ReprMixin):
         observed_dag = self.model_dag.to_observed(observations)
         return Model(observed_dag)
 
-    def sample(self):
+    def sample(self, seed=0):
         "Forward sampling of the model"
+        if seed != 0:
+            np.random.seed(seed)
         sample_dag = nx.DiGraph()
         sample_dag.add_edges_from(self.dag.edges())
         for factor in self.factors:
