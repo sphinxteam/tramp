@@ -95,13 +95,13 @@ class TeacherStudentScenario():
         return x_data
 
     def ep_convergence(self, metrics, variables_damping=None):
-        early = EarlyStopping(tol=1e-6, min_variance=1e-10)
+        early = EarlyStopping()
         track = TrackErrors(true_values=self.x_true, metrics=metrics)
         evo = TrackEvolution()
         callback = JoinCallback([track, evo, early])
         try:
             self.run_ep(
-                max_iter=250, callback=callback, check_decreasing=False,
+                max_iter=250, callback=callback,
                 variables_damping=variables_damping
             )
         except Exception as e:
@@ -114,12 +114,12 @@ class TeacherStudentScenario():
         return df
 
     def se_convergence(self, variables_damping=None):
-        early = EarlyStopping(tol=1e-6, min_variance=1e-10)
+        early = EarlyStopping()
         evo = TrackEvolution()
         callback = JoinCallback([evo, early])
         try:
             self.run_se(
-                max_iter=250, callback=callback, check_decreasing=False,
+                max_iter=250, callback=callback,
                 variables_damping=variables_damping
             )
         except Exception as e:
@@ -165,7 +165,7 @@ def run_state_evolution(x_ids, model, **algo_kwargs):
 
     Returns
     -------
-    - records : list
+    - records : list of x_id, v, n_iter
     """
     se = StateEvolution(model)
     se.iterate(**algo_kwargs)
