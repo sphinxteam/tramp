@@ -130,7 +130,7 @@ class OldEarlyStopping(Callback):
 
 
 class EarlyStopping(Callback):
-    def __init__(self, ids="all", tol=1e-6, min_variance=1e-10, max_increase=0.1):
+    def __init__(self, ids="all", tol=1e-6, min_variance=1e-10, max_increase=0.2):
         self.ids = ids
         self.tol = tol
         self.min_variance = min_variance
@@ -163,7 +163,7 @@ class EarlyStopping(Callback):
                 new_v - old_v for old_v, new_v in zip(self.old_vs, new_vs)
             ]
             if max(increase) > self.max_increase:
-                logger.info(f"variance={max(increase)} above max_increase={self.max_increase:.2e}")
+                logger.info(f"increase={max(increase)} above max_increase={self.max_increase:.2e}")
                 logger.info("restoring old message dag")
                 algo.reset_message_dag(self.old_message_dag)
                 return True

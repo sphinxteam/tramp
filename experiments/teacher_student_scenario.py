@@ -94,16 +94,13 @@ class TeacherStudentScenario():
         x_data["n_iter"] = ep.n_iter
         return x_data
 
-    def ep_convergence(self, metrics, variables_damping=None):
+    def ep_convergence(self, metrics, damping=None):
         early = EarlyStopping()
         track = TrackErrors(true_values=self.x_true, metrics=metrics)
         evo = TrackEvolution()
         callback = JoinCallback([track, evo, early])
         try:
-            self.run_ep(
-                max_iter=250, callback=callback,
-                variables_damping=variables_damping
-            )
+            self.run_ep(max_iter=250, callback=callback, damping=damping)
         except Exception as e:
             logger.error(e)
         df = pd.merge(
@@ -113,15 +110,12 @@ class TeacherStudentScenario():
             df[y] = df[y].clip(0, 2)
         return df
 
-    def se_convergence(self, variables_damping=None):
+    def se_convergence(self, damping=None):
         early = EarlyStopping()
         evo = TrackEvolution()
         callback = JoinCallback([evo, early])
         try:
-            self.run_se(
-                max_iter=250, callback=callback,
-                variables_damping=variables_damping
-            )
+            self.run_se(max_iter=250, callback=callback, damping=damping)
         except Exception as e:
             logger.error(e)
         df = evo.get_dataframe()

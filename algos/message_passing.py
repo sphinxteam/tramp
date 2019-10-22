@@ -60,22 +60,32 @@ class MessagePassing():
         self.variables = model.variables
         self.n_iter = 0
 
-    def configure_variables_damping(self, variables_damping):
+    def configure_damping(self, damping):
         """Configure damping options on variables
 
         Parameters
         ----------
-        - variables_damping: list of variable.id, direction, damping tuples
+        - damping: float or list
+            - float: global damping
+            - list of variable.id, direction, damping tuples
             Factor-to-variable edges into `variable.id` and given `direction`
             will be damped with `damping`.
         """
-        for id, direction, damping in variables_damping:
+        if isinstance(damping, float):
+            x_ids = [variable.id for variable in self.variables]
+            damping = [
+                (x_id, "fwd", damping) for x_id in x_ids
+            ] + [
+                (x_id, "bwd", damping) for x_id in x_ids
+            ]
+        assert isinstance(damping, list)
+        for id, direction, damp in damping:
             variable = find_variable_in_nodes(id, self.message_dag.nodes())
             edges = self.message_dag.in_edges(variable, data=True)
             for source, target, data in edges:
                 if data["direction"] == direction:
-                    data["damping"] = damping
-                    logger.info(f"damping {source}->{target} at {damping}")
+                    data["damping"] = damp
+                    logger.info(f"damping {source}->{target} at {damp}")
 
     def damp_message(self, message):
         "Damp message in-place"
@@ -202,7 +212,7 @@ class MessagePassing():
         self.A_model = A_nodes - A_edges
 
     def iterate(self, max_iter=200,
-                callback=None, initializer=None, variables_damping=None,
+                callback=None, initializer=None, damping=None,
                 warm_start=False):
         initializer = initializer or ConstantInit(a=0, b=0)
         callback = callback or EarlyStopping()
@@ -214,8 +224,8 @@ class MessagePassing():
             logger.info(f"init message dag with {initializer}")
             self.init_message_dag(initializer)
             self.n_iter = 0
-        if variables_damping:
-            self.configure_variables_damping(variables_damping)
+        if damping:
+            self.configure_damping(damping)
         for i in range(max_iter):
             # forward, backward, update pass
             self.forward_message()
