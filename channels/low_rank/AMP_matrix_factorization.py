@@ -1031,13 +1031,13 @@ class VAMP_matrix_factorization(object):
         # If precision high enough and reaches Bayes optimality q=m
         cond_2 = self.diff < self.threshold_error
         # If convergence rate becomes very slow
-        n = 10
-        if self.step > n:
-            rate = np.abs(
-                self.list_diff[-1] - self.list_diff[-n]) / (self.list_diff[-n] * n) * 100
-            cond_3 = self.step > self.min_step_AMP and rate < 1
-        else:
-            cond_3 = False
+        #n = 10
+        # if self.step > n:
+        #     rate = np.abs(
+        #         self.list_diff[-1] - self.list_diff[-n]) / (self.list_diff[-n] * n) * 100
+        #     cond_3 = self.step > self.min_step_AMP and rate < 1
+        # else:
+        #     cond_3 = False
         #list_cond = [cond_1, cond_2, cond_3]
         list_cond = [cond_1, cond_2]
         if any(list_cond):
