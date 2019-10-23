@@ -42,9 +42,9 @@ class TeacherStudentScenario():
         self.teacher = teacher
         self.generative_student = student
 
-    def setup(self):
+    def setup(self, seed=0):
         # teacher generate data
-        sample = self.teacher.sample()
+        sample = self.teacher.sample(seed)
         self.true_values = sample
         self.x_true = {x_id: sample[x_id] for x_id in self.x_ids}
         self.observations = {y_id: sample[y_id] for y_id in self.y_ids}
