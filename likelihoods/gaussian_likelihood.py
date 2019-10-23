@@ -12,7 +12,7 @@ class GaussianLikelihood(Likelihood):
         self.y = y
         self.sigma = np.sqrt(var)
         self.a = 1 / var
-        self.b = y / var
+        self.b = None if y is None else y / var
 
     def sample(self, X):
         noise = self.sigma * np.random.standard_normal(X.shape)
