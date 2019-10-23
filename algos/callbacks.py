@@ -130,7 +130,7 @@ class OldEarlyStopping(Callback):
 
 
 class EarlyStopping(Callback):
-    def __init__(self, ids="all", tol=1e-6, min_variance=1e-10, max_increase=0.2):
+    def __init__(self, ids="all", tol=1e-6, min_variance=-1, max_increase=0.2):
         self.ids = ids
         self.tol = tol
         self.min_variance = min_variance
