@@ -51,12 +51,12 @@ class TeacherStudentScenario():
         # pass it to the student
         self.student = self.generative_student.to_observed(self.observations)
 
-    def run_all(self, source="ep,se", **kwargs):
+    def run_all(self, source="ep,se", **algo_kwargs):
         "Get mse values as estimated by EP or SE"
         self.setup()
         records = []
         if "se" in source:
-            x_data = self.run_se(**kwargs)
+            x_data = self.run_se(**algo_kwargs)
             records += [
                 dict(
                     source="se", x_id=x_id, v=x_data[x_id]["v"],
@@ -64,7 +64,7 @@ class TeacherStudentScenario():
                 ) for x_id in self.x_ids
             ]
         if "ep" in source:
-            x_data = self.run_ep(**kwargs)
+            x_data = self.run_ep(**algo_kwargs)
             records += [
                 dict(
                     source="ep", x_id=x_id, v=x_data[x_id]["v"],
@@ -94,13 +94,16 @@ class TeacherStudentScenario():
         x_data["n_iter"] = ep.n_iter
         return x_data
 
-    def ep_convergence(self, metrics, damping=None):
-        early = EarlyStopping()
+    def ep_convergence(self, metrics, **algo_kwargs):
+        # add TrackEvolution and TrackErrors to callback
         track = TrackErrors(true_values=self.x_true, metrics=metrics)
         evo = TrackEvolution()
-        callback = JoinCallback([track, evo, early])
+        callbacks = [track, evo]
+        if "callback" in algo_kwargs:
+            callbacks.append(algo_kwargs["callback"])
+        algo_kwargs["callback"] = JoinCallback(callbacks)
         try:
-            self.run_ep(max_iter=250, callback=callback, damping=damping)
+            self.run_ep(**algo_kwargs)
         except Exception as e:
             logger.error(e)
         df = pd.merge(
@@ -110,12 +113,15 @@ class TeacherStudentScenario():
             df[y] = df[y].clip(0, 2)
         return df
 
-    def se_convergence(self, damping=None):
-        early = EarlyStopping()
+    def se_convergence(self, **algo_kwargs):
+        # add TrackEvolution to callback
         evo = TrackEvolution()
-        callback = JoinCallback([evo, early])
+        callbacks = [evo]
+        if "callback" in algo_kwargs:
+            callbacks.append(algo_kwargs["callback"])
+        algo_kwargs["callback"] = JoinCallback(callbacks)
         try:
-            self.run_se(max_iter=250, callback=callback, damping=damping)
+            self.run_se(**algo_kwargs)
         except Exception as e:
             logger.error(e)
         df = evo.get_dataframe()
