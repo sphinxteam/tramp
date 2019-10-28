@@ -353,7 +353,7 @@ class Factor(ReprMixin):
         if self.n_prev == 0:
             logZ = self.compute_log_partition(ax, bx)
         elif self.n_next == 0:
-            logZ = self.compute_log_partition(az, bz)
+            logZ = self.compute_log_partition(az, bz, self.y)
         else:
             logZ = self.compute_log_partition(az, bz, ax, bx)
         return logZ
