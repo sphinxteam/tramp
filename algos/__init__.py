@@ -1,8 +1,9 @@
 from .expectation_propagation import ExpectationPropagation
 from .state_evolution import StateEvolution
 from .callbacks import (
-    LogProgress, TrackErrors, TrackEvolution, JoinCallback, EarlyStopping,
-    OldEarlyStopping, EarlyStoppingEP
+    LogProgress, JoinCallback,
+    TrackErrors, TrackEvolution, TrackMessages, TrackObjective,
+    EarlyStopping, OldEarlyStopping, EarlyStoppingEP
 )
 from .initial_conditions import ConstantInit, NoisyInit, CustomInit
 from .explain_mp import ExplainMessagePassing

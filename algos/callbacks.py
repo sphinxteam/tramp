@@ -44,6 +44,44 @@ class LogProgress(Callback):
             for variable_id, data in variables_data.items():
                 logger.info(f"id={variable_id} v={data['v']:.3f}")
 
+class TrackMessages(Callback):
+    def __init__(self, keys=["a", "n_iter", "direction"]):
+        self.keys = keys
+        self.records = []
+
+    def __call__(self, algo,  i, max_iter):
+        if (i == 0):
+            self.records = []
+        self.records += algo.get_edges_data(self.keys)
+
+    def get_dataframe(self):
+        return pd.DataFrame(self.records)
+
+
+class TrackObjective(Callback):
+    def __init__(self):
+        self.edge_records = []
+        self.node_records = []
+        self.model_records = []
+
+    def __call__(self, algo,  i, max_iter):
+        if (i == 0):
+            self.records = []
+        algo.update_objective()
+        # model
+        model_record = dict(A=algo.A_model, n_iter=algo.n_iter)
+        self.model_records.append(model_record)
+        # edges
+        self.edge_records += algo.get_edges_data(["A", "n_iter", "direction"])
+        # nodes
+        self.node_records +=  algo.get_nodes_data(["A", "n_iter"])
+
+    def get_dataframe(self):
+        edge_df = pd.DataFrame(self.edge_records)
+        node_df = pd.DataFrame(self.node_records)
+        model_df = pd.DataFrame(self.model_records)
+        return edge_df, node_df, model_df
+
 
 class TrackEvolution(Callback):
     def __init__(self, ids="all", every=1):

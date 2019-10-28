@@ -14,9 +14,9 @@ def get_size(x):
 
 def info_arrow(source, target, data, keys):
     if data["direction"] == "fwd":
-        m = f"{source}->{target}"
+        m = f"{source.id}->{target.id}"
     else:
-        m = f"{target}<-{source}"
+        m = f"{target.id}<-{source.id}"
     if "a" in keys:
         m += f" a={data['a']:.3f}"
     if "n_iter" in keys and "n_iter" in data:
@@ -181,6 +181,28 @@ class MessagePassing():
                 data[variable.id] = self.message_dag.node[variable].copy()
         return data
 
+    def get_edges_data(self, keys):
+        records = []
+        for source, target, data in self.message_dag.edges(data=True):
+            variable = source if isinstance(source, Variable) else target
+            factor = source if isinstance(source, Factor) else target
+            record = dict(x_id=variable.id, f_id=factor.id)
+            for key in keys:
+                record[key] = data.get(key)
+            records.append(record)
+        return records
+
+    def get_nodes_data(self, keys):
+        records = []
+        for node, data in self.message_dag.nodes(data=True):
+            node_type = "variable" if isinstance(node, Variable) else "factor"
+            record = dict(id=node.id, type=node_type)
+            for key in keys:
+                record[key] = data.get(key)
+            record["n_iter"] = self.n_iter
+            records.append(record)
+        return records
+
     def get_variable_data(self, id):
         for variable in self.variables:
             if variable.id == id:
@@ -192,7 +214,7 @@ class MessagePassing():
             message = self.message_dag.in_edges(node, data=True)
             A = self.node_objective(node, message)
             self.message_dag.node[node].update(A=A)
-        for source, target, data in message_dag.edges(data=True):
+        for source, target, data in self.message_dag.edges(data=True):
             if data["direction"] == "fwd":
                 variable = source if isinstance(source, Variable) else target
                 message = [
@@ -200,8 +222,8 @@ class MessagePassing():
                     (target, source, self.message_dag[target][source])
                 ]
                 A = self.node_objective(variable, message)
-                self.message_dag.node[source][target].update(A=A)
-                self.message_dag.node[target][source].update(A=A)
+                self.message_dag[source][target].update(A=A)
+                self.message_dag[target][source].update(A=A)
         A_nodes = sum(
             data["A"] for node, data in self.message_dag.nodes(data=True)
         )

@@ -20,6 +20,11 @@ def check_variable_ids(variables):
         raise ValueError(f"having {n_unique} ids but {n_variables} variables")
 
 
+def add_factor_ids(factors):
+    for idx, factor in enumerate(factors):
+        factor.id = f"f_{idx}"
+
+
 class Model(ReprMixin):
     def __init__(self, model_dag):
         if not isinstance(model_dag, ModelDAG):
@@ -41,8 +46,13 @@ class Model(ReprMixin):
             node for node in self.forward_ordering
             if isinstance(node, Factor)
         ]
+        add_factor_ids(self.factors)
+        self.factor_ids = [
+            factor.id for factor in self.factors
+        ]
         self.n_factors = len(self.factors)
         nx.freeze(self.dag)
+
 
     def plot(self, layout=None):
         self.model_dag.plot(layout)
