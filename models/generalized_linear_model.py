@@ -22,7 +22,8 @@ def glm_generative(N, alpha, ensemble_type, prior_type, output_type, **kwargs):
     F = ensemble.generate()
     # factors
     prior_kwargs = get_kwargs("prior", kwargs)
-    prior = get_prior(size=N, prior_type=prior_type, **prior_kwargs)
+    size = (2, N) if output_type=="modulus" else N
+    prior = get_prior(size=size, prior_type=prior_type, **prior_kwargs)
     linear_type = "complex_linear" if output_type=="modulus" else "linear"
     linear = get_channel(linear_type, W=F, name="F")
     output_kwargs = get_kwargs("output", kwargs)
