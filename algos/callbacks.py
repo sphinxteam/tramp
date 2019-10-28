@@ -130,7 +130,8 @@ class OldEarlyStopping(Callback):
 
 
 class EarlyStopping(Callback):
-    def __init__(self, ids="all", tol=1e-6, min_variance=-1, wait_increase=5, max_increase=0.2):
+    def __init__(self, ids="all", tol=1e-6, min_variance=-1,
+                 wait_increase=5, max_increase=0.2):
         self.ids = ids
         self.tol = tol
         self.min_variance = min_variance
@@ -158,16 +159,53 @@ class EarlyStopping(Callback):
                 for old_v, new_v in zip(self.old_vs, new_vs)
             ]
             if max(tols) < self.tol:
-                logger.info(f"early stopping all tolerances are below tol={self.tol:.2e}")
+                logger.info(
+                    "early stopping all tolerances (on v) are "
+                    f"below tol={self.tol:.2e}"
+                )
                 return True
             increase = [
                 new_v - old_v for old_v, new_v in zip(self.old_vs, new_vs)
             ]
             if i > self.wait_increase and max(increase) > self.max_increase:
-                logger.info(f"increase={max(increase)} above max_increase={self.max_increase:.2e}")
+                logger.info(
+                    f"increase={max(increase)} above "
+                    f"max_increase={self.max_increase:.2e}"
+                )
                 logger.info("restoring old message dag")
                 algo.reset_message_dag(self.old_message_dag)
                 return True
         # for next iteration
         self.old_vs = new_vs
         self.old_message_dag = algo.message_dag.copy()
+
+
+def norm(x):
+    return np.sqrt(np.mean(x**2))
+
+
+class EarlyStoppingEP(Callback):
+    def __init__(self, ids="all", tol=1e-6):
+        self.ids = ids
+        self.tol = tol
+        self.repr_init()
+        self.old_rs = None
+
+    def __call__(self, algo,  i, max_iter):
+        if (i == 0):
+            self.old_rs = None
+        variables_data = algo.get_variables_data(self.ids)
+        new_rs = [data["r"] for variable_id, data in variables_data.items()]
+        if self.old_rs:
+            tols = [
+                norm(new_r - old_r)/norm(new_r)
+                for old_r, new_r in zip(self.old_rs, new_rs)
+            ]
+            if max(tols) < self.tol:
+                logger.info(
+                    "early stopping all tolerances (on r) are "
+                    f"below tol={self.tol:.2e}"
+                )
+                return True
+        # for next iteration
+        self.old_rs = new_rs

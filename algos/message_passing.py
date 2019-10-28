@@ -215,7 +215,7 @@ class MessagePassing():
                 callback=None, initializer=None, damping=None,
                 warm_start=False):
         initializer = initializer or ConstantInit(a=0, b=0)
-        callback = callback or EarlyStopping()
+        callback = callback or self.default_stopping
         if warm_start:
             if not hasattr(self, "message_dag"):
                 raise ValueError("message dag was never initialized")
