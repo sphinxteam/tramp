@@ -92,6 +92,7 @@ class TeacherStudentScenario():
         ep.iterate(**algo_kwargs)
         x_data = ep.get_variables_data(self.x_ids)
         x_data["n_iter"] = ep.n_iter
+        self.x_pred = {x_id:x_data[x_id]["r"] for x_id in self.x_ids}
         return x_data
 
     def ep_convergence(self, metrics, **algo_kwargs):
