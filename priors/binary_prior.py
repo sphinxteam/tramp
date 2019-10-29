@@ -41,7 +41,7 @@ class BinaryPrior(Prior):
 
     def compute_log_partition(self, ax, bx):
         logZ = np.sum(
-            np.log(self.p_pos * np.exp(bx) + self.p_neg * np.exp(-bx))
+            np.logaddexp(np.log(self.p_pos) + bx, np.log(self.p_neg) - bx)
             - 0.5 * ax
         )
         return logZ

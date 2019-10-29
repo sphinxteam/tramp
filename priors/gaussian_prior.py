@@ -11,7 +11,7 @@ class GaussianPrior(Prior):
         self.repr_init()
         self.sigma = np.sqrt(var)
         self.a = 1 / var
-        self.b = mean / var * np.ones(size)
+        self.b = mean / var
 
     def sample(self):
         X = self.mean + self.sigma * np.random.standard_normal(self.size)
@@ -37,7 +37,7 @@ class GaussianPrior(Prior):
 
     def compute_forward_message(self, ax, bx):
         ax_new = self.a
-        bx_new = self.b
+        bx_new = self.b * np.ones_like(bx)
         return ax_new, bx_new
 
     def compute_forward_state_evolution(self, ax):

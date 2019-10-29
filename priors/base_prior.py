@@ -30,7 +30,7 @@ class Prior(Factor):
 
     def compute_free_energy(self, ax):
         def log_partition(bx):
-            return self.log_partition(ax, bx)
+            return self.compute_log_partition(ax, bx)
         A = self.beliefs_measure(ax, f=log_partition)
         return A
 

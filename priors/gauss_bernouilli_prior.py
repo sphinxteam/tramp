@@ -16,7 +16,7 @@ class GaussBernouilliPrior(Prior):
         self.repr_init()
         self.sigma = np.sqrt(var)
         self.a = 1 / var
-        self.b = mean / var * np.ones(size)
+        self.b = mean / var
         self.log_odds = np.log(rho / (1 - rho))
 
     def sample(self):
@@ -62,6 +62,6 @@ class GaussBernouilliPrior(Prior):
             b**2 / a - self.b**2 / self.a + np.log(self.a/a)
         )
         logZ = np.sum(
-            np.log(1 - self.rho + self.rho * np.exp(A))
+            np.logaddexp(np.log(1 - self.rho), np.log(self.rho) + A)
         )
         return logZ
