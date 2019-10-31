@@ -29,7 +29,7 @@ class MarchenkoPasturEnsemble(Ensemble):
         return np.sqrt((z - self.z_min) * (self.z_max - z))/(2*np.pi*z)
 
     def measure(self, f):
-        atomic = max(1, 1 - self.alpha) * f(0)
+        atomic = max(0, 1 - self.alpha) * f(0)
 
         def integrand(z):
             return f(z) * self.bulk_density(z)
