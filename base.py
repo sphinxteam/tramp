@@ -137,6 +137,8 @@ class Variable(ReprMixin):
         return A
 
     def compute_log_partition(self, ax, bx):
+        if ax<=0:
+            return np.inf
         logZ = 0.5 * np.sum(bx**2 / ax + np.log(2*np.pi/ax))
         return logZ
 
