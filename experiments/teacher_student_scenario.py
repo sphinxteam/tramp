@@ -51,31 +51,31 @@ class TeacherStudentScenario():
         # pass it to the student
         self.student = self.generative_student.to_observed(self.observations)
 
-    def run_all(self, source="ep,se", **algo_kwargs):
+    def run_all(self, source="EP,SE", **algo_kwargs):
         "Get mse values as estimated by EP or SE"
         self.setup()
         records = []
-        if "se" in source:
+        if "SE" in source:
             x_data = self.run_se(**algo_kwargs)
             records += [
                 dict(
-                    source="se", x_id=x_id, v=x_data[x_id]["v"],
+                    source="SE", x_id=x_id, v=x_data[x_id]["v"],
                     n_iter=x_data["n_iter"]
                 ) for x_id in self.x_ids
             ]
-        if "ep" in source:
+        if "EP" in source:
             x_data = self.run_ep(**algo_kwargs)
             records += [
                 dict(
-                    source="ep", x_id=x_id, v=x_data[x_id]["v"],
+                    source="EP", x_id=x_id, v=x_data[x_id]["v"],
                     n_iter=x_data["n_iter"]
                 ) for x_id in self.x_ids
             ]
-            x_pred = {x_id: x_data["r"] for x_id in self.x_ids}
+            x_pred = {x_id: x_data[x_id]["r"] for x_id in self.x_ids}
             score = self.compute_score(x_pred)
             records += [
                 dict(
-                    source="mse", x_id=x_id, v=score[x_id]["mse"]
+                    source="MSE", x_id=x_id, v=score[x_id]["mse"]
                 ) for x_id in self.x_ids
             ]
         return records
@@ -98,7 +98,7 @@ class TeacherStudentScenario():
     def ep_convergence(self, metrics, **algo_kwargs):
         # add TrackEvolution and TrackErrors to callback
         track = TrackErrors(true_values=self.x_true, metrics=metrics)
-        evo = TrackEvolution()
+        evo = TrackEvolution(ids=self.x_ids)
         callbacks = [track, evo]
         if "callback" in algo_kwargs:
             callbacks.append(algo_kwargs["callback"])
@@ -116,7 +116,7 @@ class TeacherStudentScenario():
 
     def se_convergence(self, **algo_kwargs):
         # add TrackEvolution to callback
-        evo = TrackEvolution()
+        evo = TrackEvolution(ids=self.x_ids)
         callbacks = [evo]
         if "callback" in algo_kwargs:
             callbacks.append(algo_kwargs["callback"])
@@ -132,8 +132,8 @@ class TeacherStudentScenario():
     def compute_score(self, x_pred, metrics=["mse"]):
         score = {
             x_id: {
-                metric: f(self.x_true[x_id], x_pred[x_id])
-                for metric, f in METRICS.items()
+                metric: METRICS[metric](self.x_true[x_id], x_pred[x_id])
+                for metric in metrics
             }
             for x_id in self.x_ids
         }
