@@ -74,7 +74,7 @@ class AsymmetricAbsLikelihood(PiecewiseLinearLikelihood):
     def __init__(self, y, y_name="y", shift=1e-4):
         neg = dict(zmin=-np.inf, zmax=shift, slope=-1, x0=0)
         pos = dict(zmin=shift, zmax=+np.inf, slope=+1, x0=0)
-        super().__init__(name="abs", regions=[pos, neg], y=y, y_name=y_name)
+        super().__init__(name="a-abs", regions=[pos, neg], y=y, y_name=y_name)
 
 
 class ReluLikelihood(PiecewiseLinearLikelihood):

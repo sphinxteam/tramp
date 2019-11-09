@@ -3,12 +3,14 @@ from ..likelihoods.base_likelihood import Likelihood
 from ..priors.base_prior import Prior
 from ..variables import SISOVariable, SILeafVariable
 from ..channels import (
-    GaussianChannel, AbsChannel, SgnChannel, ReluChannel,
+    GaussianChannel,
+    AbsChannel, AsymmetricAbsChannel, SgnChannel, ReluChannel,
     HardTanhChannel, HardSigmoidChannel, SymmetricDoorChannel,
     ModulusChannel
 )
 from ..likelihoods import (
-    GaussianLikelihood, AbsLikelihood, SgnLikelihood, ReluLikelihood,
+    GaussianLikelihood,
+    AbsLikelihood, AsymmetricAbsLikelihood, SgnLikelihood, ReluLikelihood,
     HardTanhLikelihood, HardSigmoidLikelihood, SymmetricDoorLikelihood,
     ModulusLikelihood
 )
@@ -18,9 +20,11 @@ import networkx as nx
 
 def channel2likelihood(channel, y, y_name):
     if isinstance(channel, GaussianChannel):
-        return GaussianLikelihood(var=channel.var, y=y, y_name=y_name)
+        return GaussianLikelihood(y=y, y_name=y_name, var=channel.var)
     if isinstance(channel, AbsChannel):
         return AbsLikelihood(y=y, y_name=y_name)
+    if isinstance(channel, AsymmetricAbsChannel):
+        return AsymmetricAbsLikelihood(y=y, y_name=y_name, shift=channel.shift)
     if isinstance(channel, SgnChannel):
         return SgnLikelihood(y=y, y_name=y_name)
     if isinstance(channel, ReluChannel):
@@ -30,7 +34,7 @@ def channel2likelihood(channel, y, y_name):
     if isinstance(channel, HardSigmoidChannel):
         return HardSigmoidLikelihood(y=y, y_name=y_name)
     if isinstance(channel, SymmetricDoorChannel):
-        return SymmetricDoorLikelihood(width=channel.width, y=y, y_name=y_name)
+        return SymmetricDoorLikelihood(y=y, y_name=y_name, width=channel.width)
     if isinstance(channel, ModulusChannel):
         return ModulusLikelihood(y=y, y_name=y_name)
     raise NotImplementedError(f"cannot convert {channel} to likelihood")

@@ -91,6 +91,14 @@ class AbsChannel(PiecewiseLinearChannel):
         super().__init__(name="abs", regions=[pos, neg])
 
 
+class AsymmetricAbsChannel(PiecewiseLinearChannel):
+    def __init__(self, shift=1e-4):
+        self.shift = shift
+        neg = dict(zmin=-np.inf, zmax=shift, slope=-1, x0=0)
+        pos = dict(zmin=shift, zmax=+np.inf, slope=+1, x0=0)
+        super().__init__(name="a-abs", regions=[pos, neg])
+
+
 class ReluChannel(PiecewiseLinearChannel):
     def __init__(self):
         neg = dict(zmin=-np.inf, zmax=0, slope=0, x0=0)
@@ -108,10 +116,10 @@ class HardTanhChannel(PiecewiseLinearChannel):
 
 class HardSigmoidChannel(PiecewiseLinearChannel):
     def __init__(self):
-        l = 2.5
-        neg = dict(zmin=-np.inf, zmax=-l, slope=0, x0=0)
-        mid = dict(zmin=-l, zmax=+l, slope=1/(2*l), x0=0.5)
-        pos = dict(zmin=l, zmax=np.inf, slope=0, x0=1)
+        L = 2.5
+        neg = dict(zmin=-np.inf, zmax=-L, slope=0, x0=0)
+        mid = dict(zmin=-L, zmax=+L, slope=1/(2*L), x0=0.5)
+        pos = dict(zmin=L, zmax=np.inf, slope=0, x0=1)
         super().__init__(name="h-sigm", regions=[pos, mid, neg])
 
 
