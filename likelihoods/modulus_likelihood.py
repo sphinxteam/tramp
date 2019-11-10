@@ -6,6 +6,20 @@ from ..utils.integration import gaussian_measure_2d, gaussian_measure
 from ..utils.misc import relu, complex2array, array2complex
 
 
+def ive_ratio(r):
+    """Returns I(r) = ive(1, r) / ive(0, r)
+
+    Notes
+    -----
+    - I(r) ~ 1 for r >> 1
+    """
+    cutoff = 1e9
+    I = np.ones_like(r)
+    ind = (r < cutoff)
+    I[ind] = ive(1, r[ind]) / ive(0, r[ind])
+    return I
+
+
 class ModulusLikelihood(Likelihood):
     """Modulus likelihood y = |z|.
 
@@ -43,7 +57,7 @@ class ModulusLikelihood(Likelihood):
     def compute_backward_posterior(self, az, bz, y):
         bz = array2complex(bz)
         b = np.absolute(bz)
-        I = ive(1, b * y) / ive(0, b * y)
+        I = ive_ratio(b*y)
         b_normed = np.zeros_like(bz)
         nonzero = (b != 0)
         b_normed[nonzero] = bz[nonzero]/b[nonzero]
