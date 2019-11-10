@@ -192,9 +192,11 @@ def norm(x):
 
 
 class EarlyStoppingEP(Callback):
-    def __init__(self, ids="all", tol=1e-6):
+    def __init__(self, ids="all", tol=1e-6, wait_increase=5, max_increase=0.2):
         self.ids = ids
         self.tol = tol
+        self.wait_increase = wait_increase
+        self.max_increase = max_increase
         self.repr_init()
         self.old_rs = None
 
@@ -214,5 +216,15 @@ class EarlyStoppingEP(Callback):
                     f"below tol={self.tol:.2e}"
                 )
                 return True
+            increase = tols
+            if i > self.wait_increase and max(increase) > self.max_increase:
+                logger.info(
+                    f"increase={max(increase)} above "
+                    f"max_increase={self.max_increase:.2e}"
+                )
+                logger.info("restoring old message dag")
+                algo.reset_message_dag(self.old_message_dag)
+                return True
         # for next iteration
         self.old_rs = new_rs
+        self.old_message_dag = algo.message_dag.copy()

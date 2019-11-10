@@ -189,19 +189,23 @@ class MessagePassing():
         for source, target, data in new_message:
             if np.isnan(data['a']):
                 logger.error(
-                    f"{source}->{target} a is nan\n" +
+                    f"{source.id}->{target.id} a is nan\n" +
                     "incoming:\n" +
                     info_message(old_message, keys=["n_iter", "a", "b"])
                 )
-                raise ValueError(f"{source}->{target} a is nan")
+                logger.warning("restoring old message dag")
+                self.reset_message_dag(self.old_message_dag)
+                raise ValueError(f"{source.id}->{target.id} a is nan")
             if (data['a'] < 0):
-                logger.warning(f"{source}->{target} negative a {data['a']}")
+                logger.warning(f"{source.id}->{target.id} negative a {data['a']}")
             if ('b' in data) and np.isnan(data['b']).any():
                 logger.error(
-                    f"{source}->{target} b is nan\n" +
+                    f"{source.id}->{target.id} b is nan\n" +
                     "incoming:\n" +
                     info_message(old_message, keys=["n_iter", "a", "b"])
                 )
+                logger.warning("restoring old message dag")
+                self.reset_message_dag(self.old_message_dag)
                 raise ValueError(f"{source}->{target} b is nan")
 
     def init_message_dag(self, initializer):
@@ -349,4 +353,5 @@ class MessagePassing():
             if stop:
                 logger.info(f"terminated after n_iter={self.n_iter} iterations")
                 return
+            self.old_message_dag = self.message_dag.copy()
         logger.info(f"terminated after n_iter={self.n_iter} iterations")

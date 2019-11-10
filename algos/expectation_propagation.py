@@ -1,5 +1,5 @@
 from .message_passing import MessagePassing
-from .callbacks import EarlyStoppingEP
+from .callbacks import EarlyStopping, EarlyStoppingEP, JoinCallback
 
 
 class ExpectationPropagation(MessagePassing):

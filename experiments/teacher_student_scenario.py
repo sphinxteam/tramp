@@ -51,7 +51,7 @@ class TeacherStudentScenario():
         # pass it to the student
         self.student = self.generative_student.to_observed(self.observations)
 
-    def run_all(self, source="EP,SE", **algo_kwargs):
+    def run_all(self, source="EP,SE", metrics=["mse"], **algo_kwargs):
         "Get mse values as estimated by EP or SE"
         self.setup()
         records = []
@@ -72,11 +72,11 @@ class TeacherStudentScenario():
                 ) for x_id in self.x_ids
             ]
             x_pred = {x_id: x_data[x_id]["r"] for x_id in self.x_ids}
-            score = self.compute_score(x_pred)
+            score = self.compute_score(x_pred, metrics=metrics)
             records += [
                 dict(
-                    source="MSE", x_id=x_id, v=score[x_id]["mse"]
-                ) for x_id in self.x_ids
+                    source=metric, x_id=x_id, v=score[x_id][metric]
+                ) for metric in metrics for x_id in self.x_ids
             ]
         return records
 
