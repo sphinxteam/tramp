@@ -5,6 +5,7 @@ from .unitary_ensemble import UnitaryEnsemble
 from .binary_ensemble import BinaryEnsemble
 from .ternary_ensemble import TernaryEnsemble
 from .marchenko_pastur_ensemble import MarchenkoPasturEnsemble
+from .random_feature_ensemble import RandomFeatureEnsemble
 
 ENSEMBLE_CLASSES = {
     "gaussian": GaussianEnsemble,
@@ -13,7 +14,8 @@ ENSEMBLE_CLASSES = {
     "unitary": UnitaryEnsemble,
     "binary": BinaryEnsemble,
     "ternary": TernaryEnsemble,
-    "marchenko": MarchenkoPasturEnsemble
+    "marchenko": MarchenkoPasturEnsemble,
+    "random_feature": RandomFeatureEnsemble
 }
 
 

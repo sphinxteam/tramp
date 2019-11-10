@@ -18,7 +18,8 @@ def glm_generative(N, alpha, ensemble_type, prior_type, output_type, **kwargs):
     "Build a generative Generalized Linear Model"
     # sensing matrix
     M = int(alpha * N)
-    ensemble = get_ensemble(ensemble_type=ensemble_type, M=M, N=N)
+    ensemble_kwargs = get_kwargs("ensemble", kwargs)
+    ensemble = get_ensemble(ensemble_type, M=M, N=N, **ensemble_kwargs)
     F = ensemble.generate()
     # factors
     prior_kwargs = get_kwargs("prior", kwargs)
