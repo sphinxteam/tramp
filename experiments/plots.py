@@ -10,6 +10,14 @@ def plot_function(f, xlim=(-3, 3)):
     plt.title(f"{f.__name__}")
 
 
+def plot_compare(x_true, x_pred):
+    fig, ax = plt.subplots(1, 1, figsize=(4,4))
+    ax.plot(np.arange(100), x_true[:100], label="x true")
+    ax.plot(np.arange(100), x_pred[:100], label="x pred")
+    ax.legend()
+    fig.tight_layout()
+
+
 def plot_compare_complex(x_true, x_pred):
     if x_true.dtype != "complex":
         x_true = array2complex(x_true)

@@ -51,6 +51,8 @@ class DisplayLatexMessagePassing(MessagePassing):
         self.latex = dict(forward=[], backward=[])
         initializer = ConstantInit(a=0, b=0)
         self.init_message_dag(initializer)
+        self.configure_damping(None)
+        self.update_dA = False
         self.forward_message()
         self.backward_message()
         return self.latex
