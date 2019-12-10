@@ -13,13 +13,20 @@ Implements gaussian expectation propagation for any tree-like probabilistic grap
 
 ## Install
 
+
 To install the package, go to the folder where `setup.py` is located and run:
 
 ```
-pip install -e .
+pip install .
 ```
 
-The necessary requirements should be automatically installed.
+or if you want to install in development mode (changes to the repository will immediately affect the installed package without needing to re-install):
+```
+pip install --editable .
+```
+
+See [installing from sources](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/#installing-from-source) for more details.
+In both cases, the necessary requirements should be automatically installed.
 
 ## Examples
 
