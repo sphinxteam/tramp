@@ -13,3 +13,9 @@ wip_notebooks
 
 # Logs
 *.log
+
+# Setuptools distribution folder
+/dist/
+
+# Python egg metadata
+/*.egg-info
