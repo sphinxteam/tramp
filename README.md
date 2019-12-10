@@ -1,58 +1,15 @@
-# TRAMP
+# Tree approximate message passing (TRAMP)
 
-Implement gaussian expectation propagation (aka VAMP)
-for any tree-like probabilistic graphical models.
-If this package ever achieves a certain level of awesomeness it
-will be renamed supertramp.
+Implements gaussian expectation propagation for any tree-like probabilistic graphical model. 
 
-## FIXME
+## Requirements
 
-- [ ] ax=0 in L1 and L12 map priors
-- [ ] sgn committee : EP diverges
-- [ ] mse_ep seems off for gradient channel and conv channels
-- [ ] deconv with sparse grad
-- [ ] migrate to networkx 2.x
-- [ ] division and integration warning in ModulusLikelihood
+- numpy/pandas/scipy/matplotlib
+- networkx==1.11
+- daft
 
-## TODO
+**Warning** Currently the package does not support networkx 2.xx and will throw unexpected errors. We plan to upgrade to networkx 2.xx at some point.
 
-- free energy
-  - [ ] concat_channel, duplicate_channel
-- utils
-  - [ ] improve logging
-- tests
-  - [ ] linear channels (linear, conv, dft, sum, ...)
-  - [ ] concat_channel, duplicate_channel
-  - [ ] check complex and n-array variables
-- model.sample() for variable with n_prev > 1 factors (eg TV/sparse gradient)
-- compute_output_shape for each module
-- channels
-  - [ ] matrix factorization using MAP ?
-  - [ ] learn weights of conv channel ?
-  - [ ] x = pow(z, n)
-  - [ ] x = exp(alpha z) to model scale variables, eg XRay imaging:
-    - signal s is log-density, ie density = 10^s = exp(ln10 s)
-    - measurements is intensity = exp(- R) where R = ray integral of density
-- likelihoods
-  - [ ] Poisson (eg for photon limited imaging)
-- models (depend on matrix factorization module)
-  - [ ] sparse coding
-  - [ ] NMF
-  - [ ] conv net
-- ensembles
-  - [ ] features generator
-- parameters estimation : view prior as a channel P(sample | parameters)
-  - [ ] channel Gaussian(x | r, v)
-  - [ ] channel Binary(x | p_pos)
-  - [ ] channel GaussBernouilli(x | r, v, rho)
-- GPs
-  - [ ] GP prior
-  - [ ] sampling operator channel (function -> vector)
-  - [ ] linear operator channel (eg derivative, fourier)
-- mutual info / evidence
-  - [ ] I(x,y)
-  - [ ] Reeves formula
-  - [ ] EP approximation of evidence
-- explainer
-  - [ ] animation of message passing
-  - [ ] evolution of beliefs / state evo
+## Examples
+
+Illustrating notebooks and scripts are gathered in the [tramp_notebooks](https://github.com/sphinxteam/tramp_notebooks) repo. 
