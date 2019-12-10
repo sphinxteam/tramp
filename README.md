@@ -13,3 +13,5 @@ Implements gaussian expectation propagation for any tree-like probabilistic grap
 ## Examples
 
 Illustrating notebooks and scripts are gathered in the [tramp_notebooks](https://github.com/sphinxteam/tramp_notebooks) repo. 
+
+An illustration of TRAMP on real data-set(MNIST, Fashion-MNIST) for inpainting and denoising tasks is available in [this repo](https://github.com/benjaminaubin/tramp_demo_vae)
