@@ -98,7 +98,7 @@ class TrackEvolution(Callback):
         if (i % self.every == 0):
             variables_data = algo.get_variables_data(self.ids)
             for variable_id, data in variables_data.items():
-                record = dict(id=variable_id, v=data["v"], iter=i)
+                record = dict(id=variable_id, v=data["v"], r=data["r"], iter=i)
                 self.records.append(record)
 
     def get_dataframe(self):
