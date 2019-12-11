@@ -90,7 +90,6 @@ class TrackEvolution(Callback):
         self.every = every
         self.repr_init()
         self.records = []
-        self.last = None
 
     def __call__(self, algo,  i, max_iter):
         if (i == 0):
@@ -98,7 +97,27 @@ class TrackEvolution(Callback):
         if (i % self.every == 0):
             variables_data = algo.get_variables_data(self.ids)
             for variable_id, data in variables_data.items():
-                record = dict(id=variable_id, v=data["v"], r=data["r"], iter=i)
+                record = dict(id=variable_id, v=data["v"], iter=i)
+                self.records.append(record)
+
+    def get_dataframe(self):
+        return pd.DataFrame(self.records)
+
+
+class TrackEstimate(Callback):
+    def __init__(self, ids="all", every=1):
+        self.ids = ids
+        self.every = every
+        self.repr_init()
+        self.records = []
+
+    def __call__(self, algo,  i, max_iter):
+        if (i == 0):
+            self.records = []
+        if (i % self.every == 0):
+            variables_data = algo.get_variables_data(self.ids)
+            for variable_id, data in variables_data.items():
+                record = dict(id=variable_id, r=data["r"], iter=i)
                 self.records.append(record)
 
     def get_dataframe(self):
