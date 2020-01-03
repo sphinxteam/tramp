@@ -1,4 +1,5 @@
 from ..base import Factor
+from scipy.optimize  import root
 
 
 class Channel(Factor):
@@ -56,11 +57,43 @@ class Channel(Factor):
         A = self.beliefs_measure(az, ax, tau_z, f=log_partition)
         return A
 
-    def compute_mutual_information(self, az, ax, tau_z, alpha=1):
+    def get_alpha(self):
+        return getattr(self, 'alpha', 1)
+
+    def compute_mutual_information(self, az, ax, tau_z):
+        alpha = self.get_alpha()
         tau_x = self.second_moment(tau_z)
         A = self.compute_free_energy(az, ax, tau_z)
         I = 0.5*(az*tau_z + alpha*ax*tau_x) - A + 0.5*np.log(2*np.pi*tau_z/np.e)
         return A
+
+    def compute_precision(self, vz, vx, tau_z):
+        def f(a):
+            az, ax = a
+            fz = self.compute_backward_error(az, ax, tau_z) - vz
+            fx = self.compute_forward_error(az, ax, tau_z) - vx
+            return fz, fx
+        x0 = 1/vz, 1/vx
+        sol = root(f, x0=x0, method='hybr')
+        az, ax = sol.x
+        return az, ax
+
+    def compute_dual_mutual_information(self, vz, vx, tau_z):
+        alpha = self.get_alpha()
+        az, ax = self.compute_precision(vz, vx, tau_z)
+        I = self.compute_mutual_information(az, ax, tau_z)
+        I_dual = I - 0.5*(az*vz + alpha*ax*vx)
+        return I_dual
+
+    def compute_dual_free_energy(self, mz, mx, tau_z):
+        alpha = self.get_alpha()
+        tau_x = self.second_moment(tau_z)
+        vz = tau_z - mz
+        vx = tau_x - mx
+        az, ax = self.compute_precision(vz, vx, tau_z)
+        A = self.compute_free_energy(az, ax, tau_z)
+        A_dual = 0.5*(az*mz + alpha*ax*mx) - A
+        return A_dual
 
 
 class SIFactor(Factor):

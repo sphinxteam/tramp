@@ -1,4 +1,5 @@
 from ..base import Factor
+from scipy.optimize  import root_scalar
 
 
 class Prior(Factor):
@@ -39,3 +40,24 @@ class Prior(Factor):
         A = self.compute_free_energy(ax)
         I = 0.5*ax*tau_x - A
         return A
+
+    def compute_precision(self, vx):
+        def f(ax):
+            return self.compute_forward_error(ax) - vx
+        sol = root_scalar(f, bracket=[0, 1/vx], method='bisect')
+        ax = sol.root
+        return ax
+
+    def compute_dual_mutual_information(self, vx):
+        ax = self.compute_precision(vx)
+        I = self.compute_mutual_information(ax)
+        I_dual = I - 0.5*ax*vx
+        return I_dual
+
+    def compute_dual_free_energy(self, mx):
+        tau_x = self.second_moment()
+        vx = tau_x - mx
+        ax = self.compute_precision(vx)
+        A = self.compute_free_energy(ax)
+        A_dual = 0.5*ax*mx - A
+        return A_dual

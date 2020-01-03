@@ -95,6 +95,7 @@ class Model(ReprMixin):
 
     def init_shapes(self):
         "Compute variable shapes inplace (shape attribute of variable node)"
+        # TODO : add N, alpha
         for factor in self.factors:
             prev_variables = self.dag.predecessors(factor)
             next_variables = self.dag.successors(factor)
@@ -137,3 +138,11 @@ class Model(ReprMixin):
             for variable in self.variables
         }
         return shapes
+
+    def compute_dual_mutual_information(self, vs, alphas):
+        # TODO
+        return I_dual
+
+    def compute_dual_free_energy(self, ms, alphas):
+        # TODO
+        return A_dual

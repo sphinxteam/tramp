@@ -1,4 +1,6 @@
 from ..base import Factor
+from scipy.optimize  import root_scalar
+import numpy as np
 
 
 class Likelihood(Factor):
@@ -43,6 +45,26 @@ class Likelihood(Factor):
         return A
 
     def compute_mutual_information(self, az, tau_z):
-        A = self.compute_free_energy(az, ax, tau_z)
-        I = 0.5*az*tau_z - A + 0.5*np.log(2*pi*tau_z/np.e)
+        A = self.compute_free_energy(az, tau_z)
+        I = 0.5*az*tau_z - A + 0.5*np.log(2*np.pi*tau_z/np.e)
         return A
+
+    def compute_precision(self, vz, tau_z):
+        def f(az):
+            return self.compute_backward_error(az, tau_z) - vz
+        sol = root_scalar(f, bracket=[1/tau_z, 1/vz], method='bisect')
+        az = sol.root
+        return az
+
+    def compute_dual_mutual_information(self, vz, tau_z):
+        az = self.compute_precision(vz, tau_z)
+        I = self.compute_mutual_information(az, tau_z)
+        I_dual = I - 0.5*az*vz
+        return I_dual
+
+    def compute_dual_free_energy(self, mz, tau_z):
+        vz = tau_z - mz
+        az = self.compute_precision(vz, tau_z)
+        A = self.compute_free_energy(az, tau_z)
+        A_dual = 0.5*az*mz - A
+        return A_dual

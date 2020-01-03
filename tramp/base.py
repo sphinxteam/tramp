@@ -136,6 +136,14 @@ class Variable(ReprMixin):
         A = 0.5*ax*tau_x - I + 0.5*np.log(2*np.pi*tau_x/np.e)
         return A
 
+    def compute_dual_mutual_information(self, vx, tau_x):
+        I_dual = 0.5*np.log(tau_x/vx) - 0.5
+        return I_dual
+
+    def compute_dual_free_energy(self, mx, tau_x):
+        A_dual = 0.5*np.log(2*np.pi*(tau_x - mx))
+        return A_dual
+
     def compute_log_partition(self, ax, bx):
         if ax<=0:
             return np.inf

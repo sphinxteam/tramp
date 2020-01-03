@@ -69,3 +69,22 @@ class MarchenkoPasturChannel(AnalyticalLinearChannel):
     def __init__(self, alpha, name = "W"):
         ensemble=MarchenkoPasturEnsemble(alpha = alpha)
         super().__init__(ensemble = ensemble, name = name)
+
+    def compute_precision(self, vz, vx, tau_z):
+        ax = 1/vx - 1/vz
+        az = (1 - self.alpha*ax*vx)/vz
+        return az, ax
+
+    def _compute_dual_mutual_information(self, vz, vx, tau_z):
+        Iz = 0.5*np.log(tau_z/vz) - 0.5
+        J = 0.5*self.alpha*(np.log(vz/vx) + vx/vz - 1)
+        I_dual = J + Iz
+        return I_dual
+
+    def _compute_dual_free_energy(self, mz, mx, tau_z):
+        tau_x = self.second_moment(tau_z)
+        vz = tau_z - mz
+        vx = tau_x - mx
+        I_dual = self._compute_dual_mutual_information(vz, vx, tau_z)
+        A_dual = I_dual - 0.5*np.log(2*np.pi*tau_z/np.e)
+        return A_dual
