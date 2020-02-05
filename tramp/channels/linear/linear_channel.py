@@ -72,6 +72,8 @@ class LinearChannel(Channel):
             bx_svd = self.U.T @ bx
             bz_svd = self.V.T @ bz
             resolvent = 1 / (az + ax * self.spectrum)
+            if bz.ndim > 1:
+                resolvent = resolvent[:, np.newaxis]
             rz_svd = resolvent * (bz_svd + self.S.T @ bx_svd)
             rz = self.V @ rz_svd
         else:
