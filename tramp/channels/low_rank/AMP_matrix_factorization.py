@@ -119,8 +119,8 @@ class VAMP_matrix_factorization(object):
         """
         Delta = max(self.Delta, 1e-2)
         self.S = (self.Y / Delta).T
-        self.S_square = (np.square(self.S)).T
-        self.R = (- 1 / Delta * np.ones((self.M, self.N)) + self.S_square).T
+        self.S_square = (np.square(self.S))
+        self.R = (- 1 / Delta * np.ones((self.M, self.N)) + self.S_square.T).T
 
     ############## Initialization ##############
     def initialization(self):
