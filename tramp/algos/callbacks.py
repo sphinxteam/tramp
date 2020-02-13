@@ -100,8 +100,8 @@ class TrackEvolution(Callback):
             for variable_id, data in variables_data.items():
                 record = dict(id=variable_id, v=data["v"], iter=i)
                 self.records.append(record)
-            if self.verbose:
-                print(record)
+                if self.verbose:
+                    print(record)
 
     def get_dataframe(self):
         return pd.DataFrame(self.records)
@@ -128,13 +128,14 @@ class TrackEstimate(Callback):
 
 
 class TrackErrors(Callback):
-    def __init__(self, true_values, metrics=["mse"], every=1):
+    def __init__(self, true_values, metrics=["mse"], every=1, verbose=False):
         self.ids = true_values.keys()
         self.metrics = metrics
         self.every = every
         self.repr_init()
         self.X_true = true_values
         self.errors = []
+        self.verbose = verbose
 
     def __call__(self, algo,  i, max_iter):
         if (i == 0):
@@ -152,6 +153,7 @@ class TrackErrors(Callback):
                     func = METRICS.get(metric)
                     error[metric] = func(X_pred[id], self.X_true[id])
                 errors.append(error)
+                print(errors)
             self.errors += errors
 
     def get_dataframe(self):
