@@ -153,6 +153,7 @@ class TrackErrors(Callback):
                     func = METRICS.get(metric)
                     error[metric] = func(X_pred[id], self.X_true[id])
                 errors.append(error)
+            if self.verbose:
                 print(errors)
             self.errors += errors
 
