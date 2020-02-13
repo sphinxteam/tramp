@@ -85,11 +85,12 @@ class TrackObjective(Callback):
 
 
 class TrackEvolution(Callback):
-    def __init__(self, ids="all", every=1):
+    def __init__(self, ids="all", every=1, verbose=False):
         self.ids = ids
         self.every = every
         self.repr_init()
         self.records = []
+        self.verbose = verbose
 
     def __call__(self, algo,  i, max_iter):
         if (i == 0):
@@ -99,6 +100,8 @@ class TrackEvolution(Callback):
             for variable_id, data in variables_data.items():
                 record = dict(id=variable_id, v=data["v"], iter=i)
                 self.records.append(record)
+            if self.verbose:
+                print(record)
 
     def get_dataframe(self):
         return pd.DataFrame(self.records)
