@@ -180,9 +180,9 @@ class TrackOverlaps(Callback):
                     (data['r'].T).dot(self.X_true[variable_id])
                 q = 1/self.X_true[variable_id].shape[0] * \
                     (data['r'].T).dot(data['r'])
-                q_star = 1/self.X_true[variable_id].shape[0] * \
+                Q = 1/self.X_true[variable_id].shape[0] * \
                     (self.X_true[variable_id].T).dot(self.X_true[variable_id])
-                record = dict(id=variable_id, m=m, q=q, q_star=q_star, iter=i)
+                record = dict(id=variable_id, m=m, q=q, Q=Q, iter=i)
                 self.records.append(record)
                 if self.verbose:
                     print(record)
