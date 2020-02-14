@@ -161,6 +161,32 @@ class TrackErrors(Callback):
         return pd.DataFrame(self.errors)
 
 
+class TrackOverlaps(Callback):
+    def __init__(self, true_values, ids="all", every=1, verbose=False):
+        self.ids = ids
+        self.every = every
+        self.repr_init()
+        self.X_true = true_values
+        self.records = []
+        self.verbose = verbose
+
+    def __call__(self, algo,  i, max_iter):
+        if (i == 0):
+            self.records = []
+        if (i % self.every == 0):
+            variables_data = algo.get_variables_data(self.ids)
+            for variable_id, data in variables_data.items():
+                overlap = 1/self.X_true[variable_id].shape[0] * \
+                    (data['r'].T).dot(self.X_true[variable_id])
+                record = dict(id=variable_id, overlap=overlap, iter=i)
+                self.records.append(record)
+                if self.verbose:
+                    print(record)
+
+    def get_dataframe(self):
+        return pd.DataFrame(self.records)
+
+
 class EarlyStopping(Callback):
     def __init__(self, ids="all", tol=1e-6, min_variance=-1,
                  wait_increase=5, max_increase=0.2):

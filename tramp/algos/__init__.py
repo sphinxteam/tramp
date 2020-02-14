@@ -3,7 +3,7 @@ from .state_evolution import StateEvolution
 from .callbacks import (
     LogProgress, JoinCallback,
     TrackErrors, TrackEvolution, TrackEstimate,
-    TrackMessages, TrackObjective,
+    TrackMessages, TrackObjective, TrackOverlaps,
     EarlyStopping, EarlyStoppingEP
 )
 from .initial_conditions import ConstantInit, NoisyInit, CustomInit
