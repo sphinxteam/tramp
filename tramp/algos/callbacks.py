@@ -176,9 +176,13 @@ class TrackOverlaps(Callback):
         if (i % self.every == 0):
             variables_data = algo.get_variables_data(self.ids)
             for variable_id, data in variables_data.items():
-                overlap = 1/self.X_true[variable_id].shape[0] * \
+                m = 1/self.X_true[variable_id].shape[0] * \
                     (data['r'].T).dot(self.X_true[variable_id])
-                record = dict(id=variable_id, overlap=overlap, iter=i)
+                q = 1/self.X_true[variable_id].shape[0] * \
+                    (data['r'].T).dot(data['r'])
+                q_star = 1/self.X_true[variable_id].shape[0] * \
+                    (self.X_true[variable_id].T).dot(self.X_true[variable_id])
+                record = dict(id=variable_id, m=m, q=q, q_star=q_star, iter=i)
                 self.records.append(record)
                 if self.verbose:
                     print(record)
