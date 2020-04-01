@@ -36,6 +36,6 @@ An illustration of TRAMP on real data-set (MNIST, Fashion-MNIST) for simple inve
 
 ## Acknowledgments
 
-The SPHINX team acknowledges funding from:
+Both the SPHINX team and the SMILE team acknowledges funding from:
 
 ![](logos.png)
