@@ -42,6 +42,8 @@ Illustrating notebooks and scripts are gathered in the [tramp_notebooks](https:/
 
 An illustration of TRAMP on real data-set (MNIST, Fashion-MNIST) for simple inverse problems tasks (inpainting and denoising) is available in [this repo](https://github.com/benjaminaubin/tramp_demo_vae).
 
+Codes corresponding to the examples presented in the above mentioned paper can be found in the [tramp_examples](https://github.com/benjaminaubin/tramp_examples) repo.
+
 ## Acknowledgments
 
 Both the SPHINX team and the SMILE team acknowledges funding from:
