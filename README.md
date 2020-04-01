@@ -11,10 +11,6 @@ Implements gaussian expectation propagation for any tree-like probabilistic grap
 
 **Warning** Currently the package does not support networkx 2.xx and will throw unexpected errors. We plan to upgrade to networkx 2.xx at some point.
 
-## ArXiv
-
-The package is presented in more details in the corresponding paper on [arXiv](https://github.com/sphinxteam/tramp/)
-
 ## Install
 
 To install the package, go to the folder where `setup.py` is located and run:
@@ -35,6 +31,10 @@ pip install git+https://github.com/sphinxteam/tramp.git
 
 See [installing from sources](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/#installing-from-source) for more details.
 In both cases, the necessary requirements should be automatically installed.
+
+## ArXiv
+
+The package is presented in more details in the corresponding paper on [arXiv](https://github.com/sphinxteam/tramp/)
 
 ## Examples
 
