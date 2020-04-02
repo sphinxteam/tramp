@@ -44,6 +44,6 @@ Codes corresponding to the examples presented in the above mentioned paper can b
 
 ## Acknowledgments
 
-Both the SPHINX team and the SMILE team acknowledges funding from:
+Both the SPHINX team and the SMILE team acknowledge funding from:
 
 ![](logos.png)
