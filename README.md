@@ -34,7 +34,7 @@ In both cases, the necessary requirements should be automatically installed.
 
 ## ArXiv
 
-The package is presented in more details in the corresponding paper on [arXiv](https://github.com/sphinxteam/tramp/)
+The package is presented in more details in the corresponding paper on [arXiv](https://arxiv.org/abs/2004.01571)
 
 ## Examples
 
