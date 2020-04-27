@@ -1,5 +1,5 @@
 .. TRAMP documentation master file, created by
-   sphinx-quickstart on Mon Apr 27 18:32:26 2020.
+   sphinx-quickstart on Mon Apr 27 09:34:06 2020.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
@@ -8,7 +8,27 @@ Welcome to TRAMP's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Getting started:
+
+   getting_started
+   
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Examples:
+
+   examples
+   /gallery/sparseRegression/sparseregression
+   
+
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Reference:
+
+   autodoc
+
 
 
 
@@ -16,5 +36,4 @@ Indices and tables
 ==================
 
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`

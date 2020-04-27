@@ -1,0 +1,22 @@
+
+
+Examples using ``tramp.algos.ExpectationPropagation``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example will illustrate how to use different simple modules of TRAMP  ">
+
+.. only:: html
+
+ .. figure:: /gallery/sparseRegression/images/thumb/sphx_glr_sparseRegression_thumb.png
+
+     :ref:`sphx_glr_gallery_sparseRegression_sparseRegression.py`
+
+.. raw:: html
+
+    </div>
+
+.. only:: not html
+
+ * :ref:`sphx_glr_gallery_sparseRegression_sparseRegression.py`
