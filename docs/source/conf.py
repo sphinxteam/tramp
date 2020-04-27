@@ -6,6 +6,7 @@ project = 'TRAMP'
 copyright = '2020, Antoine Baker, Benjamin Aubin, Florent Krzakala, Lenka Zdeborova'
 author = 'Antoine Baker, Benjamin Aubin, Florent Krzakala, Lenka Zdeborova'
 release = '0.1'
+version = '0.1'
 language = 'en'
 
 # -- General configuration ---------------------------------------------------
@@ -24,13 +25,14 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.autosummary',
     'sphinx.ext.extlinks',
-    'sphinx_fontawesome'
+    'sphinx_fontawesome',
+    'sphinx.ext.githubpages',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 html_static_path = ["_static"]
-source_suffix = '.rst'
+source_suffix = ['.rst', '.md']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -61,12 +63,9 @@ html_theme_options = {
     'display_version': True,
     'prev_next_buttons_location': 'none',
     'style_external_links': True,
-    'style_nav_header_background': '#118ab2',
     'navigation_depth': 4,
     'titles_only': False
-
 }
-
 
 html_logo = "_templates/logo_light.png"
 html_show_sourcelink = True
@@ -81,9 +80,7 @@ sphinx_gallery_conf = {
 }
 
 html_css_files = [
-    'css/custom.css',
+    'css/customtheme.css',
 ]
 html_js_files = [
-    'js/custom.js',
 ]
-# html_style = 'css/customtheme.css'
