@@ -18,7 +18,7 @@ Welcome to TRAMP's documentation!
    :caption: Examples:
 
    examples
-   /gallery/sparseRegression/sparseregression
+   /gallery/sparseRegression/sparseRegression
    
 
 

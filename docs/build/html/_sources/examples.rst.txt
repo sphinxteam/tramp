@@ -6,4 +6,4 @@ Examples
    :maxdepth: 2
    :caption: List of the examples:
 
-   /gallery/sparseRegression/sparseregression
+   /gallery/sparseRegression/sparseRegression
