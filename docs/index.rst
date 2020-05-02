@@ -9,7 +9,6 @@ Welcome to TRAMP's documentation!
    contributing
 
 
-
 .. toctree::
    :maxdepth: 1
    :caption: Documentation:
@@ -26,8 +25,10 @@ Welcome to TRAMP's documentation!
    :maxdepth: 1
    :caption: Examples:
 
-   .. examples
    /gallery/sparseRegression/sparseRegression
+   /gallery/sparseGradient/sparseGradient
+   /gallery/sparseFFT/sparseFFT
+   /gallery/sparseCS/sparseCS
    
 
 

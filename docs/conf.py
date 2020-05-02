@@ -26,7 +26,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.extlinks',
     'sphinx_fontawesome',
-    'sphinx.ext.githubpages',
+
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -73,8 +73,8 @@ html_show_sourcelink = True
 # sphinx-gallery configuration ##
 sphinx_gallery_conf = {
     # path to your example scripts
-    'examples_dirs': ['../examples/sparseRegression'],
-    'gallery_dirs': ['gallery/sparseRegression'],
+    'examples_dirs': ['../examples/sparseRegression', '../examples/sparseGradient', '../examples/sparseFFT', '../examples/sparseCS'],
+    'gallery_dirs': ['gallery/sparseRegression', 'gallery/sparseGradient', 'gallery/sparseFFT', 'gallery/sparseCS'],
     'backreferences_dir': 'gen_modules/backreferences',
     'doc_module': ('tramp')
 }
