@@ -19,3 +19,11 @@ wip_notebooks
 
 # Python egg metadata
 /*.egg-info
+
+# docs directory
+/docs/_build/
+/docs/_static/
+/docs/_templates/
+/docs/gen_modules/
+/docs/make.bat
+/docs/Makefile
