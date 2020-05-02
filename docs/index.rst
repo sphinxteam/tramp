@@ -6,6 +6,7 @@ Welcome to TRAMP's documentation!
    :caption: Getting started:
 
    getting_started
+   contributing
 
 
 
@@ -13,17 +14,19 @@ Welcome to TRAMP's documentation!
    :maxdepth: 1
    :caption: Documentation:
 
-   module
-   class
-   function
-
+   algos
+   priors
+   likelihoods
+   channels
+   ensembles
+   utils
 
 
 .. toctree::
    :maxdepth: 1
    :caption: Examples:
 
-   examples
+   .. examples
    /gallery/sparseRegression/sparseRegression
    
 

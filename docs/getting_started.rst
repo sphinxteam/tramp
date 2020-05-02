@@ -25,19 +25,19 @@ Installation
 
 To install the package, go to the folder where setup.py is located and run:
 
-.. code-block:: console
+.. code-block::
 
     pip install .
     
 or if you want to install in development mode (changes to the repository will immediately affect the installed package without needing to re-install):
 
-.. code-block:: console
+.. code-block::
 
     pip install --editable .
 
 To install the package on a remote machine directly from the github repo:
 
-.. code-block:: console
+.. code-block::
     
     pip install git+https://github.com/sphinxteam/tramp.git
 
@@ -51,8 +51,8 @@ More details on the implementation of the package can be found on the `arXiv pap
 
 To cite this work, please use 
 
-.. code-block:: console
-    
+.. code-block:: latex
+
     @misc{baker2020tramp,
     title={TRAMP: Compositional Inference with TRee Approximate Message Passing},
     author={Antoine Baker and Benjamin Aubin and Florent Krzakala and Lenka Zdeborová},
