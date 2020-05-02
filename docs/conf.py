@@ -17,8 +17,8 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx_rtd_theme',
-    # 'recommonmark',
-    # 'sphinx_gallery.gen_gallery',
+    'recommonmark',
+    'sphinx_gallery.gen_gallery',
     'sphinx.ext.napoleon',
     'sphinxjp.themes.basicstrap',
     'sphinx.ext.doctest',
@@ -70,14 +70,14 @@ html_theme_options = {
 html_logo = "_templates/logo_light.png"
 html_show_sourcelink = True
 
-## sphinx-gallery configuration ##
-# sphinx_gallery_conf = {
-#     # path to your example scripts
-#     'examples_dirs': ['../../examples/sparseRegression'],
-#     'gallery_dirs': ['gallery/sparseRegression'],
-#     'backreferences_dir': 'gen_modules/backreferences',
-#     'doc_module': ('tramp')
-# }
+# sphinx-gallery configuration ##
+sphinx_gallery_conf = {
+    # path to your example scripts
+    'examples_dirs': ['../examples/sparseRegression'],
+    'gallery_dirs': ['gallery/sparseRegression'],
+    'backreferences_dir': 'gen_modules/backreferences',
+    'doc_module': ('tramp')
+}
 
 html_css_files = [
     'css/customtheme.css',

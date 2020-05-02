@@ -46,3 +46,20 @@ See `installing from sources <https://packaging.python.org/guides/installing-usi
 
 Citation
 --------
+
+More details on the implementation of the package can be found on the `arXiv paper <https://arxiv.org/abs/2004.01571>`_.
+
+To cite this work, please use 
+
+.. code-block:: console
+    
+    @misc{baker2020tramp,
+    title={TRAMP: Compositional Inference with TRee Approximate Message Passing},
+    author={Antoine Baker and Benjamin Aubin and Florent Krzakala and Lenka Zdeborová},
+    year={2020},
+    eprint={2004.01571},
+    archivePrefix={arXiv},
+    primaryClass={stat.ML}
+    }
+
+
