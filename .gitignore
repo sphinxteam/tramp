@@ -20,6 +20,8 @@ wip_notebooks
 # Python egg metadata
 /*.egg-info
 
+/.vscode/
+
 # docs directory
 /docs/_build/
 /docs/_static/
