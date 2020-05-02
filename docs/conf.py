@@ -61,7 +61,7 @@ html_theme_options = {
     'logo_only': True,
     'navigation_depth': 5,
     'display_version': True,
-    'prev_next_buttons_location': 'none',
+    'prev_next_buttons_location': 'top',
     'style_external_links': True,
     'navigation_depth': 4,
     'titles_only': False
