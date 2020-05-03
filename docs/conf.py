@@ -1,5 +1,6 @@
 import sphinx_rtd_theme
 import sphinx_fontawesome
+from sphinx_gallery.sorting import ExplicitOrder
 
 # -- Project information -----------------------------------------------------
 project = 'TRAMP'
@@ -12,21 +13,22 @@ language = 'en'
 # -- General configuration ---------------------------------------------------
 
 extensions = [
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.viewcode',
+    "sphinx.ext.autosummary",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.coverage",
+    "sphinx.ext.doctest",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.todo",
+    "sphinx.ext.viewcode",
+    "sphinx_gallery.gen_gallery",
+    "nb2plots",
+    "texext",
     'sphinx_rtd_theme',
     'recommonmark',
-    'sphinx_gallery.gen_gallery',
-    'sphinx.ext.napoleon',
-    'sphinxjp.themes.basicstrap',
-    'sphinx.ext.doctest',
-    'sphinx.ext.todo',
-    'sphinx.ext.autosummary',
     'sphinx.ext.extlinks',
     'sphinx_fontawesome',
-
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -42,9 +44,8 @@ locale_dirs = ['locale/']
 gettext_compact = False
 
 master_doc = 'index'
-suppress_warnings = ['image.nonlocal_uri']
 # 'monokai','solarized-light', 'tango',  'solarized-dark', 'pastie'
-pygments_style = 'solarized-dark'
+pygments_style = 'tango'  # 'monokai'  # 'solarized-dark'
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -73,14 +74,27 @@ html_show_sourcelink = True
 # sphinx-gallery configuration ##
 sphinx_gallery_conf = {
     # path to your example scripts
-    'examples_dirs': ['../examples/sparseRegression', '../examples/sparseGradient', '../examples/sparseFFT', '../examples/sparseCS'],
-    'gallery_dirs': ['gallery/sparseRegression', 'gallery/sparseGradient', 'gallery/sparseFFT', 'gallery/sparseCS'],
-    'backreferences_dir': 'gen_modules/backreferences',
-    'doc_module': ('tramp')
+    'examples_dirs': ['../examples/'],
+    "subsection_order": ExplicitOrder(
+        [
+            "../examples/sparse",
+            "../examples/GLM",
+        ]
+    ),
+    'gallery_dirs': ['gallery'],
+    'backreferences_dir': 'modules/backreferences',
+    'doc_module': ('tramp'),
+    'image_scrapers': ('matplotlib'),
 }
+
 
 html_css_files = [
     'css/customtheme.css',
 ]
 html_js_files = [
 ]
+
+
+latex_elements = {
+    'preamble': r'\usepackage{tikz}',
+}

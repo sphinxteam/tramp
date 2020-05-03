@@ -1,3 +1,0 @@
-Sparse regression example
-=========================
-

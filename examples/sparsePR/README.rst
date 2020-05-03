@@ -1,3 +1,0 @@
-Sparse FFT example
-==================
-
