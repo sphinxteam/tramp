@@ -2,6 +2,8 @@
 
 Implements gaussian expectation propagation for any tree-like probabilistic graphical model.
 
+Documentation website: [https://sphinxteam.github.io/tramp.docs.io](https://sphinxteam.github.io/tramp.docs.io)
+
 ## Requirements
 
 - python>=3.6
