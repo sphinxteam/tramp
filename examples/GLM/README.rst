@@ -1,3 +1,0 @@
-Generalized Linear Models
--------------------------
-
