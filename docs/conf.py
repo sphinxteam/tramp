@@ -29,7 +29,8 @@ extensions = [
     'recommonmark',
     'sphinx.ext.extlinks',
     'sphinx_fontawesome',
-    'sphinx.ext.githubpages'
+    'sphinx.ext.githubpages',
+    'sphinx_copybutton'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -95,7 +96,8 @@ html_css_files = [
 html_js_files = [
 ]
 
-
 latex_elements = {
     'preamble': r'\usepackage{tikz}',
 }
+
+copybutton_prompt_text = ">>> "
