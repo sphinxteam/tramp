@@ -49,7 +49,7 @@ def build_sparse_grad_student(size, grad_rho, noise_var):
             + (
                 GradientChannel(shape=x_shape) +
                 GaussBernouilliPrior(size=grad_shape, rho=grad_rho)
-            ) @ MILeafVariable(id="z'", n_prev=2)
+            ) @ MILeafVariable(id="x'", n_prev=2)
         )
     ).to_model()
     return student

@@ -1,0 +1,22 @@
+
+
+Examples using ``tramp.Channel``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Sparse gradient">
+
+.. only:: html
+
+ .. figure:: /gallery/sparse/images/thumb/sphx_glr_plot_sparseGradient_thumb.png
+
+     :ref:`sphx_glr_gallery_sparse_plot_sparseGradient.py`
+
+.. raw:: html
+
+    </div>
+
+.. only:: not html
+
+ * :ref:`sphx_glr_gallery_sparse_plot_sparseGradient.py`
