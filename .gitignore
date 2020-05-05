@@ -26,7 +26,8 @@ wip_notebooks
 /docs/_build/
 /docs/_static/
 /docs/_templates/
-/docs/gen_modules/
+/docs/modules/
+/docs/modules/backreferences/
 /docs/gallery/
 /docs/make.bat
 /docs/Makefile
