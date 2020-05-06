@@ -45,7 +45,7 @@ The :class:`LinearChannel` multiplies the above variable ``x`` by the matrix ``W
 .. nbplot::
 
     >>> from tramp.channels import LinearChannel
-    >>> model = prior @ V(id="x") @ LinearChannel(W=W, name='W') @ V(id="z")
+    >>> model = prior @ V(id="x") @ LinearChannel(W=W, name='W') @ V(id="z0")
 
 
 Adding other channels
@@ -76,12 +76,15 @@ This observation can be for example the result of the above `model` whose output
     >>> model = model @ GaussianChannel(var=1e-2) @ O(id='y')
 
 
-Building the model
-__________________
+Building the model and plot the model 
+_____________________________________
 
 .. nbplot::
 
     >>> model = model.to_model()
+    >>> model.plot()
+
+
 
 
 Running Expectation Propagation
@@ -90,80 +93,85 @@ _______________________________
 
 
 
-Unleash TRAMP's power
----------------------
+.. Unleash TRAMP's power
+.. ---------------------
 
-Creating a :class:`Variable` ``x`` sampled from a :class:`GaussianPrior` with ``n_prev=1`` predecessors and ``n_next=2`` successors
+.. Creating a :class:`Variable` ``x`` sampled from a :class:`GaussianPrior` with ``n_prev=1`` predecessors and ``n_next=2`` successors
 
-.. nbplot::
+.. .. nbplot::
     
-    >>> from tramp.variables import SIMOVariable as V
-    >>> from tramp.priors import GaussianPrior
-    >>> N = 100
-    >>> prior_x = GaussianPrior(size=N, var=1) @ V('x', n_prev=1, n_next=2)
+..     >>> from tramp.variables import SIMOVariable as V
+..     >>> from tramp.priors import GaussianPrior
+..     >>> N = 100
+..     >>> prior_x = GaussianPrior(size=N, var=1) @ V(id="x", n_next=2)
 
-and connect it to a :class:`GaussianChannel` with ``y`` observations and a sparse :class:`GradientChannel` constraint
+.. and connect it to a :class:`GaussianChannel` with ``y`` observations and a sparse :class:`GradientChannel` constraint
 
-.. nbplot::
+.. .. nbplot::
 
-    >>> from tramp.channels import GradientChannel, GaussianChannel
-    >>> from tramp.priors import GaussBernouilliPrior
-    >>> from tramp.variables import SISOVariable as V, MILeafVariable
-    >>> N = 400
-    >>> x_shape = (N,)
-    >>> grad_shape = (1,) + x_shape
-    >>> channel_y = GaussianChannel(var=0.1) @ O("y")
-    >>> channel_grad = ( GradientChannel(shape=grad_shape) + GaussBernouilliPrior(size=grad_shape, rho=0.04) ) @ MILeafVariable(id="z'", n_prev=2)
-    >>> model = prior_x @ ( channel_y +  channel_grad )
-    >>> model = model.to_model()
-
-
-
-Teacher-Student scenario
-------------------------
-
-In a :class:`TeacherStudentScenario`, a ``teacher`` generates samples of the variables ``x_ids`` and a  ``student`` tries to recover them. 
-A ``seed`` can be used for reproducibility of the results. 
-
-.. nbplot::
-
-    >>> x_ids = ["x", "x'"]
-    >>> scenario = TeacherStudentScenario(teacher, student, x_ids=x_ids)
-    >>> scenario.setup(seed=seed)
+..     >>> from tramp.channels import GradientChannel, GaussianChannel
+..     >>> from tramp.priors import GaussBernouilliPrior
+..     >>> from tramp.variables import SISOVariable as V, MILeafVariable
+..     >>> N = 400
+..     >>> x_shape = (N,)
+..     >>> grad_shape = (1,) + x_shape
+..     >>> channel_y = GaussianChannel(var=0.1) @ O("y")
+..     >>> channel_grad = ( GradientChannel(shape=grad_shape) + GaussBernouilliPrior(size=grad_shape, rho=0.04) ) @ MILeafVariable(id="z'", n_prev=2)
+..     >>> model = prior_x @ ( channel_y +  channel_grad )
+..     >>> model = model.to_model()
 
 
-Run Expectation Propagation
-___________________________
 
-EP can be run with a maixmum number of iterations ``max_iter`` and ``damping`` on all variables to help convergence. 
-Different ``callback`` can be used such as :class:`EarlyStoppingEP` if precision `tol` is reached. 
+.. Teacher-Student scenario
+.. ------------------------
 
-.. nbplot::
+.. In a :class:`TeacherStudentScenario`, a ``teacher`` generates samples of the variables ``x_ids`` and a  ``student`` tries to recover them. 
+.. A ``seed`` can be used for reproducibility of the results. 
 
-    >>> max_iter = 1000
-    >>> damping = 0.1
-    >>> scenario.run_ep(max_iter=max_iter, damping=damping, callback=EarlyStoppingEP(tol=1e-2))
+.. .. nbplot::
+
+..     >>> x_ids = ["x", "x'"]
+..     >>> scenario = TeacherStudentScenario(teacher, student, x_ids=x_ids)
+..     >>> scenario.setup(seed=seed)
 
 
-To use multiple callbacks at a time, you need to use :class:`JoinCallback`:
+.. Run Expectation Propagation
+.. ___________________________
 
-.. nbplot::
-    >>> from tramp.algos import JoinCallback, EarlyStoppingEP, TrackOverlaps, TrackEstimate
-    >>> track_overlap = TrackOverlaps()
-    >>> track_estimate = TrackEstimate()
-    >>> callback = JoinCallback([track_overlap, track_estimate, EarlyStoppingEP(tol=1e-12)]
+.. EP can be run with a maixmum number of iterations ``max_iter`` and ``damping`` on all variables to help convergence. 
+.. Different ``callback`` can be used such as :class:`EarlyStoppingEP` if precision `tol` is reached. 
 
-The results of EP is given by ``scenario.x_pred`` and can be compared to the ground truth ``scenario.x_true``. 
+.. .. nbplot::
 
-.. nbplot::
+..     >>> max_iter = 1000
+..     >>> damping = 0.1
+..     >>> scenario.run_ep(max_iter=max_iter, damping=damping, callback=EarlyStoppingEP(tol=1e-2))
+
+
+.. To use multiple callbacks at a time, you need to use :class:`JoinCallback`:
+
+.. .. nbplot::
+..     >>> from tramp.algos import JoinCallback, EarlyStoppingEP, TrackOverlaps, TrackEstimate
+..     >>> track_overlap = TrackOverlaps()
+..     >>> track_estimate = TrackEstimate()
+..     >>> callback = JoinCallback([track_overlap, track_estimate, EarlyStoppingEP(tol=1e-12)]
+
+.. The results of EP is given by ``scenario.x_pred`` and can be compared to the ground truth ``scenario.x_true``. 
+
+.. .. nbplot::
    
-    >>> from tramp.algos.metrics import mean_squared_error
-    >>> y_true = scenario.observations["y"]
-    >>> x_true = scenario.x_true
-    >>> x_pred = scenario.x_pred
-    >>> mse = mean_squared_error(x_pred, x_true)
+..     >>> from tramp.algos.metrics import mean_squared_error
+..     >>> y_true = scenario.observations["y"]
+..     >>> x_true = scenario.x_true
+..     >>> x_pred = scenario.x_pred
+..     >>> mse = mean_squared_error(x_pred, x_true)
 
 
-Run State Evolution
-___________________
+.. Run State Evolution
+.. ___________________
 
+
+Downloading the tutorial
+________________________
+
+.. code-links::
