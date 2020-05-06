@@ -30,13 +30,13 @@ extensions = [
     'sphinx.ext.extlinks',
     'sphinx_fontawesome',
     'sphinx.ext.githubpages',
-    'sphinx_copybutton'
+    'sphinx_copybutton',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 html_static_path = ["_static"]
-source_suffix = ['.rst', '.md']
+source_suffix = ['.rst']
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
