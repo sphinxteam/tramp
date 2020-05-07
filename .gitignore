@@ -30,8 +30,6 @@ wip_notebooks
 /docs/modules/backreferences/
 /docs/gallery/
 /docs/auto-examples/
-/docs/make.bat
-/docs/Makefile
 /gallery
 
-/examples_new/
+/examples_tmp/
