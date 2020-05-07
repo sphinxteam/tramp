@@ -24,8 +24,6 @@ wip_notebooks
 
 # docs directory
 /docs/_build/
-/docs/_static/
-/docs/_templates/
 /docs/modules/
 /docs/modules/backreferences/
 /docs/gallery/
