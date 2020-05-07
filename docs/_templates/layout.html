@@ -48,7 +48,12 @@
                         &copy; <a href="{{ path }}">{% trans %}Copyright{% endtrans %}</a> {{ copyright }}
                         {%- else %}
                         {% set copyright = copyright|e %}
-                        &copy; {% trans %}Copyright{% endtrans %} {{ copyright }}
+                        &copy; {% trans %}Copyright{% endtrans %} {{ copyright }}.
+
+                        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+                            href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a
+                            href="https://readthedocs.org">Read the
+                            Docs</a>
                         {%- endif %}
                         {%- endif %}
 
