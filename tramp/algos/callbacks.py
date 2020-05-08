@@ -1,3 +1,4 @@
+"""Callbacks for EP and SE."""
 from .metrics import METRICS
 import pandas as pd
 import numpy as np

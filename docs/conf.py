@@ -4,8 +4,8 @@ from sphinx_gallery.sorting import ExplicitOrder
 
 # -- Project information -----------------------------------------------------
 project = 'TRAMP'
-copyright = '2020, Antoine Baker, Benjamin Aubin, Florent Krzakala, Lenka Zdeborova'
-author = 'Antoine Baker, Benjamin Aubin, Florent Krzakala, Lenka Zdeborova'
+copyright = '2020, TRAMP developers'
+author = 'TRAMP developers'
 release = '0.1'
 version = '0.1'
 language = 'en'
@@ -24,30 +24,36 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx_gallery.gen_gallery",
     "nb2plots",
-    "texext",
+    "texext.math_dollar",
     'sphinx_rtd_theme',
-    'recommonmark',
     'sphinx.ext.extlinks',
     'sphinx_fontawesome',
     'sphinx.ext.githubpages',
     'sphinx_copybutton',
 ]
 
+# generate autosummary pages
+autosummary_generate = True
+
+# If true, the current module name will be prepended to all description
+# unit titles (such as .. function::).
+add_module_names = True
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 html_static_path = ["_static"]
-source_suffix = ['.rst']
+source_suffix = '.rst'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '*.md']
 locale_dirs = ['locale/']
 gettext_compact = False
 
 master_doc = 'index'
 # 'monokai','solarized-light', 'tango',  'solarized-dark', 'pastie'
-pygments_style = 'tango'  # 'monokai'  # 'solarized-dark'
+pygments_style = 'tango'
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -55,7 +61,6 @@ pygments_style = 'tango'  # 'monokai'  # 'solarized-dark'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 
-# html_theme = 'alabaster'
 html_theme = 'sphinx_rtd_theme'
 html_theme_options = {
     'collapse_navigation': True,
@@ -70,7 +75,7 @@ html_theme_options = {
     'titles_only': False
 }
 
-html_logo = "_templates/logo_light.png"
+html_logo = "_static/logo_light.png"
 html_show_sourcelink = True
 
 # sphinx-gallery configuration ##
@@ -89,9 +94,13 @@ sphinx_gallery_conf = {
     'image_scrapers': ('matplotlib'),
 }
 
+# show section and code author
+show_authors = True
 
+# If true, the reST sources are included in the HTML build as _sources/<name>.
+html_copy_source = False
 html_css_files = [
-    'css/customtheme.css',
+    'customtheme.css',
 ]
 html_js_files = [
 ]

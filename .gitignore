@@ -25,9 +25,9 @@ wip_notebooks
 # docs directory
 /docs/_build/
 /docs/modules/
-/docs/modules/backreferences/
 /docs/gallery/
 /docs/auto-examples/
-/gallery
+/docs/path.to.file
+
 
 /examples_tmp/
