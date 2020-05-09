@@ -2,7 +2,7 @@
 
 Implements gaussian expectation propagation for any tree-like probabilistic graphical model.
 
-Documentation website: [https://sphinxteam.github.io/tramp.docs.io](https://sphinxteam.github.io/tramp.docs.io)
+Documentation website: [https://sphinxteam.github.io/tramp.docs](https://sphinxteam.github.io/tramp.docs)
 
 ## Requirements
 
