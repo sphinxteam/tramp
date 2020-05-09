@@ -3,7 +3,12 @@ Tutorial
 
 .. currentmodule:: tramp
 
-This guide can help you start working with TRAMP.
+This simple guide can help you start working with TRAMP. 
+
+.. seealso::
+
+    For a detailed overview of the implementation please review the :ref:`userguide` or the `arXiv paper <https://arxiv.org/abs/2004.01571>`_.
+
 
 Building your first model
 -------------------------
@@ -11,7 +16,7 @@ Building your first model
 Creating a variable
 ^^^^^^^^^^^^^^^^^^^
 
-Create a :class:`variables.SISOVariable` ``V`` of size ``N`` drawn from a :class:`priors.GaussBernouilliPrior` separable prior with sparsity ``rho``
+Let us start by creating our first variable :class:`variables.SISOVariable` ``V`` of size ``N`` drawn from a :class:`priors.GaussBernouilliPrior` separable prior with sparsity ``rho``
 
 .. nbplot::
 
@@ -19,15 +24,15 @@ Create a :class:`variables.SISOVariable` ``V`` of size ``N`` drawn from a :class
     >>> from tramp.priors import GaussBernouilliPrior
     >>> N, rho = 100, 0.1
     >>> prior = GaussBernouilliPrior(size=N, rho=rho)
-    >>> prior @ V(id="x")
+    >>> var_x = prior @ V(id="x")
 
-The opeartor ``@`` allows to assign a variable ``x`` drawn from a distribution ``prior``.
+The opeartor ``@`` allows to assign a variable ``x`` drawn from a ``prior`` distribution, and in general to concatenate modules together.
 
 
 Draw a matrix from an ensemble
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Create a matrix ``W``, an instance of the :class:`ensembles.GaussianEnsemble` of size `` M \times N ``
+Creating a matrix ``W`` instance of the :class:`ensembles.GaussianEnsemble` of size ``M x N`` can be done by
 
 .. nbplot::
 
@@ -40,7 +45,8 @@ Create a matrix ``W``, an instance of the :class:`ensembles.GaussianEnsemble` of
 Constructing a linear channel
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The :class:`channels.LinearChannel` multiplies the above variable ``x`` by the matrix ``W`` and can be casted in a new variable ``z = W x`` with ``W ~ ensemble`` and ``x ~  prior``
+The variable ``x`` can be mutliplied by the matrix ``W`` using the :class:`channels.LinearChannel`. 
+The result can be casted in a new variable ``z0 = W x`` with ``W ~ ensemble`` and ``x ~  prior``.
 
 .. nbplot::
 
@@ -48,11 +54,12 @@ The :class:`channels.LinearChannel` multiplies the above variable ``x`` by the m
     >>> model = prior @ V(id="x") @ LinearChannel(W=W, name='W') @ V(id="z0")
 
 
-Adding other channels
-^^^^^^^^^^^^^^^^^^^^^
+Adding other modules
+^^^^^^^^^^^^^^^^^^^^
 
-As many module can be added as will. Each module must be followed by a variable ``V``.
-For example a :class:`channels.BiasChannel` with bias ``b`` followed by a :class:`channels.ReluChannel`.
+As many module as desired can be added to the previous ``model``. Each module must be followed by a variable ``V``.
+For example a :class:`channels.BiasChannel` with value ``b`` with intermediate variabel ``z``, 
+followed by a :class:`channels.ReluChannel` outputing a variable ``h``.
 
 .. nbplot::
 
@@ -65,19 +72,21 @@ For example a :class:`channels.BiasChannel` with bias ``b`` followed by a :class
 Adding observations
 ^^^^^^^^^^^^^^^^^^^
 
-
-An observation ``O`` can be added as an instance of the :class:`variables.SILeafVariable`.
-This observation can be for example the result of the above `model` whose output goes through a noisy :class:`channels.GaussianChannel` with variance ``var``.
+Observations :class:`SILeafVariable` ``O`` can be added to the the ``model``.
+For example ``model`` may go through a noisy :class:`channels.GaussianChannel` with variance ``var`` and outputs a variable ``y``.
 
 .. nbplot::
 
     >>> from tramp.variables import SILeafVariable as O
     >>> from tramp.channels import GaussianChannel
-    >>> model = model @ GaussianChannel(var=1e-2) @ O(id='y')
+    >>> var = 1e-2
+    >>> model = model @ GaussianChannel(var=var) @ O(id='y')
 
 
-Plot the model
-^^^^^^^^^^^^^^
+Representing the model
+^^^^^^^^^^^^^^^^^^^^^^
+
+Once the model completed, it can be built with the method ``.to_model()`` and drawn with ``.plot()`` :
 
 .. nbplot::
 
@@ -86,19 +95,15 @@ Plot the model
 
 
 
-Running Expectation Propagation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+EP/SE in the Bayes-optimal scenario
+-----------------------------------
 
-
-
-
-Sparse gradient prior
----------------------
+Let us illustrate how to run ``EP`` or ``SE`` in the Bayes-optimal case and on a more complex model: a sparse gradient prior.
 
 Build the model
 ^^^^^^^^^^^^^^^
 
-Creating a ``x`` sampled from a :class:`priors.GaussianPrior` with ``n_prev=1`` predecessors and ``n_next=2`` successors
+Creating a variable ``x`` of size ``N`` sampled from a :class:`priors.GaussianPrior` with  ``n_next=2`` successors can be done with a :class:`variables.SIMOVariable` ``V``
 
 .. nbplot::
 
@@ -107,27 +112,36 @@ Creating a ``x`` sampled from a :class:`priors.GaussianPrior` with ``n_prev=1`` 
     >>> N = 100
     >>> prior_x = GaussianPrior(size=N, var=1) @ V(id="x", n_next=2)
 
-and connect it to a :class:`channels.GaussianChannel` with ``y`` observations and a sparse :class:`channels.GradientChannel` constraint
+which can be connected to a :class:`channels.GaussianChannel` with ``y`` observations and a sparse gradient constraint on ``x``. 
+This constraint can be built with a new variable ``x'`` connected to ``n_prev=2`` predecesors: a :class:`channels.GradientChannel` connected to ``x`` and a :class:`priors.GaussBernouilliPrior` with sparsity ``rho``.
 
 .. nbplot::
 
     >>> from tramp.channels import GradientChannel, GaussianChannel
     >>> from tramp.priors import GaussBernouilliPrior
     >>> from tramp.variables import SISOVariable as V, MILeafVariable
+    >>> rho = 0.04
+    >>> var = 0.1
     >>> x_shape = (N,)
     >>> grad_shape = (1,) + x_shape
-    >>> channel_y = GaussianChannel(var=0.1) @ O("y")
-    >>> channel_grad = (GradientChannel(shape=x_shape) + GaussBernouilliPrior(size=grad_shape, rho=0.04)) @ MILeafVariable(id="x'", n_prev=2)
+    >>> # Create the gaussian channel and the observations y 
+    >>> channel_y = GaussianChannel(var=var) @ O("y")
+    >>> # Create the sparse gradient constraint and the new variable x'
+    >>> channel_grad = (GradientChannel(shape=x_shape) + GaussBernouilliPrior(size=grad_shape, rho=rho)) @ MILeafVariable(id="x'", n_prev=2)
+    >>> # Plug the two channels to the variables x
     >>> model = prior_x @ ( channel_y +  channel_grad )
+    >>> # Build the model
     >>> model = model.to_model()
+    >>> # Show the model
     >>> model.plot()
 
 
 Teacher-Student scenario
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-In a :class:`experiments.BayesOptimalScenario`, a ``teacher`` generates samples of the variables ``x_ids`` and a  ``student`` tries to recover them.
-A ``seed`` can be used for reproducibility of the results.
+In a :class:`experiments.BayesOptimalScenario`, ground truth samples of all the variables contained in the ``model`` are drawn (namely ``x, x', y`` ).
+The ``scenario`` tries then to infer the variables ``x_ids`` from the observations ``y`` and knowing the structure and the parameters of the model (``rho``, ``var``).
+The ``scenario`` is setup with a ``.setup()`` method where an optional ``seed`` can be used for reproducibility.
 
 .. nbplot::
 
@@ -137,11 +151,12 @@ A ``seed`` can be used for reproducibility of the results.
     >>> scenario.setup(seed=42)
 
 
-Run Expectation Propagation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Run Expectation Propagation (EP)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-EP can be run with a maximum number of iterations ``max_iter`` and ``damping`` on all variables to help convergence.
-Different ``callback`` can be used such as :class:`algos.EarlyStoppingEP` if precision `tol` is reached.
+EP can be run on the above ``scenario`` with the method ``.run_ep()``. 
+Optional maximum number of iterations ``max_iter`` and ``damping`` on all variables to help convergence can be added.
+Different ``callback`` can be used such as :class:`algos.EarlyStoppingEP` if precision ``tol`` is reached.
 
 .. nbplot::
 
@@ -157,6 +172,19 @@ To use multiple callbacks at a time, you need to use :class:`algos.JoinCallback`
     >>> track_estimate = TrackEstimate()
     >>> callback = JoinCallback([track_overlap, track_estimate, EarlyStoppingEP(tol=1e-12)])
 
-To be continued...
+Run State Evolution (SE)
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+SE can be performed simply with the ``run_se()`` method
+
+.. nbplot::
+    
+    >>> scenario.run_se()
+
+
+.. note::
+
+    Continue the tutorial
+
 
 .. code-links::

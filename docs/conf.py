@@ -97,7 +97,7 @@ sphinx_gallery_conf = {
 # show section and code author
 show_authors = True
 
-# If true, the reST sources are included in the HTML build as _sources/<name>.
+# Custom theme
 html_copy_source = False
 html_css_files = [
     'customtheme.css',
@@ -109,4 +109,8 @@ latex_elements = {
     'preamble': r'\usepackage{tikz}',
 }
 
+# Copy button
 copybutton_prompt_text = ">>> "
+
+# nb2plot formats
+nbplot_formats = ['.pdf', '.png']
