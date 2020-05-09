@@ -85,8 +85,8 @@ sphinx_gallery_conf = {
     "subsection_order": ExplicitOrder(
         [
             "../examples/sparse",
-            "../examples/vae_prior",
             "../examples/glm",
+            "../examples/vae_prior",
         ]
     ),
     'gallery_dirs': ['gallery'],
@@ -112,6 +112,3 @@ latex_elements = {
 
 # Copy button
 copybutton_prompt_text = ">>> "
-
-# nb2plot formats
-nbplot_formats = ['.pdf', '.png']
