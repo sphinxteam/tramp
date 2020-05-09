@@ -432,12 +432,18 @@ data = 'mnist'
 category, seed = 8, 5
 
 # %%
+# Denoising
+model, Delta = 'denoising', 4
+dic = run_demo(model=model, data=data, category=category,
+               max_iter=max_iter, Delta=Delta, seed=seed)
+plot_VAE(dic)
+
+# %%
 # Uniform inpainting
 model, p_rem, type_rem = 'inpainting', 50, 'uniform'
 dic = run_demo(model=model, data=data, category=category,
                max_iter=max_iter, p_rem=p_rem, type_rem=type_rem, seed=seed)
 plot_VAE(dic, save_fig=False)
-
 
 # %%
 # Central band inpainting
@@ -445,11 +451,3 @@ model, p_rem, type_rem = 'inpainting', 25, 'band'
 dic = run_demo(model=model, data=data, category=category,
                max_iter=max_iter, p_rem=p_rem, type_rem=type_rem, seed=seed)
 plot_VAE(dic, save_fig=False)
-
-
-# %%
-# Denoising
-model, Delta = 'denoising', 4
-dic = run_demo(model=model, data=data, category=category,
-               max_iter=max_iter, Delta=Delta, seed=seed)
-plot_VAE(dic)

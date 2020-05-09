@@ -85,8 +85,8 @@ sphinx_gallery_conf = {
     "subsection_order": ExplicitOrder(
         [
             "../examples/sparse",
-            "../examples/glm",
             "../examples/vae_prior",
+            "../examples/glm",
         ]
     ),
     'gallery_dirs': ['gallery'],
