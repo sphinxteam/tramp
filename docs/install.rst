@@ -1,11 +1,24 @@
 Installation
 ------------
 
+Requirements
+____________
+
 .. tip::
+    TRAMP package requires the following packages
+
     - python>=3.6
     - numpy/pandas/scipy/matplotlib
     - networkx==1.11
     - daft
+
+    To directly install all the dependencies please type:
+
+
+    .. code-block::
+
+        pip install -U -r requirements/default.txt
+
 ..
 
 
@@ -14,25 +27,31 @@ Installation
 ..
 
 
+Package installation
+____________________
+
 To install the package, go to the folder where setup.py is located and run:
 
 .. code-block::
 
     pip install .
 
-or if you want to install in development mode (changes to the repository will immediately affect the installed package without needing to re-install):
 
-.. code-block::
+.. seealso::
 
-    pip install --editable .
+    If you want to install in development mode (changes to the repository will immediately affect the installed package without needing to re-install):
 
-To install the package on a remote machine directly from the github repo:
+    .. code-block::
 
-.. code-block::
+        pip install --editable .
 
-    pip install git+https://github.com/sphinxteam/tramp.git
+    To install the package on a remote machine directly from the github repo:
 
-See `installing from sources <https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/#installing-from-source>`_ for more details. In both cases, the necessary requirements should be automatically installed.
+    .. code-block::
+
+        pip install git+https://github.com/sphinxteam/tramp.git
+
+    See `installing from sources <https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/#installing-from-source>`_ for more details. In both cases, the necessary requirements should be automatically installed.
 
 
 Citation
