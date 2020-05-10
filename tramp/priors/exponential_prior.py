@@ -1,24 +1,26 @@
 import numpy as np
 from .base_prior import Prior
+from ..utils.integration import exponential_measure
+from ..utils.truncated_normal import log_Phi
+from ..utils.misc import norm_pdf, norm_cdf
 
 
 class ExponentialPrior(Prior):
     """
-        - lambda * exp(-lambda * x)
-        - mean = 1 / lambda 
-        - var = 1 / lambda^2
+        - lambd * exp( -lambd * x)
+        - mean = 1 / lambd 
+        - b0 = - lambd
     """
 
-    def __init__(self, size, mean=0):
+    def __init__(self, size, lambd=1):
         self.size = size
-        self.mean = mean
+        assert lambd > 0
+        self.mean = 1/lambd
+        self.b = - lambd
         self.repr_init()
-        self.sigma = np.sqrt(var)
-        self.a = 0
-        self.b = mean
 
     def sample(self):
-        X = np.random.exponential(scale=1/mean, self.size)
+        X = np.random.exponential(scale=1/self.mean, size=self.size)
         return X
 
     def math(self):
@@ -27,51 +29,29 @@ class ExponentialPrior(Prior):
     def second_moment(self):
         return self.mean**2
 
-    def compute_forward_posterior(self, ax, bx):
-        a = ax + self.a
-        b = bx + self.b
-        rx = - 1 / b
-        vx = 1 / b**2
-        return rx, vx
-
-    def compute_forward_error(self, ax):
-        # a = ax + self.a
-        # vx = 1 / a
-        raise NotImplementedError
-        return vx
-
-    def compute_forward_message(self, ax, bx):
-        # ax_new = self.a
-        # bx_new = self.b * np.ones_like(bx)
-        raise NotImplementedError
-        return ax_new, bx_new
-
-    def compute_forward_state_evolution(self, ax):
-        # ax_new = self.a
-        raise NotImplementedError
-        return ax_new
-
     def measure(self, f):
-        raise NotImplementedError
+        return exponential_measure(m=self.mean)
 
     def compute_log_partition(self, ax, bx):
-        # a = ax + self.a
-        # b = bx + self.b
-        # logZ = 0.5 * np.sum(
-        #     b**2 / a - self.b**2 / self.a + np.log(self.a/a)
-        # )
-        raise NotImplementedError
+        a = ax
+        b = bx + self.b
+        A = b**2/(2*a) + 1/2 * np.log(2*pi/a)
+        z_pos = b / np.sqrt(a)
+        A_pos = A + log_Phi(z_pos)
+        A_z = -np.log(-self.b)
+        logZ_i = A_pos - A_z
+        logZ = np.sum(logZ_i)
         return logZ
 
-    def compute_mutual_information(self, ax):
-        # a = ax + self.a
-        # I = 0.5*np.log(a*self.var)
-        raise NotImplementedError
-        return I
+    def compute_forward_posterior(self, ax, bx):
+        a = ax
+        b = bx + self.b
+        z_pos = b / np.sqrt(a)
+        rx = 1/np.sqrt(a) * (z_pos + norm_pdf(z_pos) / norm_cdf(z_pos))
+        v = 1/a * (
+            1 - z_pos * norm_pdf(z_pos) / norm_cdf(z_pos) - norm_pdf(z_pos)**2 / norm_cdf(z_pos)**2)
+        vx = np.mean(v)
+        return rx, vx
 
-    def compute_free_energy(self, ax):
-        # tau_x = self.second_moment()
-        # I = self.compute_mutual_information(ax)
-        # A = 0.5*ax*tau_x - I
+    def beliefs_measure(self, ax, f):
         raise NotImplementedError
-        return A

@@ -71,3 +71,21 @@ def gaussian_measure_2d_full(cov, mean, f):
         return norm_pdf(x1) * norm_pdf(x2) * f(y1, y2)
     integral = dblquad(integrand, -10, 10, -10, 10)[0]
     return integral
+
+
+def exponential_measure(m, f):
+    """Computes one-dimensional exponential integral.
+
+    Parameters
+    ----------
+    - m : mean of exponential measure
+    - f : function (R -> R) to integrate
+
+    Returns
+    -------
+    - integral of lambd*exp(-lambd*x) f(x)
+    """
+    def integrand(x):
+        return 1/m * exp(-x/m) * f(x)
+    integral = quad(integrand, 0, 10)[0]
+    return integral
