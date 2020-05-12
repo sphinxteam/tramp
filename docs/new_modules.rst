@@ -27,6 +27,17 @@ indexed by the natural parameter $\lambda$. The log-partition, the mean and the 
 Prior
 -----
 
+A new :class:`Prior` must at least contain the following methods (for EP):
+
+- ``sample``: returns sampling with corresponding distribution
+- ``math``: returns lateX representation
+- ``second_moment``: returns second moment of the distribution
+- ``measure``: returns the integration of a function ``f`` with corresponding measure
+- ``compute_log_partition``: returns $A_f[a_{x \rightarrow f} b_{x \rightarrow f}]$
+- ``compute_forward_posterior``: returns $\{r_x^{f(i)}[a_{x \rightarrow f} b_{x \rightarrow f}]\}_{i=1..N}$ and $v_x^{f}[a_{x \rightarrow f} b_{x \rightarrow f}]$
+
+
+
 General definitions
 ___________________
 
@@ -42,14 +53,11 @@ The log-partition, posterior means and variances  are given by:
       &v_x^{f}[a_{x \rightarrow f} b_{x \rightarrow f}] = \frac{1}{N} \sum_{i=1}^{N}
       v_x^{f}[a_{x \rightarrow f} b_{x \rightarrow f}^{(i)}].
 
-with 
-
-
 
 Natural prior
 _____________
 
-In the case of a natural prior with parameters $\lambda_0$
+In the case of a natural prior with parameters $\lambda_0$, this can be decomposed in two terms
 
 .. math::
   &A_f[\lambda_{z \rightarrow f}] =
@@ -62,7 +70,7 @@ In the case of a natural prior with parameters $\lambda_0$
 Example: exponential prior
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Let us illustrate with the natural prior $p_0(x | b_0) = \exp(b_0 x - A_z[b_0]) 1[x>0]$, where $b_0<0$. The natural parameters $\lambda_0 = {a_0, b_0} = {0, b_0}$ 
+Let us illustrate with the natural prior $p_0(x | b_0) = \exp(b_0 x - A_z[b_0]) 1[x>0]$, where $b_0<0$. The natural parameters $\lambda_0 = \{a_0, b_0\} = \{0, b_0\}$ 
 
 .. math::
 
@@ -78,7 +86,7 @@ with $a = a_{x \rightarrow f}$ and $b^{(i)} = b_{x \rightarrow f}^{(i)} + b_0$ a
       A_z[b_0] &\equiv  \log \left(\int_0^{\infty } \exp (b_0 x) \, dx\right) = \log \left(-\frac{1}{b_0}\right)
       \end{cases}
 
-with 
+where 
 
 .. math::
       

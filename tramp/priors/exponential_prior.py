@@ -2,19 +2,19 @@ import numpy as np
 from .base_prior import Prior
 from ..utils.integration import exponential_measure
 from ..utils.truncated_normal import log_Phi
-from ..utils.misc import norm_pdf, norm_cdf
+from ..utils.misc import phi_1
 
 
 class ExponentialPrior(Prior):
     """
-        - lambd * exp( -lambd * x)
-        - mean = 1 / lambd 
-        - b0 = - lambd
+        - lambd * exp( -lambd * x) = (-b0) exp(bO * x)
+        - mean = 1 / lambd and var = 1 / lambd**2
+        - self.b = b0 = - lambd
     """
 
     def __init__(self, size, lambd=1):
-        self.size = size
         assert lambd > 0
+        self.size = size
         self.mean = 1/lambd
         self.b = - lambd
         self.repr_init()
@@ -47,9 +47,11 @@ class ExponentialPrior(Prior):
         a = ax
         b = bx + self.b
         z_pos = b / np.sqrt(a)
-        rx = 1/np.sqrt(a) * (z_pos + norm_pdf(z_pos) / norm_cdf(z_pos))
+        # Use phi_1(x) = x + N(x) / Phi(x)
+        pdf_cdf = phi_1(z_pos)-z_pos
+        rx = 1/np.sqrt(a) * (z_pos + pdf_cdf)
         v = 1/a * (
-            1 - z_pos * norm_pdf(z_pos) / norm_cdf(z_pos) - norm_pdf(z_pos)**2 / norm_cdf(z_pos)**2)
+            1 - z_pos * pdf_cdf - pdf_cdf**2)
         vx = np.mean(v)
         return rx, vx
 
