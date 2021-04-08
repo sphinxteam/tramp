@@ -31,7 +31,7 @@ Linear channel
 
 .. autoclass:: tramp.channels.GradientChannel
 
-.. include:: modules/backreferences/tramp.channels.GradientChannel.examples
+.. include:: ../modules/backreferences/tramp.channels.GradientChannel.examples
 .. raw:: html
 
     <div class="sphx-glr-clear"></div>

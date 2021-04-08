@@ -1,4 +1,4 @@
-"""Callbacks for EP and SE."""
+"""Callbacks for ExpectationPropagation and StateEvolution algorithms."""
 from .metrics import METRICS
 import pandas as pd
 import numpy as np
