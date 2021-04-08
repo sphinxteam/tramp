@@ -7,7 +7,7 @@ from tramp.algos import EarlyStopping, EarlyStoppingEP
 def run_cs(N, alpha, f, prior_rho):
     model = glm_generative(
         N=N, alpha=alpha, ensemble_type="random_feature",
-        prior_type="gauss_bernouilli", output_type="gaussian",
+        prior_type="gauss_bernoulli", output_type="gaussian",
         ensemble_f=f, prior_rho=prior_rho, output_var=1e-11
     )
     scenario = BayesOptimalScenario(model, x_ids=["x"])

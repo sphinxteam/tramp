@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO)
 alpha = 2.
 N = 1000
 teacher = glm_generative(
-    N=N, alpha=alpha, ensemble_type="gaussian", prior_type="gauss_bernouilli",
+    N=N, alpha=alpha, ensemble_type="gaussian", prior_type="gauss_bernoulli",
     output_type="relu", prior_rho=0.5
 )
 for factor in teacher.factors:

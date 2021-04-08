@@ -6,7 +6,7 @@ Priors
 
 .. autoclass:: tramp.priors.BinaryPrior
 
-.. autoclass:: tramp.priors.GaussBernouilliPrior
+.. autoclass:: tramp.priors.GaussBernoulliPrior
 
 .. autoclass:: tramp.priors.MAP_LaplacePrior
 

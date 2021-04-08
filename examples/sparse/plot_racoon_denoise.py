@@ -9,7 +9,7 @@ from tramp.priors.base_prior import Prior
 from scipy.misc import face
 from scipy.stats import laplace
 from tramp.experiments import TeacherStudentScenario
-from tramp.priors import BinaryPrior, GaussianPrior, GaussBernouilliPrior, MAP_L21NormPrior
+from tramp.priors import BinaryPrior, GaussianPrior, GaussBernoulliPrior, MAP_L21NormPrior
 from tramp.channels import Blur2DChannel, GaussianChannel, GradientChannel
 from tramp.variables import SIMOVariable, MILeafVariable, SISOVariable as V, SILeafVariable as O
 import matplotlib.pyplot as plt
@@ -123,7 +123,7 @@ sparse_grad = (
     SIMOVariable(id="x", n_next=2) @ (
         noise @ O("y") + (
             GradientChannel(shape=x_shape) +
-            GaussBernouilliPrior(size=grad_shape, var=0.7, rho=0.9)
+            GaussBernoulliPrior(size=grad_shape, var=0.7, rho=0.9)
         ) @
         MILeafVariable(id="x'", n_prev=2)
     )

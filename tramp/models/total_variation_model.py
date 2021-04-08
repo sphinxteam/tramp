@@ -3,7 +3,7 @@ from ..variables import SISOVariable as V, SIMOVariable, MILeafVariable
 from ..channels import (
     LinearChannel, GaussianChannel, GradientChannel, ReshapeChannel
 )
-from ..priors import GaussianPrior, GaussBernouilliPrior, MAP_L21NormPrior
+from ..priors import GaussianPrior, GaussBernoulliPrior, MAP_L21NormPrior
 from ..likelihoods import GaussianLikelihood, SgnLikelihood
 
 
@@ -15,7 +15,7 @@ def sparse_gradient_block(x_shape, prior_var, grad_rho):
         GaussianPrior(size=x_shape, var=prior_var) @
         SIMOVariable(id="x", n_next=2) @ ((
                 GradientChannel(shape=x_shape) +
-                GaussBernouilliPrior(size=grad_shape, rho=grad_rho)
+                GaussBernoulliPrior(size=grad_shape, rho=grad_rho)
             ) @ MILeafVariable(id="x'", n_prev=2)
         )
     ) @ ReshapeChannel(prev_shape=x_shape, next_shape=N)

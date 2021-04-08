@@ -7,7 +7,7 @@ from tramp.algos import EarlyStopping, EarlyStoppingEP
 def run_phase_retrieval(N, alpha, prior_mean):
     model = glm_generative(
         N=N, alpha=alpha, ensemble_type="complex_gaussian", 
-        prior_type="gauss_bernouilli", output_type="modulus",
+        prior_type="gauss_bernoulli", output_type="modulus",
         prior_mean=prior_mean, prior_rho=0.5 
     )
     scenario = BayesOptimalScenario(model, x_ids=["x"])

@@ -7,7 +7,7 @@ Sparse FFT
 from tramp.algos import EarlyStoppingEP
 from tramp.variables import SISOVariable as V, SILeafVariable as O, MILeafVariable, SIMOVariable
 from tramp.channels import DFTChannel, GaussianChannel
-from tramp.priors import GaussBernouilliPrior, GaussianPrior
+from tramp.priors import GaussBernoulliPrior, GaussianPrior
 from tramp.experiments import TeacherStudentScenario
 import numpy as np
 import pandas as pd
@@ -53,7 +53,7 @@ def build_sparse_fft_student(size, prior_var, fft_rho, fft_var, noise_var):
         SIMOVariable(id="x", n_next=2) @ (
             GaussianChannel(var=noise_var) @ O("y") + (
                 DFTChannel(real=True) +
-                GaussBernouilliPrior(size=fft_shape, var=fft_var, rho=fft_rho)
+                GaussBernoulliPrior(size=fft_shape, var=fft_var, rho=fft_rho)
             ) @
             MILeafVariable(id="z", n_prev=2)
         )

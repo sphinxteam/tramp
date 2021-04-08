@@ -7,7 +7,7 @@ def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 
-class GaussBernouilliPrior(Prior):
+class GaussBernoulliPrior(Prior):
     def __init__(self, size, rho=0.5, mean=0, var=1):
         self.size = size
         self.rho = rho
@@ -21,8 +21,8 @@ class GaussBernouilliPrior(Prior):
 
     def sample(self):
         X_gauss = self.mean + self.sigma * np.random.standard_normal(self.size)
-        X_bernouilli = np.random.binomial(n=1, size=self.size, p=self.rho)
-        X = X_gauss * X_bernouilli
+        X_bernoulli = np.random.binomial(n=1, size=self.size, p=self.rho)
+        X = X_gauss * X_bernoulli
         return X
 
     def math(self):

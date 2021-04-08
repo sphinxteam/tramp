@@ -6,7 +6,7 @@ This example will illustrate how to use different simple modules of TRAMP
 """
 # %%
 from tramp.variables import SISOVariable as V, SILeafVariable as O
-from tramp.priors import GaussBernouilliPrior
+from tramp.priors import GaussBernoulliPrior
 from tramp.likelihoods import GaussianLikelihood
 from tramp.channels import GaussianChannel, LinearChannel, AnalyticalLinearChannel
 from tramp.ensembles import GaussianEnsemble, MarchenkoPasturEnsemble
@@ -28,7 +28,7 @@ class SparseTeacher():
         self.model = self.build_model()
 
     def build_model(self):
-        self.prior = GaussBernouilliPrior(size=(self.N,), rho=self.rho)
+        self.prior = GaussBernoulliPrior(size=(self.N,), rho=self.rho)
         ensemble = GaussianEnsemble(self.M, self.N)
         self.A = ensemble.generate()
         model = self.prior @ V(id="x") @ LinearChannel(W=self.A) @ V(
@@ -49,7 +49,7 @@ teacher = SparseTeacher(
 sample = (teacher.model).sample()
 
 # %%
-prior = GaussBernouilliPrior(size=(N,), rho=rho)
+prior = GaussBernoulliPrior(size=(N,), rho=rho)
 student = prior @ V(id="x") @ LinearChannel(W=teacher.A) @ V(
     id='z') @ GaussianLikelihood(y=sample['y'], var=Delta)
 student = student.to_model_dag()

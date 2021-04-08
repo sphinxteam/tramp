@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.INFO)
 # Model
 np.random.seed(42)
 teacher = glm_generative(
-    N=1000, alpha=1.2, ensemble_type="gaussian", prior_type="gauss_bernouilli",
+    N=1000, alpha=1.2, ensemble_type="gaussian", prior_type="gauss_bernoulli",
     output_type="abs", prior_rho=0.5, prior_mean=0.1
 )
 for factor in teacher.factors:

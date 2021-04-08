@@ -16,14 +16,14 @@ Building your first model
 Creating a variable
 ^^^^^^^^^^^^^^^^^^^
 
-Let us start by creating our first variable :class:`variables.SISOVariable` ``V`` of size ``N`` drawn from a :class:`priors.GaussBernouilliPrior` separable prior with sparsity ``rho``
+Let us start by creating our first variable :class:`variables.SISOVariable` ``V`` of size ``N`` drawn from a :class:`priors.GaussBernoulliPrior` separable prior with sparsity ``rho``
 
 .. nbplot::
 
     >>> from tramp.variables import SISOVariable as V
-    >>> from tramp.priors import GaussBernouilliPrior
+    >>> from tramp.priors import GaussBernoulliPrior
     >>> N, rho = 100, 0.1
-    >>> prior = GaussBernouilliPrior(size=N, rho=rho)
+    >>> prior = GaussBernoulliPrior(size=N, rho=rho)
     >>> var_x = prior @ V(id="x")
 
 The opeartor ``@`` allows to assign a variable ``x`` drawn from a ``prior`` distribution, and in general to concatenate modules together.
@@ -113,12 +113,12 @@ Creating a variable ``x`` of size ``N`` sampled from a :class:`priors.GaussianPr
     >>> prior_x = GaussianPrior(size=N, var=1) @ V(id="x", n_next=2)
 
 which can be connected to a :class:`channels.GaussianChannel` with ``y`` observations and a sparse gradient constraint on ``x``. 
-This constraint can be built with a new variable ``x'`` connected to ``n_prev=2`` predecesors: a :class:`channels.GradientChannel` connected to ``x`` and a :class:`priors.GaussBernouilliPrior` with sparsity ``rho``.
+This constraint can be built with a new variable ``x'`` connected to ``n_prev=2`` predecesors: a :class:`channels.GradientChannel` connected to ``x`` and a :class:`priors.GaussBernoulliPrior` with sparsity ``rho``.
 
 .. nbplot::
 
     >>> from tramp.channels import GradientChannel, GaussianChannel
-    >>> from tramp.priors import GaussBernouilliPrior
+    >>> from tramp.priors import GaussBernoulliPrior
     >>> from tramp.variables import SISOVariable as V, MILeafVariable
     >>> rho = 0.04
     >>> var = 0.1
@@ -127,7 +127,7 @@ This constraint can be built with a new variable ``x'`` connected to ``n_prev=2`
     >>> # Create the gaussian channel and the observations y 
     >>> channel_y = GaussianChannel(var=var) @ O("y")
     >>> # Create the sparse gradient constraint and the new variable x'
-    >>> channel_grad = (GradientChannel(shape=x_shape) + GaussBernouilliPrior(size=grad_shape, rho=rho)) @ MILeafVariable(id="x'", n_prev=2)
+    >>> channel_grad = (GradientChannel(shape=x_shape) + GaussBernoulliPrior(size=grad_shape, rho=rho)) @ MILeafVariable(id="x'", n_prev=2)
     >>> # Plug the two channels to the variables x
     >>> model = prior_x @ ( channel_y +  channel_grad )
     >>> # Build the model

@@ -6,7 +6,7 @@ from tramp.algos import CustomInit
 
 def run_se(a0, alpha, prior_rho, prior_mean):
     model = glm_state_evolution(
-        alpha=alpha, prior_type="gauss_bernouilli", output_type="abs",
+        alpha=alpha, prior_type="gauss_bernoulli", output_type="abs",
         prior_rho=prior_rho, prior_mean=prior_mean
     )
     a_init = [("x", "bwd", a0)]

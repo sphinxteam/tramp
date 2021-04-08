@@ -8,7 +8,7 @@ from tramp.algos import EarlyStoppingEP
 from tramp.experiments import TeacherStudentScenario
 from tramp.variables import SISOVariable as V, SILeafVariable as O, MILeafVariable, SIMOVariable
 from tramp.channels import GaussianChannel, GradientChannel
-from tramp.priors import GaussBernouilliPrior, GaussianPrior
+from tramp.priors import GaussBernoulliPrior, GaussianPrior
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -23,7 +23,7 @@ rc('font', family='serif')
 
 class SparseGradTeacher():
     def __init__(self, size, grad_rho, noise_var):
-        self.prior_grad = GaussBernouilliPrior(size=size, rho=grad_rho)
+        self.prior_grad = GaussBernoulliPrior(size=size, rho=grad_rho)
         self.channel = GaussianChannel(var=noise_var)
 
     def sample(self, seed=None):
@@ -48,7 +48,7 @@ def build_sparse_grad_student(size, grad_rho, noise_var):
             GaussianChannel(var=noise_var) @ O("y")
             + (
                 GradientChannel(shape=x_shape) +
-                GaussBernouilliPrior(size=grad_shape, rho=grad_rho)
+                GaussBernoulliPrior(size=grad_shape, rho=grad_rho)
             ) @ MILeafVariable(id="x'", n_prev=2)
         )
     ).to_model()

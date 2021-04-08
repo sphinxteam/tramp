@@ -20,7 +20,7 @@ np.random.seed(42)
 
 model = glm_generative(
     N=1000, alpha=2, ensemble_type="complex_gaussian",
-    prior_type="gauss_bernouilli", output_type="modulus",
+    prior_type="gauss_bernoulli", output_type="modulus",
     prior_mean=0.01, prior_rho=0.5
 )
 scenario = BayesOptimalScenario(model, x_ids=["x"])

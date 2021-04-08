@@ -18,7 +18,7 @@ from tramp.models import glm_generative
 alpha = 0.8
 N = 1000
 teacher = glm_generative(
-    N=N, alpha=alpha, ensemble_type="gaussian", prior_type="gauss_bernouilli",
+    N=N, alpha=alpha, ensemble_type="gaussian", prior_type="gauss_bernoulli",
     output_type="gaussian", output_var=1e-11, prior_rho=0.5
 )
 for factor in teacher.factors:

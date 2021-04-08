@@ -11,7 +11,7 @@ def run_critical(a0, prior_rho, prior_mean, criterion):
         id="x", a0=a0, mse_criterion=criterion,
         alpha_min=1e-5, alpha_max=1.2, alpha_tol=0.001,
         model_builder=glm_state_evolution,
-        prior_type="gauss_bernouilli", output_type="abs",
+        prior_type="gauss_bernoulli", output_type="abs",
         prior_rho=prior_rho, prior_mean=prior_mean
     )
     return dict(alpha=alpha)

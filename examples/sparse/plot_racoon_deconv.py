@@ -7,7 +7,7 @@ Racoon deconvolution
 from tramp.priors.base_prior import Prior
 from scipy.misc import face
 from tramp.experiments import TeacherStudentScenario
-from tramp.priors import BinaryPrior, GaussianPrior, GaussBernouilliPrior
+from tramp.priors import BinaryPrior, GaussianPrior, GaussBernoulliPrior
 from tramp.channels import Blur2DChannel, GaussianChannel, GradientChannel
 from tramp.variables import SIMOVariable, MILeafVariable, SISOVariable as V, SILeafVariable as O
 from tramp.models import MultiLayerModel

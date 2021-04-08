@@ -1,5 +1,5 @@
 import unittest
-from tramp.priors import BinaryPrior, GaussBernouilliPrior, GaussianPrior
+from tramp.priors import BinaryPrior, GaussBernoulliPrior, GaussianPrior
 import numpy as np
 
 
@@ -84,10 +84,10 @@ class PriorsTest(unittest.TestCase):
         for prior in priors:
             self._test_function_posterior(prior, self.records)
 
-    def test_gauss_bernouilli_posterior(self):
+    def test_gauss_bernoulli_posterior(self):
         priors = [
-            GaussBernouilliPrior(size=1, rho=0.5, mean=0., var=0.8),
-            GaussBernouilliPrior(size=1, rho=0.9, mean=1.5, var=1.0)
+            GaussBernoulliPrior(size=1, rho=0.5, mean=0., var=0.8),
+            GaussBernoulliPrior(size=1, rho=0.9, mean=1.5, var=1.0)
         ]
         for prior in priors:
             self._test_function_posterior(prior, self.records)
@@ -108,10 +108,10 @@ class PriorsTest(unittest.TestCase):
         for prior in priors:
             self._test_function_second_moment(prior)
 
-    def test_gauss_bernouilli_second_moment(self):
+    def test_gauss_bernoulli_second_moment(self):
         priors = [
-            GaussBernouilliPrior(size=1, rho=0.5, mean=0., var=0.8),
-            GaussBernouilliPrior(size=1, rho=0.9, mean=1.5, var=1.0)
+            GaussBernoulliPrior(size=1, rho=0.5, mean=0., var=0.8),
+            GaussBernoulliPrior(size=1, rho=0.9, mean=1.5, var=1.0)
         ]
         for prior in priors:
             self._test_function_second_moment(prior)
@@ -124,10 +124,10 @@ class PriorsTest(unittest.TestCase):
         for prior in priors:
             self._test_function_proba(prior, self.records)
 
-    def test_gauss_bernouilli_proba(self):
+    def test_gauss_bernoulli_proba(self):
         priors = [
-            GaussBernouilliPrior(size=1, rho=0.5, mean=0., var=0.8),
-            GaussBernouilliPrior(size=1, rho=0.9, mean=1.5, var=1.0)
+            GaussBernoulliPrior(size=1, rho=0.5, mean=0., var=0.8),
+            GaussBernoulliPrior(size=1, rho=0.9, mean=1.5, var=1.0)
         ]
         for prior in priors:
             self._test_function_proba(prior, self.records)
