@@ -73,6 +73,33 @@ def gaussian_measure_2d_full(cov, mean, f):
     return integral
 
 
+def gaussian_measure_full(mean, cov, f):
+    """Computes K-dimensional gaussian integral (full covariance).
+
+    Parameters
+    ----------
+    - mean : float or array of size K
+        mean vector
+    - cov : array of shape (K, K)
+        full covariance matrix
+    - f : function (R^K -> R) to integrate
+
+    Returns
+    -------
+    - integral of N(x| m, cov) f(x)
+    """
+    if not is_pos_def(cov):
+        logger.warn(f"cov={cov} not positive definite")
+    L = cholesky(cov)
+    def integrand(x):
+        y = L @ x + mean
+        return norm_pdf(x) * f(y)
+    K = mean.shape[0]
+    lim = [[-10, 10]]*K
+    integral = nquad(integrand, lim)[0]
+    return integral
+
+
 def exponential_measure(m, f):
     """Computes one-dimensional exponential integral.
 
