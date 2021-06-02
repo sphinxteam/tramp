@@ -1,5 +1,5 @@
 from ..base import Factor
-from scipy.optimize  import root_scalar
+from scipy.optimize import root_scalar
 
 
 class Prior(Factor):
@@ -18,8 +18,7 @@ class Prior(Factor):
 
     def compute_forward_error(self, ax):
         def variance(bx):
-            rx, vx = self.compute_forward_posterior(ax, bx)
-            return vx
+            return self.scalar_forward_variance(ax, bx)
         error = self.beliefs_measure(ax, f=variance)
         return error
 
@@ -31,7 +30,7 @@ class Prior(Factor):
 
     def compute_free_energy(self, ax):
         def log_partition(bx):
-            return self.compute_log_partition(ax, bx)
+            return self.scalar_log_partition(ax, bx)
         A = self.beliefs_measure(ax, f=log_partition)
         return A
 

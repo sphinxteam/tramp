@@ -2,6 +2,7 @@ import numpy as np
 from scipy.special import logsumexp, softmax
 from .base_prior import Prior
 from ..utils.integration import gaussian_measure_full
+from ..beliefs import binary
 
 
 def create_spins(K):
@@ -31,8 +32,8 @@ def compute_C(x):
     return C
 
 
-def compute_A_vector(x, a, b):
-    """Compute A = - 1/2 x.ax + b.x
+def compute_Ax_vector(x, a, b):
+    """Compute Ax = - 1/2 x.ax + b.x for b of shape (N, K)
 
     Parameters
     ----------
@@ -43,16 +44,16 @@ def compute_A_vector(x, a, b):
     Returns
     -------
     array of shape (N, 2**K)
-        A_ic =   - 1/2 sum_k x_ck a_kl x_cl + sum_k b_ik x_ck
+        Ax_ic =   - 1/2 sum_k x_ck a_kl x_cl + sum_k b_ik x_ck
     """
     xax = np.einsum("ck,ck -> c", x @ a, x)
     bx = np.einsum("ik,ck -> ic", b, x)
-    A = -0.5*xax + bx
-    return A
+    Ax = -0.5*xax + bx
+    return Ax
 
 
-def compute_A_scalar(x, a, b):
-    """Compute A = - 1/2 x.ax + b.x
+def compute_Ax_scalar(x, a, b):
+    """Compute Ax = - 1/2 x.ax + b.x for b of shape (K,)
 
     Parameters
     ----------
@@ -63,12 +64,12 @@ def compute_A_scalar(x, a, b):
     Returns
     -------
     array of shape (2**K,)
-        A_c =   - 1/2 sum_kl x_ck a_kl x_cl + sum_k b_k x_ck
+        Ax_c =   - 1/2 sum_kl x_ck a_kl x_cl + sum_k b_k x_ck
     """
     xax = np.einsum("ck,ck -> c", x @ a, x)
     bx = x @ b
-    A = -0.5*xax + bx
-    return A
+    Ax = -0.5*xax + bx
+    return Ax
 
 
 def compute_V_vector(p, C):
@@ -122,9 +123,7 @@ class CommitteeBinaryPrior(Prior):
         self.C = compute_C(self.x) # shape (2**K, 2**k, K, K)
         self.px = compute_px(p_pos, self.x) # shape (2**K,)
         self.p_neg = 1 - p_pos
-        self.log_odds = np.log(self.p_pos / self.p_neg)
-        self.b = 0.5*self.log_odds
-        self.A = self.K * np.log(2*np.cosh(self.b))
+        self.b = 0.5*np.log(self.p_pos / self.p_neg)
 
     def sample(self):
         p = [self.p_neg, self.p_pos]
@@ -137,13 +136,39 @@ class CommitteeBinaryPrior(Prior):
     def second_moment(self):
         return 1.
 
+    def scalar_forward_mean(self, ax, bx):
+        b = bx + self.b
+        Ax = compute_Ax_scalar(self.x, ax, b) # shape (2**K,)
+        prob = softmax(Ax) # shape (2**K,)
+        rx = prob @ self.x # shape (K,)
+        return rx
+
+    def scalar_forward_variance(self, ax, bx):
+        b = bx + self.b
+        Ax = compute_Ax_scalar(self.x, ax, b) # shape (2**K,)
+        prob = softmax(Ax) # shape (2**K,)
+        vx = compute_V_scalar(prob, self.C) # shape (K, K)
+        return vx
+
+    def scalar_log_partition(self, ax, bx):
+        b = bx + self.b
+        Ax = compute_Ax_scalar(self.x, ax, b) # shape (2**K,)
+        A = logsumexp(Ax)/self.K - binary.A(self.b)
+        return A
+
     def compute_forward_posterior(self, ax, bx):
         b = bx + self.b
-        A = compute_A_vector(self.x, ax, bx) # shape (N, 2**K)
-        prob = softmax(A, axis=1) # shape (N, 2**K)
+        Ax = compute_Ax_vector(self.x, ax, b) # shape (N, 2**K)
+        prob = softmax(Ax, axis=1) # shape (N, 2**K)
         rx = prob @ self.x # shape (N, K)
         vx = compute_V_vector(prob, self.C) # shape (K, K)
         return rx, vx
+
+    def compute_log_partition(self, ax, bx):
+        b = bx + self.b
+        Ax = compute_Ax_vector(self.x, ax, b) # shape (N, 2**K)
+        A = logsumexp(Ax, axis=1).mean() - binary.A(self.b)
+        return A
 
     def beliefs_measure(self, ax, f):
         mu = 0
@@ -153,22 +178,3 @@ class CommitteeBinaryPrior(Prior):
 
     def measure(self, f):
         return self.p_pos * f(+1) + self.p_neg * f(-1)
-
-    def compute_log_partition(self, ax, bx):
-        b = bx + self.b
-        A = compute_A_vector(self.x, ax, bx) # shape (N, 2**K)
-        logZ = logsumexp(A, axis=1).sum() - self.A
-        return logZ
-
-    def scalar_log_partition(self, ax, bx):
-        b = bx + self.b
-        A = compute_A_scalar(self.x, ax, bx) # shape (2**K,)
-        logZ = logsumexp(A) - self.A
-        return logZ
-
-    def scalar_variance(self, ax, bx):
-        b = bx + self.b
-        A = compute_A_scalar(self.x, ax, bx) # shape (2**K,)
-        prob = softmax(A) # shape (2**K,)
-        vx = compute_V_scalar(prob, self.C) # shape (K, K)
-        return vx

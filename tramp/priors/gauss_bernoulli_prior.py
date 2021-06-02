@@ -1,23 +1,21 @@
 import numpy as np
 from .base_prior import Prior
 from ..utils.integration import gaussian_measure
-
-
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
+from ..beliefs import normal, sparse
 
 
 class GaussBernoulliPrior(Prior):
-    def __init__(self, size, rho=0.5, mean=0, var=1):
+    def __init__(self, size, rho=0.5, mean=0, var=1, isotropic=True):
         self.size = size
         self.rho = rho
         self.mean = mean
         self.var = var
+        self.isotropic = isotropic
         self.repr_init()
         self.sigma = np.sqrt(var)
         self.a = 1 / var
         self.b = mean / var
-        self.log_odds = np.log(rho / (1 - rho))
+        self.eta = normal.A(self.a, self.b) - np.log(rho / (1 - rho))
 
     def sample(self):
         X_gauss = self.mean + self.sigma * np.random.standard_normal(self.size)
@@ -26,22 +24,41 @@ class GaussBernoulliPrior(Prior):
         return X
 
     def math(self):
-        return r"$\rho$"
+        return r"$\mathcal{N}_\rho$"
 
     def second_moment(self):
         return self.rho * (self.mean**2 + self.var)
 
+    def scalar_forward_mean(self, ax, bx):
+        a = ax + self.a
+        b = bx + self.b
+        return sparse.r(a, b, self.eta)
+
+    def scalar_forward_variance(self, ax, bx):
+        a = ax + self.a
+        b = bx + self.b
+        return sparse.v(a, b, self.eta)
+
+    def scalar_log_partition(self, ax, bx):
+        a = ax + self.a
+        b = bx + self.b
+        A = sparse.A(a, b, self.eta) - sparse.A(self.a, self.b, self.eta)
+        return A
+
     def compute_forward_posterior(self, ax, bx):
         a = self.a + ax
         b = self.b + bx
-        phi = 0.5 * (b**2 / a - self.b**2 / self.a + np.log(self.a / a))
-        zeta = phi + self.log_odds
-        s = sigmoid(zeta)
-        s_prime = s * (1 - s)
-        rx = (b / a) * s
-        v = (1 / a) * s + (b / a)**2 * s_prime
-        vx = np.mean(v)
+        rx = sparse.r(a, b, self.eta)
+        vx = sparse.v(a, b, self.eta)
+        if self.isotropic:
+            vx = vx.mean()
         return rx, vx
+
+    def compute_log_partition(self, ax, bx):
+        a = ax + self.a
+        b = bx + self.b
+        A = sparse.A(a, b, self.eta) - sparse.A(self.a, self.b, self.eta)
+        return A.mean()
 
     def beliefs_measure(self, ax, f):
         mu_0 = gaussian_measure(0, np.sqrt(ax), f)
@@ -54,14 +71,3 @@ class GaussBernoulliPrior(Prior):
     def measure(self, f):
         g = gaussian_measure(self.mean, self.sigma, f)
         return (1 - self.rho) * f(0) + self.rho * g
-
-    def compute_log_partition(self, ax, bx):
-        a = ax + self.a
-        b = bx + self.b
-        A = 0.5 * (
-            b**2 / a - self.b**2 / self.a + np.log(self.a/a)
-        )
-        logZ = np.sum(
-            np.logaddexp(np.log(1 - self.rho), np.log(self.rho) + A)
-        )
-        return logZ

@@ -1,13 +1,15 @@
 import numpy as np
 from .base_prior import Prior
 from ..utils.integration import gaussian_measure
+from ..beliefs import normal
 
 
 class GaussianPrior(Prior):
-    def __init__(self, size, mean=0, var=1):
+    def __init__(self, size, mean=0, var=1, isotropic=True):
         self.size = size
         self.mean = mean
         self.var = var
+        self.isotropic = isotropic
         self.repr_init()
         self.sigma = np.sqrt(var)
         self.a = 1 / var
@@ -23,6 +25,21 @@ class GaussianPrior(Prior):
     def second_moment(self):
         return self.mean**2 + self.var
 
+    def scalar_forward_mean(self, ax, bx):
+        a = ax + self.a
+        b = bx + self.b
+        return b / a
+
+    def scalar_forward_variance(self, ax, bx):
+        a = ax + self.a
+        return 1 / a
+
+    def scalar_log_partition(self, ax, bx):
+        a = ax + self.a
+        b = bx + self.b
+        A = normal.A(a, b) - normal.A(self.a, self.b)
+        return A
+
     def compute_forward_posterior(self, ax, bx):
         a = ax + self.a
         b = bx + self.b
@@ -30,13 +47,19 @@ class GaussianPrior(Prior):
         vx = 1 / a
         return rx, vx
 
+    def compute_log_partition(self, ax, bx):
+        a = ax + self.a
+        b = bx + self.b
+        A = normal.A(a, b) - normal.A(self.a, self.b)
+        return A.mean()
+
     def compute_forward_error(self, ax):
         a = ax + self.a
         vx = 1 / a
         return vx
 
     def compute_forward_message(self, ax, bx):
-        ax_new = self.a
+        ax_new = self.a * np.ones_like(ax)
         bx_new = self.b * np.ones_like(bx)
         return ax_new, bx_new
 
@@ -46,14 +69,6 @@ class GaussianPrior(Prior):
 
     def measure(self, f):
         return gaussian_measure(self.mean, self.sigma, f)
-
-    def compute_log_partition(self, ax, bx):
-        a = ax + self.a
-        b = bx + self.b
-        logZ = 0.5 * np.sum(
-            b**2 / a - self.b**2 / self.a + np.log(self.a/a)
-        )
-        return logZ
 
     def compute_mutual_information(self, ax):
         a = ax + self.a

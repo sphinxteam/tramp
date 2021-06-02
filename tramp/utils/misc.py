@@ -57,6 +57,7 @@ def log_norm_cdf_prime(x):
     return 1. / d
 
 
+# TODO get rid of phi_0, phi_1, phi_2
 def phi_0(x):
     "Computes phi(x) = x**2 / 2 + log Phi"
     return np.log(0.5 * erfcx(-x / np.sqrt(2)))
@@ -72,10 +73,3 @@ def phi_2(x):
     "Computes phi''(x) = 1 - N/Phi * (x + N/Phi)"
     y = log_norm_cdf_prime(x)
     return 1 - y * (x + y)
-
-
-def sigmoid(x):
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        s = 1 / (1 + np.exp(-x))
-    return s
