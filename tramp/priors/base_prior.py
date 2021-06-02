@@ -38,7 +38,7 @@ class Prior(Factor):
         tau_x = self.second_moment()
         A = self.compute_free_energy(ax)
         I = 0.5*ax*tau_x - A
-        return A
+        return I
 
     def compute_precision(self, vx):
         def f(ax):

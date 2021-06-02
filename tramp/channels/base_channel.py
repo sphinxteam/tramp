@@ -65,7 +65,7 @@ class Channel(Factor):
         tau_x = self.second_moment(tau_z)
         A = self.compute_free_energy(az, ax, tau_z)
         I = 0.5*(az*tau_z + alpha*ax*tau_x) - A + 0.5*np.log(2*np.pi*tau_z/np.e)
-        return A
+        return I
 
     def compute_precision(self, vz, vx, tau_z):
         def f(a):

@@ -47,7 +47,7 @@ class Likelihood(Factor):
     def compute_mutual_information(self, az, tau_z):
         A = self.compute_free_energy(az, tau_z)
         I = 0.5*az*tau_z - A + 0.5*np.log(2*np.pi*tau_z/np.e)
-        return A
+        return I
 
     def compute_precision(self, vz, tau_z):
         def f(az):
