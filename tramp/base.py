@@ -3,7 +3,6 @@ Base classes.
 """
 
 import numpy as np
-from scipy.integrate import quad, dblquad
 import logging
 logger = logging.getLogger(__name__)
 
