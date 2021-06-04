@@ -36,6 +36,10 @@ class GaussianMixturePrior(Prior):
         )
         return tau
 
+    def second_moment_FG(self, tx_hat):
+        a = tx_hat + self.a # shape (K,)
+        return mixture.tau(a, self.b, self.eta)
+
     def scalar_forward_mean(self, ax, bx):
         a = ax + self.a # shape (K,)
         b = bx + self.b # shape (K,)

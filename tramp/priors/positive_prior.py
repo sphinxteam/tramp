@@ -22,6 +22,10 @@ class PositivePrior(Prior):
     def second_moment(self):
         return 1.
 
+    def second_moment_FG(self, tx_hat):
+        a = tx_hat + self.a
+        return positive.tau(a, self.b)
+
     def scalar_forward_mean(self, ax, bx):
         a = ax + self.a
         b = bx + self.b

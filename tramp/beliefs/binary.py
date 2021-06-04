@@ -11,3 +11,7 @@ def r(b):
 
 def v(b):
     return 1-np.tanh(b)**2  # 1 / cosh**2 leads to overflow
+
+
+def tau(b):
+    return 1.

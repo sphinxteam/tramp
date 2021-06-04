@@ -29,6 +29,10 @@ class GaussBernoulliPrior(Prior):
     def second_moment(self):
         return self.rho * (self.mean**2 + self.var)
 
+    def second_moment_FG(self, tx_hat):
+        a = tx_hat + self.a
+        return sparse.tau(a, self.b, self.eta)
+
     def scalar_forward_mean(self, ax, bx):
         a = ax + self.a
         b = bx + self.b
@@ -46,8 +50,8 @@ class GaussBernoulliPrior(Prior):
         return A
 
     def compute_forward_posterior(self, ax, bx):
-        a = self.a + ax
-        b = self.b + bx
+        a = ax + self.a
+        b = bx + self.b
         rx = sparse.r(a, b, self.eta)
         vx = sparse.v(a, b, self.eta)
         if self.isotropic:

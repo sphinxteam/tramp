@@ -13,3 +13,7 @@ def r(a, b):
 
 def v(a, b):
     return truncated_normal_var(b / a, a, 0, np.inf)
+
+
+def tau(a, b):
+    return r(a, b)**2 + v(a, b)

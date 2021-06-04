@@ -20,3 +20,8 @@ def r(a, b, eta):
 def v(a, b, eta):
     s = p(a, b, eta)
     return s / a + s * (1-s) * (b / a)**2
+
+
+def tau(a, b, eta):
+    s = p(a, b, eta)
+    return s / a + s * (b / a)**2

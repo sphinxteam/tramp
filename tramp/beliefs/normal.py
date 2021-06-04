@@ -10,3 +10,7 @@ def r(a, b):
 
 def v(a, b):
     return 1 / a
+
+
+def tau(a, b):
+    return 1 / a + (b / a)**2

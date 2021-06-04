@@ -25,6 +25,10 @@ class GaussianPrior(Prior):
     def second_moment(self):
         return self.mean**2 + self.var
 
+    def second_moment_FG(self, tx_hat):
+        a = tx_hat + self.a
+        return normal.tau(a, self.b)
+
     def scalar_forward_mean(self, ax, bx):
         a = ax + self.a
         b = bx + self.b

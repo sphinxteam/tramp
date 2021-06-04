@@ -39,3 +39,9 @@ def v(a, b, eta):
         sk*sl*(rk-rl)**2 for sk, rk in zip(s, rs) for sl, rl in zip(s, rs)
     )
     return Dr + vs.sum(axis=0)
+
+
+def tau(a, b, eta):
+    s = p(a, b, eta)
+    taus = s * normal.tau(a, b)
+    return taus.sum(axis=0)

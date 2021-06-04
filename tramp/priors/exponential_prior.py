@@ -21,7 +21,11 @@ class ExponentialPrior(Prior):
         return r"\exp"
 
     def second_moment(self):
-        return self.mean**2
+        return 2 * self.mean**2
+
+    def second_moment_FG(self, tx_hat):
+        a = tx_hat
+        return positive.tau(a, self.b)
 
     def scalar_forward_mean(self, ax, bx):
         b = bx + self.b

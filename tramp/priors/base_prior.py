@@ -6,6 +6,9 @@ class Prior(Factor):
     n_next = 1
     n_prev = 0
 
+    def prior_log_partition_FG(self, tx_hat):
+        return self.scalar_log_partition(ax=tx_hat, bx=0)
+
     def compute_forward_message(self, ax, bx):
         rx, vx = self.compute_forward_posterior(ax, bx)
         ax_new, bx_new = self.compute_ab_new(rx, vx, ax, bx)
