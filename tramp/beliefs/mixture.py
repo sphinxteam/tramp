@@ -33,10 +33,10 @@ def r(a, b, eta):
 
 def v(a, b, eta):
     s = p(a, b, eta)
-    rs = s * normal.r(a, b)
+    r_ = normal.r(a, b)
     vs = s * normal.v(a, b)
     Dr = 0.5 * sum(
-        sk*sl*(rk-rl)**2 for sk, rk in zip(s, rs) for sl, rl in zip(s, rs)
+        sk*sl*(rk-rl)**2 for sk, rk in zip(s, r_) for sl, rl in zip(s, r_)
     )
     return Dr + vs.sum(axis=0)
 
