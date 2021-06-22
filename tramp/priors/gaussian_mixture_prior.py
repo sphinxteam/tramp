@@ -7,7 +7,7 @@ from ..beliefs import normal, mixture
 class GaussianMixturePrior(Prior):
     def __init__(self, size, probs=[0.5, 0.5], means=[-1, 1], sigmas=[1, 1], isotropic=True):
         self.size = size
-        assert len(probs)==len(means)==len(vars)
+        assert len(probs)==len(means)==len(sigmas)
         self.K = len(probs)
         self.probs = np.array(probs)
         self.means = np.array(means)
@@ -59,8 +59,9 @@ class GaussianMixturePrior(Prior):
     def compute_forward_posterior(self, ax, bx):
         a = ax + self.a[:, np.newaxis] # shape (K, N)
         b = bx + self.b[:, np.newaxis] # shape (K, N)
-        rx = mixture.r(a, b, self.eta)
-        vx = mixture.v(a, b, self.eta)
+        eta = self.eta[:, np.newaxis]  # shape (K, 1)
+        rx = mixture.r(a, b, eta)
+        vx = mixture.v(a, b, eta)
         if self.isotropic:
             vx = vx.mean()
         return rx, vx
@@ -68,8 +69,42 @@ class GaussianMixturePrior(Prior):
     def compute_log_partition(self, ax, bx):
         a = ax + self.a[:, np.newaxis] # shape (K, N)
         b = bx + self.b[:, np.newaxis] # shape (K, N)
-        A = mixture.A(a, b, self.eta) - mixture.A(self.a, self.b, self.eta)
+        eta = self.eta[:, np.newaxis]  # shape (K, 1)
+        A = mixture.A(a, b, eta) - mixture.A(self.a, self.b, self.eta)
         return A.mean()
+
+    def b_measure(self, mx_hat, qx_hat, tx0_hat, f):
+        # a0, b0, r0, v0, p0 : shape (K,)
+        a0 = self.a + tx0_hat
+        b0 = self.b
+        r0 = b0 / a0
+        v0 = 1 / a0
+        p0 = mixture.p(a0, b0, self.eta)
+        mu = 0
+        for pk, rk, vk in zip(p0, r0, v0):
+            mu += pk*gaussian_measure(
+                mx_hat * rk, np.sqrt(qx_hat + (mx_hat**2) * vk), f
+            )
+        return mu
+
+    def bx_measure(self, mx_hat, qx_hat, tx0_hat, f):
+        # a0, b0, r0, v0, p0 : shape (K,)
+        a0 = self.a + tx0_hat
+        b0 = self.b
+        r0 = b0 / a0
+        v0 = 1 / a0
+        p0 = mixture.p(a0, b0, self.eta)
+        ax_star = (mx_hat / qx_hat) * mx_hat
+        mu = 0
+        for ak, bk, pk, rk, vk in zip(a0, b0, p0, r0, v0):
+            def r_times_f(bx):
+                bx_star = (mx_hat / qx_hat) * bx
+                r = (bk + bx_star) /  (ak + ax_star)
+                return r * f(bx)
+            mu += pk*gaussian_measure(
+                mx_hat * rk, np.sqrt(qx_hat + (mx_hat**2) * vk), r_times_f
+            )
+        return mu
 
     def beliefs_measure(self, ax, f):
         mu = sum(

@@ -71,6 +71,37 @@ class GaussianPrior(Prior):
         ax_new = self.a
         return ax_new
 
+    def b_measure(self, mx_hat, qx_hat, tx0_hat, f):
+        a0 = self.a + tx0_hat
+        b0 = self.b
+        r0 = b0 / a0
+        v0 = 1 / a0
+        mu = gaussian_measure(
+            mx_hat * r0, np.sqrt(qx_hat + (mx_hat**2) * v0), f
+        )
+        return mu
+
+    def bx_measure(self, mx_hat, qx_hat, tx0_hat, f):
+        a0 = self.a + tx0_hat
+        b0 = self.b
+        r0 = b0 / a0
+        v0 = 1 / a0
+        ax_star = (mx_hat / qx_hat) * mx_hat
+        def r_times_f(bx):
+            bx_star = (mx_hat / qx_hat) * bx
+            r = (b0 + bx_star) /  (a0 + ax_star)
+            return r * f(bx)
+        mu = gaussian_measure(
+            mx_hat * r0, np.sqrt(qx_hat + (mx_hat**2) * v0), r_times_f
+        )
+        return mu
+
+    def beliefs_measure(ax, f):
+        mu = gaussian_measure(
+            ax * self.r0, np.sqrt(ax + (ax**2) * self.v0), f
+        )
+        return mu
+
     def measure(self, f):
         return gaussian_measure(self.mean, self.sigma, f)
 

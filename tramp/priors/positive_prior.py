@@ -57,8 +57,14 @@ class PositivePrior(Prior):
         A = positive.A(a, b) - positive.A(self.a, self.b)
         return A.mean()
 
-    def measure(self, f):
+    def b_measure(self, mx_hat, qx_hat, tx0_hat):
+        raise NotImplementedError
+
+    def bx_measure(self, mx_hat, qx_hat, tx0_hat):
         raise NotImplementedError
 
     def beliefs_measure(self, ax, f):
+        raise NotImplementedError
+
+    def measure(self, f):
         raise NotImplementedError

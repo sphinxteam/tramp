@@ -254,6 +254,13 @@ class Factor(ReprMixin):
         b_new = r * v_inv - b
         return a_new, b_new
 
+    def compute_a_mhat_qhat_new(self, v, m, q, a, m_hat, q_hat, t0):
+        a_new = np.clip(inv(v) - a, self.AMIN, self.AMAX)
+        v_inv = (a + a_new)
+        m_hat_new = v_inv * (m / t0) - m_hat
+        q_hat_new = (v_inv**2) * (q - m**2 / t0) - q_hat
+        return a_new, m_hat_new, q_hat_new
+
     def __add__(self, other):
         from .models.dag_algebra import DAG
         return DAG(self) + other

@@ -14,15 +14,57 @@ class Prior(Factor):
         ax_new, bx_new = self.compute_ab_new(rx, vx, ax, bx)
         return ax_new, bx_new
 
+    def compute_forward_state_evolution_BO(self, ax, tx0_hat):
+        vx = self.compute_forward_v_BO(ax, tx0_hat)
+        ax_new = self.compute_a_new(vx, ax)
+        return ax_new
+
+    def compute_forward_v_BO(self, ax, tx0_hat):
+        mx_hat = ax - tx0_hat
+        def v_func(bx): return self.scalar_forward_variance(ax, bx)
+        vx = self.b_measure(mx_hat, mx_hat, tx0_hat, v_func)
+        return vx
+
+    def compute_potential_BO(self, ax, tx0_hat):
+        mx_hat = ax - tx0_hat
+        def A_func(bx): return self.scalar_log_partition(ax, bx)
+        A = self.b_measure(mx_hat, mx_hat, tx0_hat, A_func)
+        return A
+
+    def compute_forward_state_evolution_RS(self, ax, mx_hat, qx_hat,
+                                           teacher, tx0_hat, tx0):
+        vx, mx, qx = self.compute_forward_vmq_RS(
+            ax, mx_hat, qx_hat, teacher, tx0_hat
+        )
+        ax_new, mx_hat_new, qx_hat_new = self.compute_a_mhat_qhat_new(
+            vx, mx, qx, ax, mx_hat, qx_hat, tx0
+        )
+        return ax_new, mx_hat_new, qx_hat_new
+
+    def compute_forward_vmq_RS(self, ax, mx_hat, qx_hat,
+                               teacher, tx0_hat):
+        def v_func(bx): return self.scalar_forward_variance(ax, bx)
+        def r_func(bx): return self.scalar_forward_mean(ax, bx)
+        def q_func(bx): return self.scalar_forward_mean(ax, bx)**2
+        vx = teacher.b_measure(mx_hat, qx_hat, tx0_hat, v_func)
+        mx = teacher.bx_measure(mx_hat, qx_hat, tx0_hat, r_func)
+        qx = teacher.b_measure(mx_hat, qx_hat, tx0_hat, q_func)
+        return vx, mx, qx
+
+    def compute_potential_RS(self, ax, mx_hat, qx_hat,
+                             teacher, tx0_hat):
+        def A_func(bx): return self.scalar_log_partition(ax, bx)
+        A = teacher.b_measure(mx_hat, qx_hat, tx0_hat, A_func)
+        return A
+
     def compute_forward_state_evolution(self, ax):
         vx = self.compute_forward_error(ax)
         ax_new = self.compute_a_new(vx, ax)
         return ax_new
 
     def compute_forward_error(self, ax):
-        def variance(bx):
-            return self.scalar_forward_variance(ax, bx)
-        error = self.beliefs_measure(ax, f=variance)
+        def v_func(bx): return self.scalar_forward_variance(ax, bx)
+        error = self.beliefs_measure(ax, v_func)
         return error
 
     def compute_forward_overlap(self, ax):
@@ -32,9 +74,8 @@ class Prior(Factor):
         return mx
 
     def compute_free_energy(self, ax):
-        def log_partition(bx):
-            return self.scalar_log_partition(ax, bx)
-        A = self.beliefs_measure(ax, f=log_partition)
+        def A_func(bx): return self.scalar_log_partition(ax, bx)
+        A = self.beliefs_measure(ax, A_func)
         return A
 
     def compute_mutual_information(self, ax):

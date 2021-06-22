@@ -59,6 +59,12 @@ class MAP_L21NormPrior(Prior):
         A_sum = np.sum(bx*rx - 0.5*ax*(rx**2)) - self.gamma*l21_norm(rx, self.axis)
         return A_sum / self.N
 
+    def b_measure(self, mx_hat, qx_hat, tx0_hat, f):
+        raise NotImplementedError
+
+    def bx_measure(self, mx_hat, qx_hat, tx0_hat, f):
+        raise NotImplementedError
+
     def beliefs_measure(self, ax, f):
         raise NotImplementedError
 

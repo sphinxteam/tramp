@@ -54,6 +54,18 @@ class BinaryPrior(Prior):
         A = binary.A(b) - binary.A(self.b) - 0.5*ax
         return A.mean()
 
+    def b_measure(self, mx_hat, qx_hat, tx0_hat, f):
+        mu_pos = gaussian_measure(+mx_hat, np.sqrt(qx_hat), f)
+        mu_neg = gaussian_measure(-mx_hat, np.sqrt(qx_hat), f)
+        mu = self.p_pos * mu_pos + self.p_neg * mu_neg
+        return mu
+
+    def bx_measure(self, mx_hat, qx_hat, tx0_hat, f):
+        mu_pos = +gaussian_measure(+mx_hat, np.sqrt(qx_hat), f)
+        mu_neg = -gaussian_measure(-mx_hat, np.sqrt(qx_hat), f)
+        mu = self.p_pos * mu_pos + self.p_neg * mu_neg
+        return mu
+
     def beliefs_measure(self, ax, f):
         mu_pos = gaussian_measure(+ax, np.sqrt(ax), f)
         mu_neg = gaussian_measure(-ax, np.sqrt(ax), f)

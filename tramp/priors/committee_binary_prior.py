@@ -170,6 +170,12 @@ class CommitteeBinaryPrior(Prior):
         A = logsumexp(Ax, axis=1).mean() - binary.A(self.b)
         return A
 
+    def b_measure(self, mx_hat, qx_hat, tx0_hat, f):
+        raise NotImplementedError
+
+    def bx_measure(self, mx_hat, qx_hat, tx0_hat, f):
+        raise NotImplementedError
+
     def beliefs_measure(self, ax, f):
         mu = 0
         for x, px in zip(self.x, self.px):

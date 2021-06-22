@@ -57,6 +57,12 @@ class MAP_LaplacePrior(Prior):
         A =  -self.gamma*np.abs(rx) + bx*rx - 0.5*ax*(rx**2)
         return A.mean()
 
+    def b_measure(self, mx_hat, qx_hat, tx0_hat, f):
+        raise NotImplementedError
+
+    def bx_measure(self, mx_hat, qx_hat, tx0_hat, f):
+        raise NotImplementedError
+
     def beliefs_measure(self, ax, f):
         raise NotImplementedError
 

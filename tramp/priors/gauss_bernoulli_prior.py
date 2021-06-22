@@ -64,6 +64,37 @@ class GaussBernoulliPrior(Prior):
         A = sparse.A(a, b, self.eta) - sparse.A(self.a, self.b, self.eta)
         return A.mean()
 
+    def b_measure(self, mx_hat, qx_hat, tx0_hat, f):
+        a0 = self.a + tx0_hat
+        b0 = self.b
+        r0 = b0 / a0
+        v0 = 1 / a0
+        rho = sparse.p(a0, b0, self.eta)
+        mu_0 = gaussian_measure(0, np.sqrt(qx_hat), f)
+        mu_1 = gaussian_measure(
+            mx_hat * r0, np.sqrt(qx_hat + (mx_hat**2) * v0), f
+        )
+        mu = (1 - rho) * mu_0 + rho * mu_1
+        return mu
+
+    def bx_measure(self, mx_hat, qx_hat, tx0_hat, f):
+        a0 = self.a + tx0_hat
+        b0 = self.b
+        r0 = b0 / a0
+        v0 = 1 / a0
+        rho = sparse.p(a0, b0, self.eta)
+        mu_0 = 0
+        ax_star = (mx_hat / qx_hat) * mx_hat
+        def r_times_f(bx):
+            bx_star = (mx_hat / qx_hat) * bx
+            r = (b0 + bx_star) /  (a0 + ax_star)
+            return r * f(bx)
+        mu_1 = gaussian_measure(
+            mx_hat * r0, np.sqrt(qx_hat + (mx_hat**2) * v0), r_times_f
+        )
+        mu = (1 - rho) * mu_0 + rho * mu_1
+        return mu
+
     def beliefs_measure(self, ax, f):
         mu_0 = gaussian_measure(0, np.sqrt(ax), f)
         mu_1 = gaussian_measure(
