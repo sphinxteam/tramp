@@ -49,6 +49,24 @@ def run_experiments(run, on_progress=None, **kwargs):
     return df
 
 
+def simple_run_experiments(run, **kwargs):
+    "Same as run_experiments but raises error and no `on_progress` callback"
+    experiments = get_experiments_from_kwargs(**kwargs)
+    n_experiments = len(experiments)
+    records = []
+    # iterate over experiments
+    for idx, experiment in enumerate(experiments):
+        record = experiment.copy()
+        results = run(**experiment)
+        if isinstance(results, dict):
+            results = [results]
+        for result in results:
+            result.update(record)
+        records += results
+    df = pd.DataFrame(records)
+    return df
+
+
 def save_experiments(run, csv_file, on_progress=None, **kwargs):
     df = run_experiments(run, on_progress, **kwargs)
     df.to_csv(csv_file, index=False)
