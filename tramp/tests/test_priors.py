@@ -1,137 +1,114 @@
-import unittest
-from tramp.priors import BinaryPrior, GaussBernoulliPrior, GaussianPrior
+import pytest
 import numpy as np
+from numpy.testing import assert_allclose
+from tramp.priors import (
+    GaussianPrior, GaussBernoulliPrior, BinaryPrior,
+    MAP_LaplacePrior, MAP_L21NormPrior,
+    ExponentialPrior, PositivePrior, GaussianMixturePrior
+)
+from tramp.utils.check_limits import check_prior_BO_limit, check_prior_BN_limit
+from tramp.utils.check_gradients import (
+    check_prior_grad_BO, check_prior_grad_FG, check_prior_grad_RS,
+    check_prior_grad_BO_BN, check_prior_grad_EP_scalar, EPSILON
+)
 
 
-def empirical_second_moment(prior):
-    """
-    Estimate second_moment by sampling.
-    """
-    prior.size = 1000*1000
-    X = prior.sample()
-    tau_x = (X**2).mean()
-    return tau_x
+@pytest.mark.parametrize("prior", [
+    GaussianPrior(size=(10, 10, 10), isotropic=False),
+    BinaryPrior(size=100, isotropic=False)
+])
+def test_separable_prior_vectorization(prior):
+    assert not prior.isotropic
+    N = np.prod(prior.size)
+    ax = np.linspace(1, 2, N)
+    ax = ax.reshape(prior.size)
+    bx = np.linspace(-2, 2, N)
+    bx = bx.reshape(prior.size)
+    rx, vx = prior.compute_forward_posterior(ax, bx)
+    assert rx.shape == bx.shape
+    assert vx.shape == bx.shape
+    # check rx vectorization
+    rx_ = np.array([prior.scalar_forward_mean(a, b) for a, b in zip(ax, bx)])
+    rx_ = rx_.reshape(prior.size)
+    assert_allclose(rx, rx_)
+    # check vx vectorization
+    vx_ = np.array([prior.scalar_forward_variance(a, b) for a, b in zip(ax, bx)])
+    vx_ = vx_.reshape(prior.size)
+    assert_allclose(vx, vx_)
+    # check A vectorization
+    A = prior.compute_log_partition(ax, bx)
+    A_ = np.mean([prior.scalar_log_partition(a, b) for a, b in zip(ax, bx)])
+    assert A == A_
 
 
-def explicit_integral(ax, bx, prior):
-    """
-    Compute rx, vx for prior p(x) by integration.
-    """
-    def belief(x):
-        L = -0.5 * ax * (x**2) + bx * x
-        return np.exp(L)
-
-    def x_belief(x):
-        return x*belief(x)
-
-    def x2_belief(x):
-        return (x**2)*belief(x)
-
-    Z = prior.measure(belief)
-    rx = prior.measure(x_belief) / Z
-    x2 = prior.measure(x2_belief) / Z
-    vx = x2 - rx**2
-    return rx, vx
+@pytest.mark.parametrize("prior", [
+    GaussianPrior(size=None),
+    BinaryPrior(size=None)
+])
+def test_prior_BO_limit(prior):
+    df = check_prior_BO_limit(prior)
+    assert_allclose(df["A_BO"], df["A_RS"])
+    assert_allclose(df["vx_BO"], df["vx_RS"])
+    assert_allclose(df["mx_BO"], df["mx_RS"])
+    assert_allclose(df["mx_BO"], df["qx_RS"])
 
 
-class PriorsTest(unittest.TestCase):
-    def setUp(self):
-        self.records = [
-            dict(ax=2.0, bx=2.0),
-            dict(ax=1.5, bx=1.3)
-        ]
-
-    def tearDown(self):
-        pass
-
-    def _test_function_second_moment(self, prior, places=2):
-        tau_x_emp = empirical_second_moment(prior)
-        tau_x_hat = prior.second_moment()
-        msg = f"prior={prior}"
-        self.assertAlmostEqual(tau_x_emp, tau_x_hat, places=places, msg=msg)
-
-    def _test_function_posterior(self, prior, records, places=12):
-        for record in records:
-            ax, bx = record["ax"], record["bx"]
-            rx, vx = explicit_integral(ax, bx, prior)
-            rx_hat, vx_hat = prior.compute_forward_posterior(ax, bx)
-            rx_hat = float(rx_hat)
-            msg = f"record={record} prior={prior}"
-            self.assertAlmostEqual(rx, rx_hat, places=places, msg=msg)
-            self.assertAlmostEqual(vx, vx_hat, places=places, msg=msg)
-
-    def _test_function_proba(self, prior, records, places=12):
-        for record in records:
-            ax = record["ax"]
-            def one(bx): return 1
-            sum_proba = prior.beliefs_measure(ax, f=one)
-            msg = f"record={record} prior={prior}"
-            self.assertAlmostEqual(sum_proba, 1., places=places, msg=msg)
-
-    def test_gaussian_posterior(self):
-        priors = [
-            GaussianPrior(size=1, mean=0.5, var=1.0),
-            GaussianPrior(size=1, mean=-2.5, var=10.0)
-        ]
-        for prior in priors:
-            self._test_function_posterior(prior, self.records)
-
-    def test_binary_posterior(self):
-        priors = [
-            BinaryPrior(size=1, p_pos=0.5),
-            BinaryPrior(size=1, p_pos=0.6)
-        ]
-        for prior in priors:
-            self._test_function_posterior(prior, self.records)
-
-    def test_gauss_bernoulli_posterior(self):
-        priors = [
-            GaussBernoulliPrior(size=1, rho=0.5, mean=0., var=0.8),
-            GaussBernoulliPrior(size=1, rho=0.9, mean=1.5, var=1.0)
-        ]
-        for prior in priors:
-            self._test_function_posterior(prior, self.records)
-
-    def test_gaussian_second_moment(self):
-        priors = [
-            GaussianPrior(size=1, mean=0.5, var=1.0),
-            GaussianPrior(size=1, mean=-0.3, var=0.5)
-        ]
-        for prior in priors:
-            self._test_function_second_moment(prior)
-
-    def test_binary_second_moment(self):
-        priors = [
-            BinaryPrior(size=1, p_pos=0.5),
-            BinaryPrior(size=1, p_pos=0.6)
-        ]
-        for prior in priors:
-            self._test_function_second_moment(prior)
-
-    def test_gauss_bernoulli_second_moment(self):
-        priors = [
-            GaussBernoulliPrior(size=1, rho=0.5, mean=0., var=0.8),
-            GaussBernoulliPrior(size=1, rho=0.9, mean=1.5, var=1.0)
-        ]
-        for prior in priors:
-            self._test_function_second_moment(prior)
-
-    def test_binary_proba(self):
-        priors = [
-            BinaryPrior(size=1, p_pos=0.5),
-            BinaryPrior(size=1, p_pos=0.6)
-        ]
-        for prior in priors:
-            self._test_function_proba(prior, self.records)
-
-    def test_gauss_bernoulli_proba(self):
-        priors = [
-            GaussBernoulliPrior(size=1, rho=0.5, mean=0., var=0.8),
-            GaussBernoulliPrior(size=1, rho=0.9, mean=1.5, var=1.0)
-        ]
-        for prior in priors:
-            self._test_function_proba(prior, self.records)
+@pytest.mark.parametrize("prior", [
+    GaussianPrior(size=None),
+    GaussBernoulliPrior(size=None)
+])
+def test_prior_BN_limit(prior):
+    df = check_prior_BN_limit(prior)
+    assert_allclose(df["A_FG"], df["A_BN"])
+    assert_allclose(df["vx_FG"], df["vx_BN"])
+    assert_allclose(df["tx_FG"], df["tx_BN"])
 
 
-if __name__ == "__main__":
-    unittest.main()
+@pytest.mark.parametrize("prior", [
+    GaussianPrior(size=None),
+    GaussBernoulliPrior(size=None)
+])
+def test_prior_grad_BO(prior):
+    df = check_prior_grad_BO(prior)
+    assert_allclose(df["mx"], 2*df["grad_mx_hat_A"], rtol=0, atol=EPSILON)
+
+
+@pytest.mark.parametrize("prior", [
+    GaussianPrior(size=None),
+    GaussBernoulliPrior(size=None)
+])
+def test_prior_grad_FG(prior):
+    df = check_prior_grad_FG(prior)
+    assert_allclose(df["tx"], -2*df["grad_tx_hat_A"], rtol=0, atol=EPSILON)
+
+
+@pytest.mark.parametrize("prior", [
+    GaussianPrior(size=None),
+    GaussBernoulliPrior(size=None)
+])
+def test_prior_grad_BO_BN(prior):
+    df = check_prior_grad_BO_BN(prior)
+    assert_allclose(df["mx"], 2*df["grad_ax_A"], rtol=0, atol=EPSILON)
+    assert_allclose(df["vx"], 2*df["grad_ax_I"], rtol=0, atol=EPSILON)
+
+
+@pytest.mark.parametrize("prior", [
+    GaussianPrior(size=None),
+    GaussBernoulliPrior(size=None)
+])
+def test_prior_grad_EP_scalar(prior):
+    df = check_prior_grad_EP_scalar(prior)
+    assert_allclose(df["rx"], df["grad_bx_A1"], rtol=0, atol=EPSILON)
+    assert_allclose(df["vx"], df["grad_bx_A2"], rtol=0, atol=EPSILON)
+    assert_allclose(df["tx"], -2*df["grad_ax_A"], rtol=0, atol=EPSILON)
+
+
+@pytest.mark.parametrize("teacher,student", [
+    (GaussianPrior(size=None), BinaryPrior(size=None)),
+    (GaussBernoulliPrior(size=None), BinaryPrior(size=None)),
+])
+def test_prior_grad_RS(teacher, student):
+    df = check_prior_grad_RS(teacher, student)
+    assert_allclose(df["mx"], df["grad_mx_hat_A"], rtol=0, atol=EPSILON)
+    assert_allclose(df["qx"], -2*df["grad_qx_hat_A"], rtol=0, atol=EPSILON)
+    assert_allclose(df["tx"], -2*df["grad_tx_hat_A"], rtol=0, atol=EPSILON)
