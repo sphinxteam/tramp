@@ -40,7 +40,6 @@ autosummary_generate = True
 add_module_names = True
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
 html_static_path = ["_static"]
 source_suffix = '.rst'
 
@@ -100,15 +99,6 @@ show_authors = True
 
 # Custom theme
 html_copy_source = False
-html_css_files = [
-    'customtheme.css',
-]
-html_js_files = [
-]
-
-latex_elements = {
-    'preamble': r'\usepackage{tikz}',
-}
 
 # Copy button
 copybutton_prompt_text = ">>> "
