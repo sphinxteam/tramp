@@ -5,7 +5,7 @@ from tramp.beliefs import (
     binary, exponential, mixture,
     normal, positive, sparse, truncated
 )
-from tramp.utils.check_gradients import check_belief_grad_b, EPSILON
+from tramp.checks.check_gradients import check_belief_grad_b, EPSILON
 
 
 @pytest.mark.parametrize("belief,kwargs", [

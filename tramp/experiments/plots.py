@@ -11,8 +11,6 @@ def plot_function(f, xlim=(-3, 3)):
 
 
 def plot_compare(x_true, x_pred):
-    plt.rc('text', usetex=False)
-    plt.rc('font', family='serif', serif=['Computer Modern'])
     fig, ax = plt.subplots(1, 1, figsize=(4,4))
     ax.plot(np.arange(100), x_true[:100], label="x true")
     ax.plot(np.arange(100), x_pred[:100], label="x pred")
@@ -21,8 +19,6 @@ def plot_compare(x_true, x_pred):
 
 
 def plot_compare_complex(x_true, x_pred):
-    plt.rc('text', usetex=False)
-    plt.rc('font', family='serif', serif=['Computer Modern'])
     if x_true.dtype != "complex":
         x_true = array2complex(x_true)
     if x_pred.dtype != "complex":

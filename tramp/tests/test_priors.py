@@ -6,8 +6,8 @@ from tramp.priors import (
     MAP_LaplacePrior, MAP_L21NormPrior,
     ExponentialPrior, PositivePrior, GaussianMixturePrior
 )
-from tramp.utils.check_limits import check_prior_BO_limit, check_prior_BN_limit
-from tramp.utils.check_gradients import (
+from tramp.checks.check_limits import check_prior_BO_limit, check_prior_BN_limit
+from tramp.checks.check_gradients import (
     check_prior_grad_BO, check_prior_grad_FG, check_prior_grad_RS,
     check_prior_grad_BO_BN, check_prior_grad_EP_scalar, EPSILON
 )
