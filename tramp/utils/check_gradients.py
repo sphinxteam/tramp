@@ -98,6 +98,10 @@ def plot_belief_grad_b(belief, **kwargs):
     axs[1].plot(df["b"], df["v"], '-', label="v")
     axs[1].plot(df["b"], df["A2"], '--', label=r"$\partial^2_{b} A$")
     axs[1].set(xlabel="b")
+    # adjust axs[1] limits when v is almost constant
+    ylim = axs[1].get_ylim()
+    if (ylim[1]-ylim[0])<EPSILON:
+        axs[1].set_ylim(ylim[0]-0.12, ylim[1]+0.12)
     axs[1].legend()
     kwargs_str = " ".join(f"{key}={val}" for key, val in kwargs.items())
     fig.suptitle(f"{belief.__name__} {kwargs_str}")
