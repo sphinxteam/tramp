@@ -4,18 +4,26 @@ Utils
 Metrics
 -------
 
-.. autofunction:: tramp.algos.metrics.mean_squared_error
+.. currentmodule:: tramp.algos.metrics
 
-.. autofunction:: tramp.algos.metrics.overlap
+.. autofunction:: mean_squared_error
+.. autofunction:: overlap
 
 
 Experiments
 -----------
 
-.. autoclass:: tramp.experiments.TeacherStudentScenario
+.. currentmodule:: tramp.experiments
 
-.. autoclass:: tramp.experiments.BayesOptimalScenario
+.. autoclass:: TeacherStudentScenario
+.. autoclass:: BayesOptimalScenario
+.. autofunction:: qplot
+.. autofunction:: find_critical_alpha
 
-.. autofunction:: tramp.experiments.qplot
+Check gradients
+---------------
 
-.. autofunction:: tramp.experiments.find_critical_alpha
+.. currentmodule:: tramp.checks
+
+.. autofunction:: plot_belief_grad_b
+.. autofunction:: plot_prior_grad_BO

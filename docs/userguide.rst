@@ -1,6 +1,0 @@
-.. _userguide:
-
-User guide
-----------
-
-

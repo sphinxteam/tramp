@@ -15,7 +15,6 @@ TRAMP's python package implements gaussian expectation propagation for any tree-
    :maxdepth: 2
    :caption: User guide
 
-   userguide
    new_modules
    gallery/index
 
@@ -24,6 +23,7 @@ TRAMP's python package implements gaussian expectation propagation for any tree-
    :caption: API reference
 
    reference/algos
+   reference/beliefs
    reference/priors
    reference/likelihoods
    reference/channels
