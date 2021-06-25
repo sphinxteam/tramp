@@ -1,5 +1,5 @@
 """
-Compressed Censing
+Compressed Sensing
 ==================
 
 """
@@ -9,6 +9,8 @@ Compressed Censing
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib import rcParams
+rcParams['axes.unicode_minus'] = False
 from tramp.experiments import BayesOptimalScenario, qplot, plot_compare
 from tramp.models import glm_generative
 
@@ -83,6 +85,6 @@ qplot(
 univ = pd.read_csv("data/cs_universality.csv")
 qplot(
     univ.query("source=='SE'"),
-    x="alpha", y="v", color="f", column="prior_rho",
+    x="alpha", y="v", linestyle="f", column="prior_rho",
     rename=rename, usetex=True, font_size=16
 )
