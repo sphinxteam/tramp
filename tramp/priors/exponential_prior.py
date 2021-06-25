@@ -5,13 +5,13 @@ from ..beliefs import exponential, positive
 
 
 class ExponentialPrior(Prior):
-    def __init__(self, size, lambd=1, isotropic=True):
-        assert lambd > 0
+    def __init__(self, size, mean=1, isotropic=True):
+        assert mean > 0
         self.size = size
-        self.mean = 1/lambd
+        self.mean = mean
         self.isotropic = isotropic
         self.repr_init()
-        self.b = -lambd
+        self.b = -1/mean
 
     def sample(self):
         X = np.random.exponential(scale=1/self.mean, size=self.size)
