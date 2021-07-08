@@ -1,6 +1,16 @@
 Utils
 =====
 
+Model builders
+--------------
+
+.. autofunction:: tramp.priors.get_prior
+.. autofunction:: tramp.channels.get_channel
+.. autofunction:: tramp.likelihoods.get_likelihood
+.. autofunction:: tramp.models.glm_generative
+.. autofunction:: tramp.models.glm_state_evolution
+.. autoclass:: tramp.models.MultiLayerModel
+
 Metrics
 -------
 
@@ -17,8 +27,11 @@ Experiments
 
 .. autoclass:: TeacherStudentScenario
 .. autoclass:: BayesOptimalScenario
-.. autofunction:: qplot
+.. autofunction:: run_experiments
+.. autofunction:: save_experiments
 .. autofunction:: find_critical_alpha
+.. autofunction:: qplot
+
 
 Check gradients
 ---------------

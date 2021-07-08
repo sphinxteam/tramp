@@ -4,7 +4,7 @@ from sphinx_gallery.sorting import ExplicitOrder
 
 # -- Project information -----------------------------------------------------
 project = 'TRAMP'
-copyright = '2020, TRAMP developers'
+copyright = '2021, TRAMP developers'
 author = 'TRAMP developers'
 release = '0.1'
 version = '0.1'
@@ -51,8 +51,8 @@ locale_dirs = ['locale/']
 gettext_compact = False
 
 master_doc = 'index'
-# 'monokai','solarized-light', 'tango',  'solarized-dark', 'pastie'
-pygments_style = 'tango'
+# 'friendly', 'tango',  'paraiso-dark', 'pastie', ...
+pygments_style = 'friendly'
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -102,3 +102,6 @@ html_copy_source = False
 
 # Copy button
 copybutton_prompt_text = ">>> "
+
+# show todolist
+todo_include_todos = True

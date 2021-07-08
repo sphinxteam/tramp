@@ -1,7 +1,0 @@
-sphinx
-sphinx_rtd_theme
-sphinx-gallery
-sphinx-fontawesome
-sphinx-copybutton
-nb2plots>=0.6
-texext>=0.6.6

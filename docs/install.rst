@@ -1,9 +1,6 @@
 Installation
 ------------
 
-Requirements
-____________
-
 .. tip::
     TRAMP package requires the following packages
 
@@ -12,23 +9,9 @@ ____________
     - networkx==1.11
     - daft
 
-    To directly install all the dependencies please type:
-
-
-    .. code-block::
-
-        pip install -U -r requirements/default.txt
-
-..
-
-
 .. warning::
     Currently the package does not support networkx 2.xx and will throw unexpected errors. We plan to upgrade to networkx 2.xx at some point.
-..
 
-
-Package installation
-____________________
 
 To install the package, go to the folder where setup.py is located and run:
 
@@ -37,37 +20,18 @@ To install the package, go to the folder where setup.py is located and run:
     pip install .
 
 
-.. seealso::
+If you want to install in development mode (changes to the repository will immediately affect the installed package without needing to re-install):
 
-    If you want to install in development mode (changes to the repository will immediately affect the installed package without needing to re-install):
+.. code-block::
 
-    .. code-block::
+    pip install --editable .
 
-        pip install --editable .
+To install the package on a remote machine directly from the github repo:
 
-    To install the package on a remote machine directly from the github repo:
+.. code-block::
 
-    .. code-block::
-
-        pip install git+https://github.com/sphinxteam/tramp.git
-
-    See `installing from sources <https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/#installing-from-source>`_ for more details. In both cases, the necessary requirements should be automatically installed.
+    pip install git+https://github.com/sphinxteam/tramp.git
 
 
-Citation
---------
-
-More details on the implementation of the package can be found on the `arXiv paper <https://arxiv.org/abs/2004.01571>`_.
-
-To cite this work, please use
-
-.. code-block:: latex
-
-    @misc{baker2020tramp,
-      title={TRAMP: Compositional Inference with TRee Approximate Message Passing},
-      author={Antoine Baker and Benjamin Aubin and Florent Krzakala and Lenka Zdeborová},
-      year={2020},
-      eprint={2004.01571},
-      archivePrefix={arXiv},
-      primaryClass={stat.ML}
-    }
+See `installing from sources <https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/#installing-from-source>`_ for more details.
+In all three cases, the necessary requirements should be automatically installed.

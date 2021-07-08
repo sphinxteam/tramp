@@ -5,21 +5,23 @@ TRAMP's python package implements gaussian expectation propagation for any tree-
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Getting started
 
    install
    tutorial
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: User guide
 
-   new_modules
+   introduction
    gallery/index
+   contributing
+   citation
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: API reference
 
    reference/algos
