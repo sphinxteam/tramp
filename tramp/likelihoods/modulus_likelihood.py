@@ -21,23 +21,19 @@ def ive_ratio(r):
 
 
 class ModulusLikelihood(Likelihood):
-    """Modulus likelihood y = |z|.
+    """Modulus likelihood $y = |z|$.
 
     Parameters
     ----------
-    - y: array
+    y : ndarray
         observed modulus
-    - y_name: str
+    y_name : str
         name of y for display
 
     Notes
     -----
-    For message passing it is more convenient to represent a complex array x
-    as a real array X where X[0] = x.real and X[1] = x.imag
-
-    In particular:
-    - input  of sample(): Z array of shape (2, z.shape)
-    - message bz, posterior rz: real arrays of shape (2, z.shape)
+    For message passing it is more convenient to represent the complex array z
+    as a real array Z where Z[0] = z.real and Z[1] = z.imag
     """
 
     def __init__(self, y, y_name="y"):

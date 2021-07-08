@@ -29,20 +29,24 @@ def binary_search(f, xmin, xmax, xtol):
 
 
 def find_state_evolution_mse(id, a0, alpha, model_builder, **model_kwargs):
-    """
-    Find the variable mse according to the state evolution of the model.
+    """Find the variable mse according to the state evolution of the model.
 
     Parameters
     ----------
-    - id : id of the variables to infer (signal)
-    - a0 : initial value of the a message id -> prior
-    - alpha : measurment density
-    - model_builder : function or class
-    - model_kwargs : model arguments
+    id : str
+        id of the variables to infer (signal)
+    a0 : float
+        initial value of the a message id -> prior
+    alpha : float
+        measurement density
+    model_builder : function or class
+    **model_kwargs : dict
         model_builder(**model_kwargs) must return a Model instance.
+
     Returns
     -------
-    - result : dict
+    v : float
+        The variable mse according to state evolution
     """
     model = model_builder(alpha=alpha, **model_kwargs)
     a_init = [(id, "bwd", a0)]
@@ -56,25 +60,32 @@ def find_state_evolution_mse(id, a0, alpha, model_builder, **model_kwargs):
 def find_critical_alpha(id, a0, mse_criterion, alpha_min, alpha_max,
                         model_builder, alpha_tol=1e-6, vtol=1e-3,
                         **model_kwargs):
-    """
-    Find critical value of the measurment density alpha. It performs a binary
-    search on alpha to find the minimal value of alpha for which the mse
-    criterion is satisfied.
+    """Find critical value of the measurment density alpha.
+
+    It performs a binary search on alpha to find the minimal value of alpha for
+    which the mse criterion is satisfied.
 
     Parameters
     ----------
-    - id : id of the variables to infer (signal)
-    - a0 : initial value of the a message id -> prior
-    - mse_criterion : str or function
-        - "random" : search the maximal value of alpha for which v = tau_x
-        (no better than random guess)
-        - "perfect" : search the minimal value of alpha for which v = 0,
-        (perfect reconstruction)
-        - function : choosen so that mse_criterion(v) returns False when
-        alpha < alpha_c and True when alpha > alpha_c
-    - alpha_min, alpha_max : min and max values for the alpha search.
-    - alpha_tol : tolerance on alpha, default 1e-6
-    - vtol : tolerance on the variance v used in the "perfect" or "random" mse
+    id : str
+        id of the variable to infer (signal)
+    a0 : float
+        Initial value of the a message id -> prior
+    mse_criterion : {"random", "perfect"} or function
+        Criterion on the mse:
+
+        - "random" : search the maximal value of alpha for which v = tau_x (no better than random guess)
+        - "perfect" : search the minimal value of alpha for which v = 0 (perfect reconstruction)
+        - function : mse_criterion(v) must return False when alpha < alpha_c and True when alpha > alpha_c
+
+    alpha_min : float
+        Minimal value for the alpha search
+    alpha_max : float
+        Maximal value for the alpha search
+    alpha_tol : float,
+        Tolerance on alpha, default 1e-6
+    vtol : float
+        Tolerance on the variance v used in the "perfect" or "random" mse
         criteria
     """
     if mse_criterion == "perfect":
