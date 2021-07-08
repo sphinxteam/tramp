@@ -1,4 +1,4 @@
-"""Binary prior"""
+"""Implements the BinaryPrior class."""
 import numpy as np
 from .base_prior import Prior
 from ..utils.integration import gaussian_measure
@@ -6,12 +6,25 @@ from ..beliefs import binary
 
 
 class BinaryPrior(Prior):
+    r"""Binary prior :math:`p(x) = p_+ \delta_+(x) + p_- \delta_-(x)`
+
+    Parameters
+    ----------
+    size : int or tuple of int
+        Shape of x
+    p_pos : float in (0,1)
+        Parameter :math:`p_+` of the binary prior
+    isotropic : bool
+        Using isotropic or diagonal beliefs
+    """
+
     def __init__(self, size, p_pos=0.5, isotropic=True):
         self.size = size
         self.p_pos = p_pos
         self.isotropic = isotropic
         self.repr_init()
         self.p_neg = 1 - p_pos
+        # natural parameters
         self.b = 0.5*np.log(self.p_pos / self.p_neg)
 
     def sample(self):

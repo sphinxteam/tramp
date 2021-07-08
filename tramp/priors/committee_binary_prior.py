@@ -1,3 +1,4 @@
+"""Implements the CommitteeBinaryPrior class."""
 import numpy as np
 from scipy.special import logsumexp, softmax
 from .base_prior import Prior
@@ -8,27 +9,28 @@ from ..beliefs import binary
 def create_spins(K):
     "Create spins configurations"
     x = [list(np.binary_repr(i, width=K)) for i in range(2**K)]
-    x = 2*np.array(x, dtype=int) - 1 # shape (2**K, K)
+    x = 2*np.array(x, dtype=int) - 1  # shape (2**K, K)
     return x
+
 
 def compute_px(p_pos, x):
     "Compute spins probabilties"
-    n_pos = (x==+1).sum(axis=1) # shape (2**K,)
-    n_neg = (x==-1).sum(axis=1) # shape (2**K,)
+    n_pos = (x == +1).sum(axis=1)  # shape (2**K,)
+    n_neg = (x == -1).sum(axis=1)  # shape (2**K,)
     p_neg = 1 - p_pos
-    px = (p_pos**n_pos)*(p_neg**n_neg) # shape (2**K,)
+    px = (p_pos**n_pos)*(p_neg**n_neg)  # shape (2**K,)
     return px
 
 
 def compute_C(x):
     "Compute spins covariance matrix C = (x-x')(x-x')^T"
     n = np.newaxis
-    #entries c,d,k,l
-    x_ck = x[:,n,:,n]
-    x_dk = x[n,:,:,n]
-    x_cl = x[:,n,n,:]
-    x_dl = x[n,:,n,:]
-    C = (x_ck - x_dk)*(x_cl - x_dl) # shape (2**K, 2**K, K, K)
+    # entries c,d,k,l
+    x_ck = x[:, n, :, n]
+    x_dk = x[n, :, :, n]
+    x_cl = x[:, n, n, :]
+    x_dl = x[n, :, n, :]
+    C = (x_ck - x_dk)*(x_cl - x_dl)  # shape (2**K, 2**K, K, K)
     return C
 
 
@@ -113,16 +115,29 @@ def compute_V_scalar(p, C):
 
 
 class CommitteeBinaryPrior(Prior):
+    r"""Committee Binary prior :math:`p(x) = p_+ \delta_+(x) + p_- \delta_-(x)`
+
+    Parameters
+    ----------
+    N : int
+        Shape of x is (N, K)
+    K : int
+        Number of experts in the committee
+    p_pos : float in (0,1)
+        Parameter :math:`p_+` of the binary prior
+    """
+
     def __init__(self, N, K, p_pos=0.5):
         self.N = N
         self.K = K
         self.p_pos = p_pos
         self.repr_init()
         self.size = (N, K)
-        self.x = create_spins(K) # shape (2**K, K)
-        self.C = compute_C(self.x) # shape (2**K, 2**k, K, K)
-        self.px = compute_px(p_pos, self.x) # shape (2**K,)
+        self.x = create_spins(K)  # shape (2**K, K)
+        self.C = compute_C(self.x)  # shape (2**K, 2**k, K, K)
+        self.px = compute_px(p_pos, self.x)  # shape (2**K,)
         self.p_neg = 1 - p_pos
+        # natural parameters
         self.b = 0.5*np.log(self.p_pos / self.p_neg)
 
     def sample(self):
@@ -138,35 +153,35 @@ class CommitteeBinaryPrior(Prior):
 
     def scalar_forward_mean(self, ax, bx):
         b = bx + self.b
-        Ax = compute_Ax_scalar(self.x, ax, b) # shape (2**K,)
-        prob = softmax(Ax) # shape (2**K,)
-        rx = prob @ self.x # shape (K,)
+        Ax = compute_Ax_scalar(self.x, ax, b)  # shape (2**K,)
+        prob = softmax(Ax)  # shape (2**K,)
+        rx = prob @ self.x  # shape (K,)
         return rx
 
     def scalar_forward_variance(self, ax, bx):
         b = bx + self.b
-        Ax = compute_Ax_scalar(self.x, ax, b) # shape (2**K,)
-        prob = softmax(Ax) # shape (2**K,)
-        vx = compute_V_scalar(prob, self.C) # shape (K, K)
+        Ax = compute_Ax_scalar(self.x, ax, b)  # shape (2**K,)
+        prob = softmax(Ax)  # shape (2**K,)
+        vx = compute_V_scalar(prob, self.C)  # shape (K, K)
         return vx
 
     def scalar_log_partition(self, ax, bx):
         b = bx + self.b
-        Ax = compute_Ax_scalar(self.x, ax, b) # shape (2**K,)
+        Ax = compute_Ax_scalar(self.x, ax, b)  # shape (2**K,)
         A = logsumexp(Ax)/self.K - binary.A(self.b)
         return A
 
     def compute_forward_posterior(self, ax, bx):
         b = bx + self.b
-        Ax = compute_Ax_vector(self.x, ax, b) # shape (N, 2**K)
-        prob = softmax(Ax, axis=1) # shape (N, 2**K)
-        rx = prob @ self.x # shape (N, K)
-        vx = compute_V_vector(prob, self.C) # shape (K, K)
+        Ax = compute_Ax_vector(self.x, ax, b)  # shape (N, 2**K)
+        prob = softmax(Ax, axis=1)  # shape (N, 2**K)
+        rx = prob @ self.x  # shape (N, K)
+        vx = compute_V_vector(prob, self.C)  # shape (K, K)
         return rx, vx
 
     def compute_log_partition(self, ax, bx):
         b = bx + self.b
-        Ax = compute_Ax_vector(self.x, ax, b) # shape (N, 2**K)
+        Ax = compute_Ax_vector(self.x, ax, b)  # shape (N, 2**K)
         A = logsumexp(Ax, axis=1).mean() - binary.A(self.b)
         return A
 

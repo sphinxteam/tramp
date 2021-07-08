@@ -1,3 +1,4 @@
+"""Implements the GaussianMixturePrior class."""
 import numpy as np
 from .base_prior import Prior
 from ..utils.integration import gaussian_measure
@@ -5,16 +6,33 @@ from ..beliefs import normal, mixture
 
 
 class GaussianMixturePrior(Prior):
-    def __init__(self, size, probs=[0.5, 0.5], means=[-1, 1], sigmas=[1, 1], isotropic=True):
+    r"""Gaussian mixture prior $p(x)=\sum_{k=1}^K p_k \mathcal{N}(x|r_k,v_k)$
+
+    Parameters
+    ----------
+    size : int or tuple of int
+        Shape of x
+    probs : list of length K
+        Probability parameters :math:`p_k` of the Gaussian mixture prior
+    means : list of length K
+        Mean parameters :math:`r_k` of the Gaussian mixture prior
+    vars : list of length K
+        Variance parameters :math:`r_k` of the Gaussian mixture prior
+    isotropic : bool
+        Using isotropic or diagonal beliefs
+    """
+
+    def __init__(self, size, probs=[0.5, 0.5], means=[-1, 1], vars=[1, 1], isotropic=True):
         self.size = size
-        assert len(probs)==len(means)==len(sigmas)
+        assert len(probs) == len(means) == len(vars)
         self.K = len(probs)
         self.probs = np.array(probs)
         self.means = np.array(means)
-        self.sigmas = np.array(sigmas)
+        self.vars = np.array(vars)
         self.isotropic = isotropic
         self.repr_init()
-        self.vars = self.sigmas**2
+        self.sigmas = np.sqrt(vars)
+        # natural parameters
         self.a = 1 / self.vars
         self.b = self.means / self.vars
         self.eta = np.log(self.probs) - normal.A(self.a, self.b)
@@ -37,28 +55,28 @@ class GaussianMixturePrior(Prior):
         return tau
 
     def second_moment_FG(self, tx_hat):
-        a = tx_hat + self.a # shape (K,)
+        a = tx_hat + self.a  # shape (K,)
         return mixture.tau(a, self.b, self.eta)
 
     def scalar_forward_mean(self, ax, bx):
-        a = ax + self.a # shape (K,)
-        b = bx + self.b # shape (K,)
+        a = ax + self.a  # shape (K,)
+        b = bx + self.b  # shape (K,)
         return mixture.r(a, b, self.eta)
 
     def scalar_forward_variance(self, ax, bx):
-        a = ax + self.a # shape (K,)
-        b = bx + self.b # shape (K,)
+        a = ax + self.a  # shape (K,)
+        b = bx + self.b  # shape (K,)
         return mixture.v(a, b, self.eta)
 
     def scalar_log_partition(self, ax, bx):
-        a = ax + self.a # shape (K,)
-        b = bx + self.b # shape (K,)
+        a = ax + self.a  # shape (K,)
+        b = bx + self.b  # shape (K,)
         A = mixture.A(a, b, self.eta) - mixture.A(self.a, self.b, self.eta)
         return A
 
     def compute_forward_posterior(self, ax, bx):
-        a = ax + self.a[:, np.newaxis] # shape (K, N)
-        b = bx + self.b[:, np.newaxis] # shape (K, N)
+        a = ax + self.a[:, np.newaxis]  # shape (K, N)
+        b = bx + self.b[:, np.newaxis]  # shape (K, N)
         eta = self.eta[:, np.newaxis]  # shape (K, 1)
         rx = mixture.r(a, b, eta)
         vx = mixture.v(a, b, eta)
@@ -67,8 +85,8 @@ class GaussianMixturePrior(Prior):
         return rx, vx
 
     def compute_log_partition(self, ax, bx):
-        a = ax + self.a[:, np.newaxis] # shape (K, N)
-        b = bx + self.b[:, np.newaxis] # shape (K, N)
+        a = ax + self.a[:, np.newaxis]  # shape (K, N)
+        b = bx + self.b[:, np.newaxis]  # shape (K, N)
         eta = self.eta[:, np.newaxis]  # shape (K, 1)
         A = mixture.A(a, b, eta) - mixture.A(self.a, self.b, self.eta)
         return A.mean()
@@ -99,7 +117,7 @@ class GaussianMixturePrior(Prior):
         for ak, bk, pk, rk, vk in zip(a0, b0, p0, r0, v0):
             def r_times_f(bx):
                 bx_star = (mx_hat / qx_hat) * bx
-                r = (bk + bx_star) /  (ak + ax_star)
+                r = (bk + bx_star) / (ak + ax_star)
                 return r * f(bx)
             mu += pk*gaussian_measure(
                 mx_hat * rk, np.sqrt(qx_hat + (mx_hat**2) * vk), r_times_f

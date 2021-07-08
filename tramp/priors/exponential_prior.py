@@ -1,3 +1,4 @@
+"""Implements the ExponentialPrior class."""
 import numpy as np
 from .base_prior import Prior
 from ..utils.integration import exponential_measure
@@ -5,12 +6,25 @@ from ..beliefs import exponential, positive
 
 
 class ExponentialPrior(Prior):
+    r"""Exponential prior :math:`p(x) = 1_+(x) \frac{1}{r} e^{-\frac{x}{r}}`
+
+    Parameters
+    ----------
+    size : int or tuple of int
+        Shape of x
+    mean : float in (0,1)
+        Mean parameter :math:`r` of the exponential prior
+    isotropic : bool
+        Using isotropic or diagonal beliefs
+    """
+
     def __init__(self, size, mean=1, isotropic=True):
         assert mean > 0
         self.size = size
         self.mean = mean
         self.isotropic = isotropic
         self.repr_init()
+        # natural parameters
         self.b = -1/mean
 
     def sample(self):

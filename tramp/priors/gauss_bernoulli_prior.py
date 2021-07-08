@@ -1,3 +1,4 @@
+"""Implements the GaussBernoulliPrior class."""
 import numpy as np
 from .base_prior import Prior
 from ..utils.integration import gaussian_measure
@@ -5,6 +6,22 @@ from ..beliefs import normal, sparse
 
 
 class GaussBernoulliPrior(Prior):
+    r"""Gauss-Bernoulli prior $p(x)=[1-\rho]\delta(x)+\rho\mathcal{N}(x|r,v)$
+
+    Parameters
+    ----------
+    size : int or tuple of int
+        Shape of x
+    rho : float in (0,1)
+        Sparsity parameter $\rho$ of the Gauss-Bernoulli prior
+    mean : float
+        Mean parameter $r$ of the Gauss-Bernoulli prior
+    var : float
+        Variance parameter $v$ of the Gauss-Bernoulli prior
+    isotropic : bool
+        Using isotropic or diagonal beliefs
+    """
+
     def __init__(self, size, rho=0.5, mean=0, var=1, isotropic=True):
         self.size = size
         self.rho = rho
@@ -13,6 +30,7 @@ class GaussBernoulliPrior(Prior):
         self.isotropic = isotropic
         self.repr_init()
         self.sigma = np.sqrt(var)
+        # natural parameters
         self.a = 1 / var
         self.b = mean / var
         self.eta = normal.A(self.a, self.b) - np.log(rho / (1 - rho))

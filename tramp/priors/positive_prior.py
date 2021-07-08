@@ -1,3 +1,4 @@
+"""Implements the PositivePrior class."""
 import numpy as np
 from .base_prior import Prior
 from ..beliefs import positive
@@ -5,10 +6,21 @@ from scipy.stats import halfnorm
 
 
 class PositivePrior(Prior):
+    r"""Positive prior :math:`p(x) = 2 * 1_+(x) \mathcal{N}(x|0,1)`
+
+    Parameters
+    ----------
+    size : int or tuple of int
+        Shape of x
+    isotropic : bool
+        Using isotropic or diagonal beliefs
+    """
+
     def __init__(self, size, isotropic=True):
         self.size = size
         self.isotropic = isotropic
         self.repr_init()
+        # natural parameters
         self.a = 1.
         self.b = 0.
 

@@ -1,3 +1,4 @@
+"""Implements the base Prior class."""
 from ..base import Factor
 from scipy.optimize import root_scalar
 

@@ -1,3 +1,4 @@
+"""Implements the GaussianPrior class."""
 import numpy as np
 from .base_prior import Prior
 from ..utils.integration import gaussian_measure
@@ -5,6 +6,20 @@ from ..beliefs import normal
 
 
 class GaussianPrior(Prior):
+    r"""Gaussian prior $p(x)=\mathcal{N}(x|r, v)$
+
+    Parameters
+    ----------
+    size : int or tuple of int
+        Shape of x
+    mean : float
+        Mean parameter $r$ of the Gaussian prior
+    var : float
+        Variance parameter $v$ of the Gaussian prior
+    isotropic : bool
+        Using isotropic or diagonal beliefs
+    """
+
     def __init__(self, size, mean=0, var=1, isotropic=True):
         self.size = size
         self.mean = mean
@@ -12,6 +27,7 @@ class GaussianPrior(Prior):
         self.isotropic = isotropic
         self.repr_init()
         self.sigma = np.sqrt(var)
+        # natural parameters
         self.a = 1 / var
         self.b = mean / var
 
@@ -62,12 +78,21 @@ class GaussianPrior(Prior):
         vx = 1 / a
         return vx
 
+    def compute_forward_v_BO(self, ax, tx0_hat):
+        a = ax + self.a
+        vx = 1 / a
+        return vx
+
     def compute_forward_message(self, ax, bx):
         ax_new = self.a * np.ones_like(ax)
         bx_new = self.b * np.ones_like(bx)
         return ax_new, bx_new
 
     def compute_forward_state_evolution(self, ax):
+        ax_new = self.a
+        return ax_new
+
+    def compute_forward_state_evolution_BO(self, ax, tx0_hat):
         ax_new = self.a
         return ax_new
 
@@ -87,9 +112,10 @@ class GaussianPrior(Prior):
         r0 = b0 / a0
         v0 = 1 / a0
         ax_star = (mx_hat / qx_hat) * mx_hat
+
         def r_times_f(bx):
             bx_star = (mx_hat / qx_hat) * bx
-            r = (b0 + bx_star) /  (a0 + ax_star)
+            r = (b0 + bx_star) / (a0 + ax_star)
             return r * f(bx)
         mu = gaussian_measure(
             mx_hat * r0, np.sqrt(qx_hat + (mx_hat**2) * v0), r_times_f

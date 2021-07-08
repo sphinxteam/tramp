@@ -1,3 +1,4 @@
+"""Implements the MAP_L1NormPrior class."""
 import numpy as np
 from .base_prior import Prior
 
@@ -16,23 +17,40 @@ def v_soft_threshold(x, gamma):
     return np.abs(x) > gamma
 
 
-class MAP_LaplacePrior(Prior):
-    def __init__(self, size, scale, isotropic=True):
+class MAP_L1NormPrior(Prior):
+    r"""MAP prior associated to the $\Vert . \Vert_1$ penalty.
+
+    The corresponding factor is given by $f(x) = e^{-\gamma \Vert x \Vert_1}$
+    where $\gamma$ is the regularization parameter.
+
+    Parameters
+    ----------
+    size : int or tuple of int
+        Shape of x
+    gamma : float
+        Regularization parameter $\gamma$
+    isotropic : bool
+        Using isotropic or diagonal beliefs
+    """
+
+    def __init__(self, size, gamma=1, isotropic=True):
         self.size = size
-        self.scale = scale
+        self.gamma = gamma
         self.isotropic = isotropic
         self.repr_init()
-        self.gamma = 1 / scale
 
     def sample(self):
-        X = np.random.laplace(size=self.size, scale=self.scale)
+        X = np.random.laplace(size=self.size, scale=1/self.gamma)
         return X
 
     def math(self):
         return r"$\Vert . \Vert_1$"
 
     def second_moment(self):
-        return 2 * self.scale**2
+        raise NotImplementedError
+
+    def second_moment_FG(self, tx_hat):
+        raise NotImplementedError
 
     def scalar_forward_mean(self, ax, bx):
         return (1 / ax) * soft_threshold(bx, self.gamma)
@@ -42,7 +60,7 @@ class MAP_LaplacePrior(Prior):
 
     def scalar_log_partition(self, ax, bx):
         rx = (1 / ax) * soft_threshold(bx, self.gamma)
-        A =  -self.gamma*np.abs(rx) -0.5*ax*(rx**2) + bx*rx
+        A =  bx*rx - 0.5*ax*(rx**2) - self.gamma*np.abs(rx)
         return A
 
     def compute_forward_posterior(self, ax, bx):
@@ -54,7 +72,7 @@ class MAP_LaplacePrior(Prior):
 
     def compute_log_partition(self, ax, bx):
         rx = (1 / ax) * soft_threshold(bx, self.gamma)
-        A =  -self.gamma*np.abs(rx) + bx*rx - 0.5*ax*(rx**2)
+        A =  bx*rx - 0.5*ax*(rx**2) - self.gamma*np.abs(rx)
         return A.mean()
 
     def b_measure(self, mx_hat, qx_hat, tx0_hat, f):
