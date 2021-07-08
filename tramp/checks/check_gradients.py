@@ -187,8 +187,8 @@ def plot_prior_grad_BO(prior):
     axs.plot(df["mx_hat"], 2*df["grad_mx_hat_A"], '--', label=r"$2\partial_{\widehat{m}_x^-} A$")
     axs.set(xlabel=r"$\widehat{m}_x^-$")
     axs.legend()
-    fig.suptitle(prior)
-    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+    fig.suptitle(f"{prior}".replace("(", "\n").replace(")", "\n"), fontsize=12)
+    fig.tight_layout(rect=[0, 0.03, 1, 0.90])
 
 
 def get_prior_grad_BO_BN(prior, ax):
@@ -245,8 +245,8 @@ def plot_prior_grad_FG(prior):
     axs.plot(df["tx_hat"], -2*df["grad_tx_hat_A"], '--', label=r"$-2\partial_{\widehat{\tau}_x^-} A$")
     axs.set(xlabel=r"$\widehat{\tau}_x^-$")
     axs.legend()
-    fig.suptitle(prior)
-    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+    fig.suptitle(f"{prior}".replace("(", "\n").replace(")", "\n"), fontsize=12)
+    fig.tight_layout(rect=[0, 0.03, 1, 0.90])
 
 
 def get_prior_grad_EP_scalar(prior, ax, bx):
@@ -257,10 +257,11 @@ def get_prior_grad_EP_scalar(prior, ax, bx):
     vx = prior.scalar_forward_variance(ax, bx)
     def A_func(ax): return prior.scalar_log_partition(ax, bx)
     grad_ax_A = numerical_1st_derivative(ax, A_func, EPSILON)
-    tx = rx**2 + vx
+    qx = rx**2
+    tx = qx + vx
     return {
         "grad_bx_A1": grad_bx_A1, "grad_bx_A2": grad_bx_A2, "grad_ax_A": grad_ax_A,
-        "rx": rx, "vx": vx, "tx": tx
+        "rx": rx, "vx": vx, "tx": tx, "qx": qx
     }
 
 
@@ -282,9 +283,44 @@ def plot_prior_grad_EP_scalar(prior):
     axs[1].plot(df["bx"], df["grad_bx_A2"], '--', label=r"$\partial^2_{b_x^-} A$")
     axs[1].set(xlabel=r"$b_x^-$")
     axs[1].legend()
-    axs[2].plot(df["bx"], df["tx"], '-', label=r"$\tau_x$")
+    if prior.__class__.__name__.startswith("MAP"):
+        axs[2].plot(df["bx"], df["qx"], '-', label=r"$q_x$")
+    else:
+        axs[2].plot(df["bx"], df["tx"], '-', label=r"$\tau_x$")
     axs[2].plot(df["bx"], -2*df["grad_ax_A"], '--', label=r"$-2\partial_{a_x^-} A$")
     axs[2].set(xlabel=r"$b_x^-$")
     axs[2].legend()
+    fig.suptitle(prior)
+    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+
+def check_prior_grad_EP_diagonal(prior):
+    assert not prior.isotropic, "Must use diagonal beliefs (isotropic=False)"
+    N = np.prod(prior.size)
+    bx = np.linspace(-6, 6, N).reshape(prior.size)
+    ax = np.ones_like(bx)
+    def A_func(bx):
+        return N*prior.compute_log_partition(ax, bx)
+    A1 = numerical_gradient(bx, A_func, EPSILON)
+    A2 = numerical_hessian_diagonal(bx, A_func, EPSILON)
+    rx, vx = prior.compute_forward_posterior(ax, bx)
+    df = pd.DataFrame({
+        "bx": bx.ravel(), "rx": rx.ravel(), "vx":vx.ravel(),
+        "grad_bx_A1":A1.ravel(), "grad_bx_A2":A2.ravel()
+    })
+    return df
+
+
+def plot_prior_grad_EP_diagonal(prior):
+    df = check_prior_grad_EP_diagonal(prior)
+    fig, axs = plt.subplots(1, 2, figsize=(8, 4))
+    axs[0].plot(df["bx"], df["rx"], '-', label=r"$r_x$")
+    axs[0].plot(df["bx"], df["grad_bx_A1"], '--', label=r"$\partial_{b_x^-} A$")
+    axs[0].set(xlabel=r"$b_x^-$")
+    axs[0].legend()
+    axs[1].plot(df["bx"], df["vx"], '-', label=r"$v_x$")
+    axs[1].plot(df["bx"], df["grad_bx_A2"], '--', label=r"$\partial^2_{b_x^-} A$")
+    axs[1].set(xlabel=r"$b_x^-$")
+    axs[1].legend()
     fig.suptitle(prior)
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])

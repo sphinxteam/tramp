@@ -6,6 +6,6 @@ from .check_high_dim import (
 )
 from .check_gradients import (
     plot_belief_grad_b,
-    plot_prior_grad_BO, plot_prior_grad_FG, plot_prior_grad_RS,
-    plot_prior_grad_BO_BN, plot_prior_grad_EP_scalar
+    plot_prior_grad_BO, plot_prior_grad_RS, plot_prior_grad_BO_BN,
+    plot_prior_grad_FG, plot_prior_grad_EP_scalar, plot_prior_grad_EP_diagonal
 )

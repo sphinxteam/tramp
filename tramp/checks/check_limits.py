@@ -77,7 +77,7 @@ def plot_prior_BN_limit(prior):
     axs[0].set(xlabel=r"$\widehat{m}_x^-$")
     axs[0].legend()
     axs[1].plot(df["mx_hat"], df["vx_BN"], "-", label=r"$v_x \quad BN$")
-    axs[1].plot(df["mx_hat"], df["vx_FG"], "--", label=r"$vx \quad FG$")
+    axs[1].plot(df["mx_hat"], df["vx_FG"], "--", label=r"$v_x \quad FG$")
     axs[1].set(xlabel=r"$\widehat{m}_x^-$")
     axs[1].legend()
     axs[2].plot(df["mx_hat"], df["tx_BN"], "-", label=r"$\tau_x \quad BN$")
