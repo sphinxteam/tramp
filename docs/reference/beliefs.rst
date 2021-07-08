@@ -1,11 +1,16 @@
+.. _api_beliefs:
+
 Beliefs
 =======
+
+Implementation
+--------------
 
 A belief, which we may as well call a (stochastic) variable type, is specified by
 the base space $X$ as well as the chosen set of sufficient statistics $\phi(x)$.
 Any variable type defines an exponential family distribution
 
-.. math:: p(x|\lambda) = e^{\lambda^\intercal  \phi(x) - A[\lambda]}
+.. math:: p(x|\lambda) = e^{\lambda^\intercal  \phi(x) - A(\lambda)}
 
 
 indexed by the natural parameter $\lambda$. We will denote by $b \in \lambda$
@@ -17,7 +22,18 @@ The log-partition, mean and variance are then given by:
   r(\lambda) = \partial_b A(\lambda), \quad
   v(\lambda) = \partial_b^2 A(\lambda)
 
+The second moment is given by $\tau(\lambda) = r(\lambda)^2 + v(\lambda)$
 
+In TRAMP, a belief is implemented as a python submodule of :mod:`tramp.beliefs`
+containing the functions :func:`A`,
+:func:`r`, :func:`v`, :func:`tau` and some additional functions if relevant.
+As a sanity check, you can use the :func:`tramp.checks.plot_belief_grad_b`
+that will check that $r = \partial_b A$ and $v = \partial_b^2 A$.
+See the various beliefs below for concrete examples.
+
+If you implement a new belief, please make sure that it passes the gradient
+checking and add it to the test suite
+:func:`tramp.tests.test_beliefs.test_belief_grad_b`.
 
 .. _binary:
 
@@ -185,7 +201,7 @@ We consider a truncated Normal variable restricted to the interval
 .. math::
 
     A_X(ab) = A(ab) + \ln p_Z, \quad
-    r_X(ab) = r + v r_Z , \quad
+    r_X(ab) = r + \sqrt{v} r_Z , \quad
     v_X(ab) = v v_Z
 
 where $A(ab), r=r(ab), v=v(ab)$ are the log-partition, mean and variance of a
@@ -194,16 +210,14 @@ where $A(ab), r=r(ab), v=v(ab)$ are the log-partition, mean and variance of a
 $p_Z$ denotes the probabilty that the standard Normal $z \sim \mathcal{N}(0,1)$
 falls withing the rescaled interval :math:`Z = \frac{X - r}{\sqrt{v}} = [z_\min, z_\max]`
 
-.. math::
-  p_Z = \int_Z dz \mathcal{N}(z) = \Phi(z_\max) - \Phi(z_\min)
+.. math:: p_Z = \int_Z dz \mathcal{N}(z) = \Phi(z_\max) - \Phi(z_\min)
 
 with $\Phi$ the Normal cumulative distribution function.
 
 It is equal to the probabilty $p_X(rv)$ that the Normal
 $x \sim \mathcal{N}(r, v)$ falls within the $X$ interval:
 
-.. math::
-  p_X(rv)= \int_X dx \mathcal{N}(x | r, v) = p_Z
+.. math:: p_X(rv)= \int_X dx \mathcal{N}(x | r, v) = p_Z
 
 $r_Z$ denotes the mean and $v_Z$ the variance of the standard Normal
 $z \sim \mathcal{N}(0,1)$ restricted to the  $Z$ interval:
@@ -216,17 +230,15 @@ $z \sim \mathcal{N}(0,1)$ restricted to the  $Z$ interval:
   \frac{z_\min \mathcal{N}(z_\min)-z_\max \mathcal{N}(z_\max)}{\Phi(z_\max)-\Phi(z_\min)}
 
 .. warning::
-  Computing $r_Z$ and $v_Z$ and $\ln p_Z$ is numerically tricky especially in
-  the tails.
-
-  We follow the implementation suggested in the
+  Computing $r_Z$, $v_Z$ and $\ln p_Z$ is numerically tricky, especially in
+  the tails. We follow the implementation suggested in the
   `TruncatedNormal.jl <https://github.com/cossio/TruncatedNormal.jl>`_
   Julia package.
 
 The corresponding exponential family distribution is the truncated Normal
 
 .. math::
-    p(x|ab) = \mathcal{N}_X(x | r, v) = \frac{1}{p_X(rv)} 1_X(x) \mathcal{N}(x|r,v)
+    p(x|ab) = \mathcal{N}_X(x|r,v) = \frac{1}{p_X(rv)} 1_X(x) \mathcal{N}(x|r,v)
 
 
 .. nbplot::
@@ -240,7 +252,7 @@ The corresponding exponential family distribution is the truncated Normal
 .. autofunction:: r
 .. autofunction:: v
 .. autofunction:: tau
-
+.. autofunction:: p
 
 .. _positive:
 
@@ -262,6 +274,7 @@ $x_\max = +\infty$.
 .. autofunction:: r
 .. autofunction:: v
 .. autofunction:: tau
+.. autofunction:: p
 
 
 .. _exponential:
@@ -278,16 +291,14 @@ The log-partition, mean and variance are given by
     v(b) = \frac{1}{b^2}
 
 The corresponding exponential family distribution is the Exponential
-with mean $r = -\frac{1}{b}$ or equivalently rate $-b$
+with mean $r = -\frac{1}{b}$
 
-.. math::
-  p(x|b) = 1_{\mathbb{R}_+}(x) \frac{1}{r} e^{- \frac{x}{r} }
+.. math:: p(x|b) = 1_{\mathbb{R}_+}(x) \frac{1}{r} e^{- \frac{x}{r} }
 
-The exponential variable is also the limit $a\rightarrow 0$ of the
+The Exponential variable is also the limit $a\rightarrow 0$ of the
 :ref:`positive` variable:
 
-.. math::
-  p(x|b) = \lim_{a\rightarrow 0} p_{\mathbb{R}_+}(x | ab)
+.. math:: p(x|b) = \lim_{a\rightarrow 0} p_{\mathbb{R}_+}(x | ab)
 
 .. note::
   The natural parameter $b$ must be negative.
