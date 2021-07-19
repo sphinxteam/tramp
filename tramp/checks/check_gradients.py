@@ -187,7 +187,7 @@ def plot_prior_grad_BO(prior):
     axs.plot(df["mx_hat"], 2*df["grad_mx_hat_A"], '--', label=r"$2\partial_{\widehat{m}_x^-} A$")
     axs.set(xlabel=r"$\widehat{m}_x^-$")
     axs.legend()
-    fig.suptitle(f"{prior}".replace("(", "\n").replace(")", "\n"), fontsize=12)
+    fig.suptitle(f"{prior}".replace("(", "\n").replace(")", "\n"), fontsize=11)
     fig.tight_layout(rect=[0, 0.03, 1, 0.90])
 
 
@@ -245,7 +245,7 @@ def plot_prior_grad_FG(prior):
     axs.plot(df["tx_hat"], -2*df["grad_tx_hat_A"], '--', label=r"$-2\partial_{\widehat{\tau}_x^-} A$")
     axs.set(xlabel=r"$\widehat{\tau}_x^-$")
     axs.legend()
-    fig.suptitle(f"{prior}".replace("(", "\n").replace(")", "\n"), fontsize=12)
+    fig.suptitle(f"{prior}".replace("(", "\n").replace(")", "\n"), fontsize=11)
     fig.tight_layout(rect=[0, 0.03, 1, 0.90])
 
 

@@ -203,6 +203,7 @@ If you implement a new prior, please add it to the test suite
 :mod:`tramp.tests.test_priors` to make sure that it passes the gradient
 checking :func:`test_prior_grad_FG`.
 
+
 .. _prior_SE:
 
 State evolution
@@ -910,7 +911,7 @@ The penalty is **not** separable due to the L2 norm.
 **Expectation propagation**
 The vectorized log-partition, posterior mean and variance are given by the usual
 formula for :ref:`MAP priors <map_priors_vectorized>` using the proximal operator.
-For the $\Vert . \Vert_{2,1}$ penalty, the scalar proximal operator is known as
+For the $\Vert . \Vert_{2,1}$ penalty, the proximal operator is known as
 the group soft thresholding operator:
 
 .. math::
@@ -945,7 +946,7 @@ covariance are given by:
   \Sigma_x[a_x^- b_x^-] &= \sum_{xx' \in (\pm)^K}
   \sigma_x \sigma_{x'} (x-x')(x-x')^T
 
-where $A(b)$ is the log-partition of the binary belief,
+where $A(b)$ is the log-partition of the :ref:`binary` belief,
 $\sigma = \mathrm{softmax}(\{A_x\})$ and for a
 spin configuration $x \in (\pm)^K$ we set
 $A_x = - \frac{1}{2} x \cdot a_x^- x + (b_0 + b_x^-) \cdot x$.
