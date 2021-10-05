@@ -1,157 +1,146 @@
-import unittest
-from tramp.likelihoods import (
-    GaussianLikelihood, SgnLikelihood, AbsLikelihood, ModulusLikelihood
-)
-from tramp.utils.misc import complex2array, array2complex
+import pytest
 import numpy as np
+from numpy.testing import assert_allclose
+from tramp.likelihoods import (
+    GaussianLikelihood, AbsLikelihood, SgnLikelihood,
+    ReluLikelihood, LeakyReluLikelihood, HardTanhLikelihood,
+    HardSigmoidLikelihood, SymmetricDoorLikelihood,
+    ModulusLikelihood
+)
+from tramp.checks.check_limits import check_likelihood_BO_limit, check_likelihood_BN_limit
+from tramp.checks.check_gradients import (
+    check_likelihood_grad_BO, check_likelihood_grad_BO_BN,
+    check_likelihood_grad_RS, check_likelihood_grad_FG,
+    check_likelihood_grad_EP_scalar, check_likelihood_grad_EP_diagonal,
+    EPSILON
+)
+from tramp.utils.misc import relu, leaky_relu, hard_tanh, hard_sigm, symm_door
 
 
-def complex_dot(z1, z2):
-    return np.real(np.conjugate(z1)*z2)
+def create_likelihoods():
+    z = np.linspace(-3, 3, 100)
+    return [
+        GaussianLikelihood(y=z, isotropic=False),
+        AbsLikelihood(y=np.abs(z), isotropic=False),
+        SgnLikelihood(y=np.sign(z), isotropic=False),
+        ReluLikelihood(y=relu(z), isotropic=False),
+        LeakyReluLikelihood(y=leaky_relu(z, 0.1), slope=0.1, isotropic=False),
+        HardTanhLikelihood(y=hard_tanh(z), isotropic=False),
+        HardSigmoidLikelihood(y=hard_sigm(z), isotropic=False),
+        SymmetricDoorLikelihood(y=symm_door(z, 1.), width=0.1, isotropic=False)
+    ]
 
 
-def explicit_real_integral(az, bz, y, likelihood):
-    """
-    Compute rz, vz for likelihood p(y|z) by integration for z real
-    """
-    def belief(z):
-        L = -0.5 * az * (z**2) + bz * z
-        return np.exp(L)
-
-    def z_belief(z):
-        return z*belief(z)
-
-    def z2_belief(z):
-        return (z**2)*belief(z)
-    Z = likelihood.measure(y, belief)
-    rz = likelihood.measure(y, z_belief) / Z
-    z2 = likelihood.measure(y, z2_belief) / Z
-    vz = z2 - rz**2
-    return rz, vz
+LIKELIHOODS = create_likelihoods()
 
 
-def explicit_complex_integral(az, bz, y, likelihood):
-    """
-    Compute rz, vz for likelihood p(y|z) by integration for z complex
-    """
-    def belief(z):
-        L = -0.5 * az * complex_dot(z, z) + complex_dot(bz, z)
-        return np.exp(L)
-
-    def real_z_belief(z):
-        return np.real(z)*belief(z)
-
-    def imag_z_belief(z):
-        return np.imag(z)*belief(z)
-
-    def z2_belief(z):
-        return complex_dot(z, z)*belief(z)
-    Z = likelihood.measure(y, belief)
-    real_rz = likelihood.measure(y, real_z_belief) / Z
-    imag_rz = likelihood.measure(y, imag_z_belief) / Z
-    rz = real_rz + imag_rz * 1j
-    z2 = likelihood.measure(y, z2_belief) / Z
-    vz = 0.5 * (z2 - complex_dot(rz, rz))
-    return rz, vz
+@pytest.mark.parametrize("func,likelihood", [
+    (np.abs, AbsLikelihood(y=None)),
+    (np.sign, SgnLikelihood(y=None)),
+    (relu, ReluLikelihood(y=None)),
+    (hard_tanh, HardTanhLikelihood(y=None)),
+    (hard_sigm, HardSigmoidLikelihood(y=None)),
+    (lambda z: leaky_relu(z, slope=0.1), LeakyReluLikelihood(y=None, slope=0.1)),
+    (lambda z: symm_door(z, width=2.), SymmetricDoorLikelihood(y=None, width=2.))
+])
+def test_likelihood_sample(func, likelihood):
+    z = np.linspace(-3, 3, 100)
+    assert_allclose(func(z), likelihood.sample(z))
 
 
-class likelihoodsTest(unittest.TestCase):
-    def setUp(self):
-        self.records = [
-            dict(az=2.0, bz=2.0, tau_z=1.0),
-            dict(az=3.5, bz=1.3, tau_z=0.5)
-        ]
-
-    def tearDown(self):
-        pass
-
-    def _test_function_posterior(self, likelihood, records, places=12):
-        for record in records:
-            az, bz = record["az"], record["bz"]
-            y = float(likelihood.y)
-            if isinstance(likelihood, ModulusLikelihood):
-                rz, vz = explicit_complex_integral(az, bz, y, likelihood)
-                bz = complex2array(np.array(bz))
-                rz_hat, vz_hat = likelihood.compute_backward_posterior(az, bz, y)
-                rz_hat = array2complex(rz_hat)
-                rz_hat = complex(rz_hat)
-            else:
-                rz, vz = explicit_real_integral(az, bz, y, likelihood)
-                rz_hat, vz_hat = likelihood.compute_backward_posterior(az, bz, y)
-                rz_hat = float(rz_hat)
-            msg = f"record={record} likelihood={likelihood}"
-            self.assertAlmostEqual(rz, rz_hat, places=places, msg=msg)
-            self.assertAlmostEqual(vz, vz_hat, places=places, msg=msg)
-
-    def _test_function_proba(self, likelihood, records, places=12):
-        for record in records:
-            az, tau_z = record["az"], record["tau_z"]
-            def one(bz, y): return 1
-            sum_proba = likelihood.beliefs_measure(az, tau_z, f=one)
-            msg = f"record={record} likelihood={likelihood}"
-            self.assertAlmostEqual(sum_proba, 1., places=places, msg=msg)
-
-    def test_gaussian_posterior(self):
-        likelihoods = [
-            GaussianLikelihood(y=np.array([+1]), var=5.2),
-            GaussianLikelihood(y=np.array([-1]), var=2.0)
-        ]
-        for likelihood in likelihoods:
-            self._test_function_posterior(likelihood, self.records)
-
-    def test_sgn_posterior(self):
-        likelihoods = [
-            SgnLikelihood(y=np.array([+1])),
-            SgnLikelihood(y=np.array([-1]))
-        ]
-        for likelihood in likelihoods:
-            self._test_function_posterior(likelihood, self.records)
-
-    def test_abs_posterior(self):
-        likelihoods = [
-            AbsLikelihood(y=np.array([10.4])),
-            AbsLikelihood(y=np.array([1.3]))
-        ]
-        for likelihood in likelihoods:
-            self._test_function_posterior(likelihood, self.records)
-
-    def test_modulus_posterior(self):
-        likelihoods = [
-            ModulusLikelihood(y=np.array([3.4])),
-            ModulusLikelihood(y=np.array([1.3]))
-        ]
-        records = [
-            dict(az=2.0, bz=2.0, tau_z=1.0),
-            dict(az=2.0, bz=2.0-1j, tau_z=1.0),
-            dict(az=3.5, bz=1.3+2j, tau_z=0.5)
-        ]
-        for likelihood in likelihoods:
-            self._test_function_posterior(likelihood, records)
-
-    def test_sgn_proba(self):
-        likelihoods = [
-            SgnLikelihood(y=np.array([+1])),
-            SgnLikelihood(y=np.array([-1]))
-        ]
-        for likelihood in likelihoods:
-            self._test_function_proba(likelihood, self.records)
-
-    def test_abs_proba(self):
-        likelihoods = [
-            AbsLikelihood(y=np.array([3.4])),
-            AbsLikelihood(y=np.array([1.3]))
-        ]
-        for likelihood in likelihoods:
-            self._test_function_proba(likelihood, self.records)
-
-    def test_modulus_proba(self):
-        likelihoods = [
-            ModulusLikelihood(y=np.array([3.4])),
-            ModulusLikelihood(y=np.array([1.3]))
-        ]
-        for likelihood in likelihoods:
-            self._test_function_proba(likelihood, self.records, places=6)
+@pytest.mark.parametrize("likelihood", LIKELIHOODS)
+def test_separable_likelihood_vectorization(likelihood):
+    assert not likelihood.isotropic
+    N = np.prod(likelihood.size)
+    az = np.linspace(1, 2, N)
+    az = az.reshape(likelihood.size)
+    bz = np.linspace(-2, 2, N)
+    bz = bz.reshape(likelihood.size)
+    rz, vz = likelihood.compute_backward_posterior(az, bz, likelihood.y)
+    assert rz.shape == bz.shape
+    assert vz.shape == bz.shape
+    # check rz vectorization
+    rz_ = np.array([
+        likelihood.scalar_backward_mean(a, b, y)
+        for a, b, y in zip(az, bz, likelihood.y)
+    ])
+    rz_ = rz_.reshape(likelihood.size)
+    assert_allclose(rz, rz_)
+    # check vz vectorization
+    vz_ = np.array([
+        likelihood.scalar_backward_variance(a, b, y)
+        for a, b, y in zip(az, bz, likelihood.y)
+    ])
+    vz_ = vz_.reshape(likelihood.size)
+    assert_allclose(vz, vz_)
+    # check A vectorization
+    A = likelihood.compute_log_partition(az, bz, likelihood.y)
+    A_ = np.mean([
+        likelihood.scalar_log_partition(a, b, y)
+        for a, b, y in zip(az, bz, likelihood.y)
+    ])
+    assert A == A_
 
 
-if __name__ == "__main__":
-    unittest.main()
+@pytest.mark.parametrize("likelihood", LIKELIHOODS)
+def test_likelihood_grad_EP_scalar(likelihood):
+    df = check_likelihood_grad_EP_scalar(likelihood)
+    assert_allclose(df["rz"], df["grad_bz_A1"], rtol=0, atol=EPSILON)
+    assert_allclose(df["vz"], df["grad_bz_A2"], rtol=0, atol=EPSILON)
+    assert_allclose(df["tz"], -2*df["grad_az_A"], rtol=0, atol=EPSILON)
+
+
+@pytest.mark.parametrize("likelihood", LIKELIHOODS)
+def test_likelihood_grad_EP_diagonal(likelihood):
+    assert not likelihood.isotropic
+    df = check_likelihood_grad_EP_diagonal(likelihood)
+    assert_allclose(df["rz"], df["grad_bz_A1"], rtol=0, atol=EPSILON)
+    assert_allclose(df["vz"], df["grad_bz_A2"], rtol=0, atol=EPSILON)
+
+
+@pytest.mark.parametrize("likelihood", LIKELIHOODS)
+def test_likelihood_grad_FG(likelihood):
+    df = check_likelihood_grad_FG(likelihood)
+    assert_allclose(df["tz"], -2*df["grad_tz_hat_A"], rtol=0, atol=EPSILON)
+
+
+@pytest.mark.parametrize("likelihood", LIKELIHOODS)
+def test_likelihood_BO_limit(likelihood):
+    df = check_likelihood_BO_limit(likelihood)
+    assert_allclose(df["A_BO"], df["A_RS"], rtol=0, atol=EPSILON)
+    assert_allclose(df["vz_BO"], df["vz_RS"], rtol=0, atol=EPSILON)
+    assert_allclose(df["mz_BO"], df["mz_RS"], rtol=0, atol=EPSILON)
+    assert_allclose(df["mz_BO"], df["qz_RS"], rtol=0, atol=EPSILON)
+
+
+@pytest.mark.parametrize("likelihood", LIKELIHOODS)
+def test_likelihood_BN_limit(likelihood):
+    df = check_likelihood_BN_limit(likelihood)
+    assert_allclose(df["A_FG"], df["A_BN"], rtol=0, atol=EPSILON)
+    assert_allclose(df["vz_FG"], df["vz_BN"], rtol=0, atol=EPSILON)
+    assert_allclose(df["tz_FG"], df["tz_BN"], rtol=0, atol=EPSILON)
+
+
+@pytest.mark.parametrize("likelihood", LIKELIHOODS)
+def test_likelihood_grad_BO(likelihood):
+    df = check_likelihood_grad_BO(likelihood)
+    assert_allclose(df["mz"], 2*df["grad_mz_hat_A"], rtol=0, atol=EPSILON)
+
+
+@pytest.mark.parametrize("likelihood", LIKELIHOODS + [
+    ModulusLikelihood(y=None)
+])
+def test_likelihood_grad_BO_BN(likelihood):
+    df = check_likelihood_grad_BO_BN(likelihood)
+    assert_allclose(df["mz"], 2*df["grad_az_A"], rtol=0, atol=EPSILON)
+    assert_allclose(df["vz"], 2*df["grad_az_I"], rtol=0, atol=EPSILON)
+
+
+@pytest.mark.parametrize("teacher,student", [
+    (likelihood, AbsLikelihood(y=None)) for likelihood in LIKELIHOODS
+])
+def test_likelihood_grad_RS(teacher, student):
+    df = check_likelihood_grad_RS(teacher, student)
+    assert_allclose(df["mz"], df["grad_mz_hat_A"], rtol=0, atol=EPSILON)
+    assert_allclose(df["qz"], -2*df["grad_qz_hat_A"], rtol=0, atol=EPSILON)
+    assert_allclose(df["tz"], -2*df["grad_tz_hat_A"], rtol=0, atol=EPSILON)

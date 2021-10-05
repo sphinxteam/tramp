@@ -37,7 +37,7 @@ class ExponentialPrior(Prior):
     def second_moment(self):
         return 2 * self.mean**2
 
-    def second_moment_FG(self, tx_hat):
+    def forward_second_moment_FG(self, tx_hat):
         a = tx_hat
         return positive.tau(a, self.b)
 

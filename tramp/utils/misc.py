@@ -39,6 +39,14 @@ def hard_tanh(x):
     return np.clip(x, -1, 1)
 
 
+def hard_sigm(x):
+    return np.clip(0.5 + x / 5, 0, 1)
+
+
+def symm_door(x, width):
+    return np.where(np.abs(x) < width, -1, 1)
+
+
 def norm_cdf(x):
     "Computes Phi(x)"
     return 0.5 * (1 + erf(x / np.sqrt(2)))

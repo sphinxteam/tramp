@@ -47,7 +47,7 @@ class GaussBernoulliPrior(Prior):
     def second_moment(self):
         return self.rho * (self.mean**2 + self.var)
 
-    def second_moment_FG(self, tx_hat):
+    def forward_second_moment_FG(self, tx_hat):
         a = tx_hat + self.a
         return sparse.tau(a, self.b, self.eta)
 

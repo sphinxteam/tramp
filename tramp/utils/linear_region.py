@@ -97,7 +97,7 @@ class LinearRegion(ReprMixin):
                 [self.slope * ax * u_eff, ax * (self.slope**2 * ax * tau_z + 1)]
             ])
             mean = np.array([0, mean_x])
-            mu = gaussian_measure_2d_full(cov, mean, integrand)
+            mu = gaussian_measure_2d_full(mean, cov, integrand)
         return mu
 
     def measure(self, f, zmin, zmax):

@@ -38,7 +38,7 @@ class BinaryPrior(Prior):
     def second_moment(self):
         return 1.
 
-    def second_moment_FG(self, tx_hat):
+    def forward_second_moment_FG(self, tx_hat):
         return binary.tau(self.b)
 
     def scalar_forward_mean(self, ax, bx):

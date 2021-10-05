@@ -34,7 +34,7 @@ class PositivePrior(Prior):
     def second_moment(self):
         return 1.
 
-    def second_moment_FG(self, tx_hat):
+    def forward_second_moment_FG(self, tx_hat):
         a = tx_hat + self.a
         return positive.tau(a, self.b)
 

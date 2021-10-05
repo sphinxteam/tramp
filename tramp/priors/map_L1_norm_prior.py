@@ -49,7 +49,7 @@ class MAP_L1NormPrior(Prior):
     def second_moment(self):
         raise NotImplementedError
 
-    def second_moment_FG(self, tx_hat):
+    def forward_second_moment_FG(self, tx_hat):
         raise NotImplementedError
 
     def scalar_forward_mean(self, ax, bx):

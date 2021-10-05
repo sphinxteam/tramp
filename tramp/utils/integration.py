@@ -47,7 +47,7 @@ def gaussian_measure_2d(m1, s1, m2, s2, f):
     return integral
 
 
-def gaussian_measure_2d_full(cov, mean, f):
+def gaussian_measure_2d_full(mean, cov, f):
     """Computes 2-dimensional gaussian integral (full covariance).
 
     Parameters

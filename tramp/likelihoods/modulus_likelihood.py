@@ -20,6 +20,15 @@ def ive_ratio(r):
     return I
 
 
+def normalize(bz):
+    """Returns bz / |bz| for bz complex"""
+    b = np.absolute(bz)
+    b_normed = np.zeros_like(bz)
+    nonzero = (b != 0)
+    b_normed[nonzero] = bz[nonzero]/b[nonzero]
+    return b_normed
+
+
 class ModulusLikelihood(Likelihood):
     """Modulus likelihood $y = |z|$.
 
@@ -36,9 +45,10 @@ class ModulusLikelihood(Likelihood):
     as a real array Z where Z[0] = z.real and Z[1] = z.imag
     """
 
-    def __init__(self, y, y_name="y"):
+    def __init__(self, y, y_name="y", isotropic=True):
         self.y_name = y_name
         self.size = self.get_size(y)
+        self.isotropic = isotropic
         self.repr_init()
         self.y = y
 
@@ -50,18 +60,43 @@ class ModulusLikelihood(Likelihood):
     def math(self):
         return r"$|\cdot|$"
 
+    def scalar_backward_mean(self, az, bz, y):
+        bz = array2complex(bz)
+        b = np.absolute(bz)
+        I = ive_ratio(b*y)
+        rz = normalize(bz) * y * I
+        return rz
+
+    def scalar_backward_variance(self, az, bz, y):
+        bz = array2complex(bz)
+        b = np.absolute(bz)
+        I = ive_ratio(b*y)
+        # 0.5 factor comes from averaging over the complex coordinate
+        vz = 0.5 * (y**2) * (1 - I**2)
+        return vz
+
+    def scalar_log_partition(self, az, bz, y):
+        b = np.absolute(bz)
+        A = -0.5*az*(y**2) + np.log(2*np.pi*y*ive(0, b*y)) + b*y
+        return A
+
     def compute_backward_posterior(self, az, bz, y):
         bz = array2complex(bz)
         b = np.absolute(bz)
         I = ive_ratio(b*y)
-        b_normed = np.zeros_like(bz)
-        nonzero = (b != 0)
-        b_normed[nonzero] = bz[nonzero]/b[nonzero]
-        rz = b_normed * y * I
-        v = 0.5 * (y**2) * (1 - I**2)
-        vz = np.mean(v)
+        rz = normalize(bz) * y * I
+        # 0.5 factor comes from averaging over the complex coordinate
+        vz = 0.5 * (y**2) * (1 - I**2)
+        if self.isotropic:
+            vz = np.mean(vz)
         rz = complex2array(rz)
         return rz, vz
+
+    def b_measure(self, mz_hat, qz_hat, tz0_hat, f):
+        raise NotImplementedError
+
+    def bz_measure(self, mz_hat, qz_hat, tz0_hat, f):
+        raise NotImplementedError
 
     def beliefs_measure(self, az, tau_z, f):
         u_eff = np.maximum(0, az * tau_z - 1)
@@ -91,8 +126,6 @@ class ModulusLikelihood(Likelihood):
 
     def compute_log_partition(self, az, bz, y):
         b = np.absolute(bz)
-        I0 = ive(0, b*y)
-        logZ = np.sum(
-            -0.5*az*(y**2) + np.log(2*np.pi*y*ive(0, b*y)) + b*y
-        )
-        return logZ
+        A = -0.5*az*(y**2) + np.log(2*np.pi*y*ive(0, b*y)) + b*y
+        # 0.5 factor comes from averaging over the complex coordinate
+        return A.mean()/2

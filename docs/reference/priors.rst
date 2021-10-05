@@ -168,14 +168,14 @@ the prior log-partition and second moment are given by:
 and are implemented in TRAMP by the methods:
 
 - :meth:`prior.prior_log_partition_FG` for $A_p[\hat{\tau}_x^-]$,
-- :meth:`prior.second_moment_FG` for $\tau_x[\hat{\tau}_x^-]$.
+- :meth:`prior.forward_second_moment_FG` for $\tau_x[\hat{\tau}_x^-]$.
 
 The prior log-partition is easily obtained from the scalar EP one
 $A_p[\hat{\tau}_x^-] = A_p[a_x^- = \hat{\tau}_x^-, b_x^- =0]$ and the
 :meth:`prior.prior_log_partition_FG` method is already
 implemented in the base :class:`Prior` class.
 When you create a new prior, you therefore only need to implement the
-:meth:`prior.second_moment_FG` method.
+:meth:`prior.forward_second_moment_FG` method.
 
 As a sanity check, you can use :func:`tramp.checks.plot_prior_grad_FG`
 to check the gradient $\tau_x = -2 \partial_{\hat{\tau}_x^-} A_p$.
