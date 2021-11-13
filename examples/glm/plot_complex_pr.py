@@ -1,42 +1,35 @@
 """
-Phase retrieval
-===============
+Complex phase retrieval
+=======================
 
 """
-
-# %%
-# Setup
+import pandas as pd
 from tramp.algos import EarlyStoppingEP
 from tramp.experiments import BayesOptimalScenario, qplot, plot_compare_complex
 from tramp.models import glm_generative
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
 
 
 # %%
 # Model
-np.random.seed(42)
-
+# -----
+# We wish to infer the sparse complex signal
+# $x \sim \mathcal{N}_\rho(.) \in \mathbb{C}^N$ from
+# $y = | Fx | \in \mathbb{R}_+^M$, where
+# $F  \in \mathbb{C}^{M \times N}$ is a Gaussian random matrix.
 model = glm_generative(
     N=1000, alpha=2, ensemble_type="complex_gaussian",
     prior_type="gauss_bernoulli", output_type="modulus",
     prior_mean=0.01, prior_rho=0.5
 )
 scenario = BayesOptimalScenario(model, x_ids=["x"])
-scenario.setup()
+scenario.setup(seed=42)
 scenario.student.plot()
-
-for factor in scenario.student.factors:
-    print(factor.id, factor)
 
 
 # %%
-# EP dyanmics
-# Damping is needed
-# really bad without damping
+# EP dynamics. Damping is essential !
 ep_evo = scenario.ep_convergence(
-    metrics=["mse", "phase_mse"], max_iter=20
+    metrics=["mse", "phase_mse"], max_iter=20  # no damping
 )
 qplot(
     ep_evo, x="iter", y=["phase_mse", "v"],
@@ -50,11 +43,15 @@ qplot(
     y_markers=[".", "x", "-"], y_legend=True
 )
 
+# %%
+# Recovered signal (up to a global phase)
 plot_compare_complex(scenario.x_true["x"], scenario.x_pred["x"])
 
 
 # %%
 # Compare EP vs SE
+# ----------------
+# See `data/phase_retrieval_ep_vs_se.py` for the corresponding script.
 rename = {
     "alpha": r"$\alpha$", "prior_mean": r"$\mu$", "prior_rho": r"$\rho$",
     "n_iter": "iterations", "source=": "", "phase_mse": "p-mse",
@@ -77,7 +74,7 @@ qplot(
 )
 
 # %%
-# MSE curves
+# Phase transition
 mse_curves = pd.read_csv("data/phase_retrieval_mse_curves.csv")
 qplot(
     mse_curves, x="alpha", y="v", linestyle="a0", column="prior_rho",

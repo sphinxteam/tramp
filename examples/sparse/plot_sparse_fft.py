@@ -3,7 +3,6 @@ Sparse FFT
 ==========
 
 """
-# %%
 from tramp.algos import EarlyStoppingEP
 from tramp.variables import SISOVariable as V, SILeafVariable as O, MILeafVariable, SIMOVariable
 from tramp.channels import DFTChannel, GaussianChannel
@@ -87,6 +86,7 @@ def plot_sparse_fft(scenario):
         markerfmt="C4o", linefmt="C4-", basefmt="C4", use_line_collection=True
     )
     axes[2].set_title(r'$z = \textrm{DFT}(x)$')
+    axes[2].set_xlim(0, 25)
     for axe in axes:
         axe.legend(fancybox=True, shadow=False, loc="lower center", fontsize=20)
     fig.tight_layout()

@@ -1,9 +1,8 @@
 """
-Racoon deconvolution
+Raccoon deconvolution
 ====================
 
 """
-# %%
 from tramp.priors.base_prior import Prior
 from scipy.misc import face
 from tramp.experiments import TeacherStudentScenario
@@ -48,34 +47,27 @@ def compare_hcut(x_true, x_pred, h=20):
 
 # %%
 # Build the teacher
-
-
-class CoonPrior(Prior):
+class RaccoonPrior(Prior):
     def __init__(self):
         x = face(gray=True).astype(np.float32)
         x = (x - x.mean())/x.std()
         self.x = x
         self.size = x.shape
 
-    def math(self):
-        return "coon"
-
     def sample(self):
         return self.x
 
 
-coon = CoonPrior()
-x_shape = coon.size
+prior = RaccoonPrior()
+x_shape = prior.size
 blur = Blur2DChannel(shape=x_shape, sigma=[10, 10])
 noise = GaussianChannel(var=0.1)
-teacher = MultiLayerModel([coon, blur, noise], ids=["x", "z", "y"])
-# teacher.plot()
+teacher = MultiLayerModel([prior, blur, noise], ids=["x", "z", "y"])
+
 
 # %%
 # Basic gaussian denoiser
-# We use only a gaussian prior on $x$ (the coon image was standardized to have mean=0 and std=1)
-
-# basic deconv model
+# We use only a gaussian prior on $x$ (the image was standardized to have mean=0 and std=1)
 prior = GaussianPrior(size=x_shape)
 basic_deconv = MultiLayerModel(
     [prior, blur, noise], ids=["x", "z", "y"]

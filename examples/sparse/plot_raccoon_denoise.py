@@ -1,9 +1,8 @@
 """
-Racoon denoising
+Raccoon denoising
 ====================
 
 """
-# %%
 from tramp.algos import ConstantInit
 from tramp.priors.base_prior import Prior
 from scipy.misc import face
@@ -63,11 +62,11 @@ def plot_histograms(x_data):
     nonzero = np.abs(x_grad) > 1e-3
     grad_rho = nonzero.mean()
     grad_var = x_grad[nonzero].var()
-    grad_loc, grad_scale = laplace.fit(x_grad[nonzero])
+    grad_loc, grad_gamma = laplace.fit(x_grad[nonzero])
     print(
-        f"grad_rho={grad_rho:.3f} grad_var={grad_var:.3f} grad_scale={grad_scale:.3f}")
+        f"grad_rho={grad_rho:.3f} grad_var={grad_var:.3f} grad_gamma={grad_gamma:.3f}")
     # compare laplace fit and empirical distribution
-    fitted = laplace(loc=0, scale=grad_scale)
+    fitted = laplace(loc=0, scale=grad_gamma)
     axs[1].hist(
         x_grad[nonzero], bins=100, log="y",
         density=True, histtype='stepfilled', alpha=0.2
@@ -80,44 +79,34 @@ def plot_histograms(x_data):
 
 # %%
 # Build the teacher
-
-
-class CoonPrior(Prior):
+class RaccoonPrior(Prior):
     def __init__(self):
         x = face(gray=True).astype(np.float32)
         x = (x - x.mean())/x.std()
         self.x = x
         self.size = x.shape
 
-    def math(self):
-        return "coon"
-
     def sample(self):
         return self.x
 
 
-coon = CoonPrior()
-x_shape = coon.size
+prior = RaccoonPrior()
+x_shape = prior.size
 noise = GaussianChannel(var=0.5)
 grad_shape = (2,) + x_shape
 teacher = (
-    coon @ SIMOVariable("x", n_next=2) @ (
-        GradientChannel(x_shape) @ O("x'") +
-        noise @ O("y")
+    prior @ SIMOVariable("x", n_next=2) @ (
+        GradientChannel(x_shape) @ O("x'") + noise @ O("y")
     )
 ).to_model()
-# teacher.plot()
-
 sample = teacher.sample()
 plot_histograms(sample)
-
 plot_data(sample, sample["y"])
+
 
 # %%
 # Sparse gradient denoising
-# sparse grad denoiser
 grad_shape = (2,) + x_shape
-
 sparse_grad = (
     GaussianPrior(size=x_shape) @
     SIMOVariable(id="x", n_next=2) @ (
@@ -128,33 +117,31 @@ sparse_grad = (
         MILeafVariable(id="x'", n_prev=2)
     )
 ).to_model()
-
 scenario = TeacherStudentScenario(teacher, sparse_grad, x_ids=["x", "x'"])
 scenario.setup(seed=1)
-# scenario.student.plot()
+scenario.student.plot()
+
 
 _ = scenario.run_ep(max_iter=100, damping=0.1)
-
-# %%
 plot_data(scenario.x_pred, scenario.observations["y"])
 compare_hcut(scenario.x_true, scenario.x_pred,
              scenario.observations["y"], h=20)
 
+
 # %%
 # Total variation denoising
-# We need to set initial conditions a = b = 1. For a = b = 0 ExpectationPropagation diverges.
-# TV denoiser
+# We need to set initial conditions a = b = 1.
+# For a = b = 0 ExpectationPropagation diverges.
 tv_denoiser = (
     GaussianPrior(size=x_shape) @
     SIMOVariable(id="x", n_next=2) @ (
         noise @ O("y") + (
             GradientChannel(shape=x_shape) +
-            MAP_L21NormPrior(size=grad_shape, scale=1)
+            MAP_L21NormPrior(size=grad_shape, gamma=1)
         ) @
         MILeafVariable(id="x'", n_prev=2)
     )
 ).to_model()
-
 scenario2 = TeacherStudentScenario(teacher, tv_denoiser, x_ids=["x", "x'"])
 scenario2.setup(seed=1)
 scenario2.student.plot()
