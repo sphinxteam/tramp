@@ -11,6 +11,9 @@ wip_notebooks
 # MacOS
 .DS_Store
 
+# data
+benchmark-*.csv
+
 # Logs
 *.log
 

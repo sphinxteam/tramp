@@ -7,7 +7,7 @@ Scripts corresponding to the figures in
 - `sparse_phase_retrieval.py`
 - `benchmark.py`
 
-In the [documentation website](https://sphinxteam.github.io/tramp.docs/gallery)
+In the documentation [gallery](https://sphinxteam.github.io/tramp.docs/gallery)
 you will find:
 
 - VAE inpainting / denoising
