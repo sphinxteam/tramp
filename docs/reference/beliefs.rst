@@ -3,11 +3,9 @@
 Beliefs
 =======
 
-Implementation
---------------
 
-A belief, which we may as well call a (stochastic) variable type, is specified by
-the base space $X$ as well as the chosen set of sufficient statistics $\phi(x)$.
+A belief is specified by the base space $X$ as well as the chosen set of
+sufficient statistics $\phi(x)$.
 Any variable type defines an exponential family distribution
 
 .. math:: p(x|\lambda) = e^{\lambda^\intercal  \phi(x) - A(\lambda)}
@@ -24,7 +22,7 @@ The log-partition, mean and variance are then given by:
 
 The second moment is given by $\tau(\lambda) = r(\lambda)^2 + v(\lambda)$
 
-In TRAMP, a belief is implemented as a python submodule of :mod:`tramp.beliefs`
+In Tree-AMP, a belief is implemented as a python submodule of :mod:`tramp.beliefs`
 containing the functions :func:`A`,
 :func:`r`, :func:`v`, :func:`tau` and some additional functions if relevant.
 As a sanity check, you can use the :func:`tramp.checks.plot_belief_grad_b`
@@ -77,13 +75,13 @@ The log-partition, mean and variance are given by
 
 .. math::
 
-    A(ab) = \frac{b^2}{2a} + \frac{1}{2} \ln \frac{2\pi}{a}, \quad
-    r(ab) = \frac{b}{a}, \quad
-    v(ab) = \frac{1}{a}
+    A(a,b) = \frac{b^2}{2a} + \frac{1}{2} \ln \frac{2\pi}{a}, \quad
+    r(a,b) = \frac{b}{a}, \quad
+    v(a,b) = \frac{1}{a}
 
 The corresponding exponential family distribution is the Normal
 
-.. math:: p(x|ab) = \mathcal{N}(x|r,v)
+.. math:: p(x|a,b) = \mathcal{N}(x|r,v)
 
 of mean $r=\frac{b}{a}$ and variance $v=\frac{1}{a}$
 
@@ -110,23 +108,23 @@ The log-partition, mean and variance are given by
 
 .. math::
 
-    A(ab\eta) = \ln (e^{\eta} + e^{A(ab)}), \quad
-    r(ab\eta) = \sigma(\xi)r, \quad
-    v(ab\eta) = \sigma(\xi)v + \sigma(\xi)(1-\sigma(\xi))r^2
+    A(a,b,\eta) = \ln (e^{\eta} + e^{A(a,b)}), \quad
+    r(a,b,\eta) = \sigma(\xi)r, \quad
+    v(a,b,\eta) = \sigma(\xi)v + \sigma(\xi)(1-\sigma(\xi))r^2
 
-where $A(ab), r=r(ab), v=v(ab)$ are the log-partition, mean and variance of a
-:ref:`normal` variable, $\sigma(\xi)$ is the sigmoid and $\xi = A(ab) - \eta$.
+where $A(a,b), r=r(a,b), v=v(a,b)$ are the log-partition, mean and variance of a
+:ref:`normal` variable, $\sigma(\xi)$ is the sigmoid and $\xi = A(a,b) - \eta$.
 
-Besides there is a finite probability $p(x=0 | ab\eta) = 1 - \sigma(\xi)$
+Besides there is a finite probability $p(x=0 | a,b,\eta) = 1 - \sigma(\xi)$
 that $x$ is exactly zero. We will denote its complementary by
 
-.. math:: p(ab\eta) = p(x \neq 0 | ab\eta) = \sigma(\xi)
+.. math:: p(a,b,\eta) = p(x \neq 0 | a,b,\eta) = \sigma(\xi)
 
 The corresponding exponential family distribution is the Gauss-Bernoulli
 
-.. math:: p(x|ab\eta) = [1 - \rho] \delta_0(x) + \rho \mathcal{N}(x|r,v)
+.. math:: p(x|a,b,\eta) = [1 - \rho] \delta_0(x) + \rho \mathcal{N}(x|r,v)
 
-with fraction of non-zero elements $\rho = p(ab\eta)$
+with fraction of non-zero elements $\rho = p(a,b,\eta)$
 
 .. nbplot::
 
@@ -154,9 +152,9 @@ The log-partition, mean and variance are given by
 
 .. math::
 
-    A(ab\eta) = \ln \sum_k e^{\xi_k}, \quad
-    r(ab\eta) = \sum_k \sigma_k r_k, \quad
-    v(ab\eta) = \sum_k \sigma_k v_k +
+    A(a,b,\eta) = \ln \sum_k e^{\xi_k}, \quad
+    r(a,b,\eta) = \sum_k \sigma_k r_k, \quad
+    v(a,b,\eta) = \sum_k \sigma_k v_k +
     \sum_{k<l} \sigma_k \sigma_l [r_k - r_l]^2
 
 where $A(a_k b_k), r_k = r(a_k b_k), v_k = v(a_k b_k)$ are the log-parition,
@@ -165,11 +163,11 @@ $\sigma = \mathrm{softmax}(\xi)$ and $\xi_k = \eta_k + A(a_k b_k)$.
 
 Besides the probability to belong to each of the K-components is
 
-.. math:: p_k(ab\eta) = p(x \in k | ab\eta) = \sigma_k
+.. math:: p_k(a,b,\eta) = p(x \in k | a,b,\eta) = \sigma_k
 
 The corresponding exponential family distribution is the Gaussian mixture
 
-.. math:: p(x|ab\eta) = \sum_k \sigma_k \mathcal{N}(x|r_k,v_k)
+.. math:: p(x|a,b,\eta) = \sum_k \sigma_k \mathcal{N}(x|r_k,v_k)
 
 On the plot below, the gradients of $A(a,b+b_0,\eta)$ are taken
 with respect to scalar $b$ for fixed 2-components $a, b_0, \eta$ and are
@@ -200,11 +198,11 @@ We consider a truncated Normal variable restricted to the interval
 
 .. math::
 
-    A_X(ab) = A(ab) + \ln p_Z, \quad
-    r_X(ab) = r + \sqrt{v} r_Z , \quad
-    v_X(ab) = v v_Z
+    A_X(a,b) = A(a,b) + \ln p_Z, \quad
+    r_X(a,b) = r + \sqrt{v} r_Z , \quad
+    v_X(a,b) = v v_Z
 
-where $A(ab), r=r(ab), v=v(ab)$ are the log-partition, mean and variance of a
+where $A(a,b), r=r(a,b), v=v(a,b)$ are the log-partition, mean and variance of a
 :ref:`normal` variable.
 
 $p_Z$ denotes the probabilty that the standard Normal $z \sim \mathcal{N}(0,1)$
@@ -238,7 +236,7 @@ $z \sim \mathcal{N}(0,1)$ restricted to the  $Z$ interval:
 The corresponding exponential family distribution is the truncated Normal
 
 .. math::
-    p(x|ab) = \mathcal{N}_X(x|r,v) = \frac{1}{p_X(rv)} 1_X(x) \mathcal{N}(x|r,v)
+    p(x|a,b) = \mathcal{N}_X(x|r,v) = \frac{1}{p_X(rv)} 1_X(x) \mathcal{N}(x|r,v)
 
 
 .. nbplot::
@@ -298,7 +296,7 @@ with mean $r = -\frac{1}{b}$
 The Exponential variable is also the limit $a\rightarrow 0$ of the
 :ref:`positive` variable:
 
-.. math:: p(x|b) = \lim_{a\rightarrow 0} p_{\mathbb{R}_+}(x | ab)
+.. math:: p(x|b) = \lim_{a\rightarrow 0} p_{\mathbb{R}_+}(x | a,b)
 
 .. note::
   The natural parameter $b$ must be negative.

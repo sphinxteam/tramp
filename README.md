@@ -1,4 +1,4 @@
-# Tree approximate message passing (TRAMP)
+# Tree approximate message passing (Tree-AMP)
 
 Implements gaussian expectation propagation for any tree-like probabilistic graphical model.
 
@@ -11,7 +11,7 @@ Documentation website: [https://sphinxteam.github.io/tramp.docs](https://sphinxt
 - networkx==1.11
 - daft
 
-**Warning** Currently the package does not support networkx 2.xx and will throw unexpected errors. We plan to upgrade to networkx 2.xx at some point.
+**Warning** Currently the package does not support networkx 2.xx and will throw errors. We plan to upgrade to networkx 2.xx at some point.
 
 ## Install
 
@@ -34,15 +34,25 @@ pip install git+https://github.com/sphinxteam/tramp.git
 See [installing from sources](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/#installing-from-source) for more details.
 In both cases, the necessary requirements should be automatically installed.
 
-## ArXiv
+## Citation
 
-The package is presented in more details in the corresponding paper on [arXiv](https://arxiv.org/abs/2004.01571)
+The package is presented in [arXiv:2004.01571](https://arxiv.org/abs/2004.01571).
+To cite this work, please use:
+
+```
+@misc{baker2021tramp,
+  title={Tree-AMP: Compositional Inference with Tree Approximate Message Passing},
+  author={Antoine Baker and Benjamin Aubin and Florent Krzakala and Lenka Zdeborová},
+  year={2021},
+  eprint={2004.01571},
+  archivePrefix={arXiv},
+  primaryClass={stat.ML}
+}
+```
 
 ## Examples
 
-Illustrating notebooks and scripts are gathered in the [tramp_notebooks](https://github.com/sphinxteam/tramp_notebooks) repo.
-
-Codes corresponding to the examples presented in the above mentioned paper can be found in the [tramp_examples](https://github.com/benjaminaubin/tramp_examples) repo.
+See [examples](examples) or the corresponding [gallery](https://sphinxteam.github.io/tramp.docs/gallery) in the documentation website.
 
 ## Acknowledgments
 

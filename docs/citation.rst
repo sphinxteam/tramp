@@ -7,9 +7,9 @@ To cite this work, please use
 .. code-block:: latex
 
     @misc{baker2020tramp,
-      title={TRAMP: Compositional Inference with TRee Approximate Message Passing},
+      title={Tree-AMP: Compositional Inference with Tree Approximate Message Passing},
       author={Antoine Baker and Benjamin Aubin and Florent Krzakala and Lenka Zdeborová},
-      year={2020},
+      year={2021},
       eprint={2004.01571},
       archivePrefix={arXiv},
       primaryClass={stat.ML}

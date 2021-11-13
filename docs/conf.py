@@ -3,9 +3,9 @@ import sphinx_fontawesome
 from sphinx_gallery.sorting import ExplicitOrder
 
 # -- Project information -----------------------------------------------------
-project = 'TRAMP'
-copyright = '2021, TRAMP developers'
-author = 'TRAMP developers'
+project = 'Tree-AMP'
+copyright = '2021, Tree-AMP developers'
+author = 'Tree-AMP developers'
 release = '0.1'
 version = '0.1'
 language = 'en'

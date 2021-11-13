@@ -1,16 +1,16 @@
 Installation
 ------------
 
-.. tip::
-    TRAMP package requires the following packages
+.. note::
+    Tree-AMP package requires the following packages
 
     - python>=3.6
     - numpy/pandas/scipy/matplotlib
     - networkx==1.11
     - daft
 
-.. warning::
-    Currently the package does not support networkx 2.xx and will throw unexpected errors. We plan to upgrade to networkx 2.xx at some point.
+    Currently the package does not support networkx 2.xx and will throw errors.
+    We plan to upgrade to networkx 2.xx at some point.
 
 
 To install the package, go to the folder where setup.py is located and run:

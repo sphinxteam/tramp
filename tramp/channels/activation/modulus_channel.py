@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 class ModulusChannel(Channel):
-    """Modulus channel x = |z|.
+    """Modulus channel $x = |z|$.
 
     Notes
     -----

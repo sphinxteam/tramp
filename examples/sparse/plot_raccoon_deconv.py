@@ -1,6 +1,6 @@
 """
 Raccoon deconvolution
-====================
+=====================
 
 """
 from tramp.priors.base_prior import Prior

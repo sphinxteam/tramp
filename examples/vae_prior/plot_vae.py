@@ -18,8 +18,6 @@ import matplotlib as mpl
 import numpy as np
 import os
 import h5py
-# Tramp package
-import tramp
 from tramp.algos import ExpectationPropagation, TrackEstimate, NoisyInit
 from tramp.algos.metrics import mean_squared_error
 from tramp.variables import SISOVariable as V, SILeafVariable as O
@@ -38,7 +36,7 @@ warnings.filterwarnings("ignore")
 mpl.use('TkAgg')
 
 # %%
-# Build the TRAMP model for inpainting/denoising with VAE prior
+# Build the Tree-AMP model for inpainting/denoising with VAE prior
 
 
 class Model_Prior():
@@ -234,7 +232,7 @@ class Model_Prior():
         return model
 
     def generate_sample(self):
-        """ 
+        """
             Generate a sample from MNIST/FashionMNIST test set
         """
         self.x_true, self.y_true = {}, {}

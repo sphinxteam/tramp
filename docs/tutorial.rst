@@ -1,7 +1,7 @@
 Tutorial
 ========
 
-This simple guide can help you start working with TRAMP.
+This simple guide can help you start working with Tree-AMP.
 
 .. seealso::
 

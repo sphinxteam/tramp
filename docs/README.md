@@ -1,10 +1,10 @@
 # Building docs
 
-We use Sphinx for generating the reference documentation for TRAMP.
+We use Sphinx for generating the reference documentation for Tree-AMP.
 
 ## Instructions
 
-In addition to installing TRAMP and its dependencies, install the Python
+In addition to installing Tree-AMP and its dependencies, install the Python
 packages need to build the documentation by entering:
 
     pip install -r requirements.txt

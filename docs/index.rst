@@ -1,7 +1,7 @@
-Welcome to TRAMP's documentation!
-=================================
+Welcome to Tree-AMP's documentation!
+====================================
 
-TRAMP's python package implements gaussian expectation propagation for any tree-like probabilistic graphical model.
+Tree-AMP's python package implements gaussian expectation propagation for any tree-like probabilistic graphical model.
 
 
 .. toctree::
@@ -15,7 +15,7 @@ TRAMP's python package implements gaussian expectation propagation for any tree-
    :maxdepth: 1
    :caption: User guide
 
-   introduction
+   implementation
    gallery/index
    contributing
    citation
