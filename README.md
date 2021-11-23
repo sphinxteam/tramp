@@ -52,7 +52,7 @@ To cite this work, please use:
 
 ## Examples
 
-See [examples](examples) or the corresponding [gallery](https://sphinxteam.github.io/tramp.docs/gallery) in the documentation website.
+See the corresponding [gallery](https://sphinxteam.github.io/tramp.docs/0.1/html/gallery/index.html) in the documentation website.
 
 ## Acknowledgments
 
