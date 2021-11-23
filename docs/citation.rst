@@ -6,7 +6,7 @@ To cite this work, please use
 
 .. code-block:: latex
 
-    @misc{baker2020tramp,
+    @misc{Baker2021TreeAMP,
       title={Tree-AMP: Compositional Inference with Tree Approximate Message Passing},
       author={Antoine Baker and Benjamin Aubin and Florent Krzakala and Lenka Zdeborová},
       year={2021},

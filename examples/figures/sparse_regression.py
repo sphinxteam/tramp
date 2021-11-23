@@ -47,9 +47,9 @@ def plot_mse_curves():
 
 def run_EP(alpha, rho, seed):
     model = glm_generative(
-        N=1000, alpha=alpha, ensemble_type="gaussian",
+        N=2000, alpha=alpha, ensemble_type="gaussian",
         prior_type="gauss_bernoulli", output_type="gaussian",
-        prior_rho=rho, output_var=1e-11
+        prior_rho=rho, output_var=1e-10
     )
     scenario = BayesOptimalScenario(model, x_ids=["x"])
     scenario.setup(seed)
@@ -63,24 +63,28 @@ def run_SE(alpha, rho):
     # analytical linear channel (Marcenko Pastur)
     model = glm_state_evolution(
         alpha=alpha, prior_type="gauss_bernoulli", output_type="gaussian",
-        prior_rho=rho, output_var=1e-11
+        prior_rho=rho, output_var=1e-10
     )
     # SE : uninformed initialization
     se = StateEvolution(model)
     se.iterate(max_iter=200)
     x_data = se.get_variable_data(id="x")
-    records = [dict(source="SE", v=x_data["v"])]
-    # Bayes optimal : informed initialization
-    # Adapt the informative initialization with alpha to:
-    # - avoid issues at low alpha if init too large
-    # - obtain the true IT transition
+    return dict(source="SE", v=x_data["v"])
+
+
+def run_BO(alpha, rho):
+    # analytical linear channel (Marcenko Pastur)
+    model = glm_state_evolution(
+        alpha=alpha, prior_type="gauss_bernoulli", output_type="gaussian",
+        prior_rho=rho, output_var=1e-10
+    )
+    # BO : informative initialization, scaled to avoid issues at low alpha
     power = 3 * np.exp(alpha)
     initializer = CustomInit(a_init=[("x", "bwd", 10**power)])
     se = StateEvolution(model)
     se.iterate(max_iter=200, initializer=initializer)
     x_data = se.get_variable_data(id="x")
-    records += [dict(source="BO", v=x_data["v"])]
-    return records
+    return dict(source="BO", v=x_data["v"])
 
 
 if __name__ == "__main__":
@@ -89,15 +93,14 @@ if __name__ == "__main__":
     df_EP = run_experiments(
         run_EP, alpha=np.linspace(0.03, 0.99, 33), rho=0.5, seed=np.arange(25)
     )
-    df_EP = df_EP.groupby(["alpha", "source", "rho"]).mean().reset_index()
+    df_EP = df_EP.groupby(["alpha", "source", "rho"], as_index=False).mean()
     del df_EP["seed"]
-    # run SE
-    df_SE = run_experiments(
-        run_SE, alpha=np.linspace(0.01, 1.0, 100), rho=0.5
-    )
-    # concat
-    df = df_EP.append(df_SE, ignore_index=True)
+    df_SE = run_experiments(run_SE, alpha=np.linspace(0.01, 1.0, 100), rho=0.5)
+    df_BO = run_experiments(run_BO, alpha=np.linspace(0.01, 1.0, 100), rho=0.5)
+    # concat and save
+    df = pd.concat([df_EP, df_SE, df_BO], ignore_index=True, sort=False)
     csv_file = __file__.replace(".py", ".csv")
+    logging.info(f"Saving {csv_file}")
     df.to_csv(csv_file, index=False)
     # plot
     plot_mse_curves()

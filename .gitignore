@@ -12,7 +12,7 @@ wip_notebooks
 .DS_Store
 
 # data
-benchmark-*.csv
+examples/figures/*.csv
 
 # Logs
 *.log

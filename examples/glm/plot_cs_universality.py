@@ -1,6 +1,6 @@
 """
-Universality in noiseless compressed sensing
-============================================
+Universality (noiseless CS)
+===========================
 
 """
 import pandas as pd
@@ -13,7 +13,7 @@ from tramp.experiments import qplot
 # -----
 # We consider for the sensing matrix $F$ a random features matrix
 # $F = \tfrac{1}{\sqrt{N}}f(WX)$ where $f$ = abs, relu, sgn or tanh.
-# See `data/cs_universality.csv` for the corresponding script.
+# See `data/cs_universality.py` for the corresponding script.
 rename = {
     "alpha": r"$\alpha$", "prior_rho": r"$\rho$",
     "source=": "", "n_iter": "iterations"

@@ -147,7 +147,7 @@ Mixture
 
 We consider a K-mixture Normal variable with natural parameters
 $a = \{a_k\}_{k=1}^K$, $b = \{b_k\}_{k=1}^K$ and
-$\eta = \{\eta_k\}_{k=1}^K$$.
+$\eta = \{\eta_k\}_{k=1}^K$.
 The log-partition, mean and variance are given by
 
 .. math::
@@ -157,9 +157,9 @@ The log-partition, mean and variance are given by
     v(a,b,\eta) = \sum_k \sigma_k v_k +
     \sum_{k<l} \sigma_k \sigma_l [r_k - r_l]^2
 
-where $A(a_k b_k), r_k = r(a_k b_k), v_k = v(a_k b_k)$ are the log-parition,
+where $A(a_k, b_k), r_k = r(a_k, b_k), v_k = v(a_k, b_k)$ are the log-parition,
 mean and variance of the $k^{th}$ :ref:`normal` variable,
-$\sigma = \mathrm{softmax}(\xi)$ and $\xi_k = \eta_k + A(a_k b_k)$.
+$\sigma = \mathrm{softmax}(\xi)$ and $\xi_k = \eta_k + A(a_k, b_k)$.
 
 Besides the probability to belong to each of the K-components is
 
@@ -212,10 +212,10 @@ falls withing the rescaled interval :math:`Z = \frac{X - r}{\sqrt{v}} = [z_\min,
 
 with $\Phi$ the Normal cumulative distribution function.
 
-It is equal to the probabilty $p_X(rv)$ that the Normal
+It is equal to the probabilty $p_X(r, v)$ that the Normal
 $x \sim \mathcal{N}(r, v)$ falls within the $X$ interval:
 
-.. math:: p_X(rv)= \int_X dx \mathcal{N}(x | r, v) = p_Z
+.. math:: p_X(r, v)= \int_X dx \mathcal{N}(x | r, v) = p_Z
 
 $r_Z$ denotes the mean and $v_Z$ the variance of the standard Normal
 $z \sim \mathcal{N}(0,1)$ restricted to the  $Z$ interval:
@@ -236,7 +236,7 @@ $z \sim \mathcal{N}(0,1)$ restricted to the  $Z$ interval:
 The corresponding exponential family distribution is the truncated Normal
 
 .. math::
-    p(x|a,b) = \mathcal{N}_X(x|r,v) = \frac{1}{p_X(rv)} 1_X(x) \mathcal{N}(x|r,v)
+    p(x|a,b) = \mathcal{N}_X(x|r,v) = \frac{1}{p_X(r, v)} 1_X(x) \mathcal{N}(x|r,v)
 
 
 .. nbplot::

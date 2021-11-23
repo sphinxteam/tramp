@@ -40,7 +40,7 @@ The package is presented in [arXiv:2004.01571](https://arxiv.org/abs/2004.01571)
 To cite this work, please use:
 
 ```
-@misc{baker2021tramp,
+@misc{Baker2021TreeAMP,
   title={Tree-AMP: Compositional Inference with Tree Approximate Message Passing},
   author={Antoine Baker and Benjamin Aubin and Florent Krzakala and Lenka Zdeborová},
   year={2021},
