@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pymc3 as pm
 from time import time
-from sklearn.linear_model import LassoCV
+from sklearn.linear_model import Lasso, LassoCV
 from tramp.ensembles import GaussianEnsemble
 from tramp.priors import GaussBernoulliPrior
 from tramp.channels import GaussianChannel, LinearChannel
