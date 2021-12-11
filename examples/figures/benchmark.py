@@ -18,11 +18,12 @@ def compute_average():
         [pd.read_csv(csv_file) for csv_file in csv_files],
         ignore_index=True, sort=False
     )
-    funs = {col: "mean" for col in df.columns if col not in ["alpha", "algo"]}
-    funs["seed"] = "nunique"
-    df_avg = df.groupby(
-        ["algo", "alpha"], as_index=False
-    ).agg(funs).rename(columns={"seed": "n_seed"})
+    # add svd_time to EP
+    df["time"] = np.where(df["algo"]=="EP", df["time"]+df["svd_time"], df["time"])
+    funs = {
+        "time":"median", "n_iter":"median", "mse":"mean", "param_scikit":"mean"
+    }
+    df_avg = df.groupby(["algo", "alpha"], as_index=False).agg(funs)
     logging.info("Saving benchmark.csv")
     df_avg.to_csv("benchmark.csv", index=False)
 
