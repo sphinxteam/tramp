@@ -5,6 +5,7 @@ from ..utils.integration import gaussian_measure, gaussian_measure_2d
 from ..beliefs import truncated
 
 
+# TODO: ConstantRegionLikelihood (slope=0)
 class LinearRegionLikelihood(Likelihood):
     "Inference knowing z in [zmin, zmax] and x = x0 + slope*z"
 
@@ -57,7 +58,7 @@ class LinearRegionLikelihood(Likelihood):
             logZ = truncated.A(az, bz, self.zmin, self.zmax)
         else:
             z = (y - self.x0) / self.slope
-            logZ = -0.5*az*(z**2) + bz*z
+            logZ = -0.5*az*(z**2) + bz*z -np.log(self.slope)
         logZ = np.where(self.contains(y), logZ, -np.inf)
         return logZ
 
@@ -292,7 +293,7 @@ class HardTanhLikelihood(PiecewiseLinearLikelihood):
 
 class HardSigmoidLikelihood(PiecewiseLinearLikelihood):
     def __init__(self, y, y_name="y", isotropic=True):
-        l = 2.5
+        l = 3
         neg = dict(zmin=-np.inf, zmax=-l, slope=0, x0=0)
         mid = dict(zmin=-l, zmax=+l, slope=1/(2*l), x0=0.5)
         pos = dict(zmin=l, zmax=np.inf, slope=0, x0=1)

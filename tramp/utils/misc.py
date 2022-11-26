@@ -40,7 +40,7 @@ def hard_tanh(x):
 
 
 def hard_sigm(x):
-    return np.clip(0.5 + x / 5, 0, 1)
+    return np.clip(0.5 + x / 6, 0, 1)
 
 
 def symm_door(x, width):
