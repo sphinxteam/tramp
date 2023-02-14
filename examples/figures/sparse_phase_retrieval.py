@@ -50,11 +50,12 @@ def run_EP(alpha, rho, seed):
     model = glm_generative(
         N=2000, alpha=alpha, ensemble_type="gaussian",
         prior_type="gauss_bernoulli", output_type="abs",
-        prior_rho=rho, prior_mean=0
+        prior_rho=rho, prior_mean=0.01
     )
     scenario = BayesOptimalScenario(model, x_ids=["x"])
     scenario.setup(seed)
-    x_data = scenario.run_ep(max_iter=200, damping=0.2)
+    callback = EarlyStopping(wait_increase=10)
+    x_data = scenario.run_ep(max_iter=200, damping=0.3, callback=callback)
     x_pred = x_data["x"]["r"]
     mse = sign_symmetric_mse(x_pred, scenario.x_true["x"])
     return dict(source="EP", v=mse)
@@ -64,12 +65,13 @@ def run_SE(alpha, rho):
     # analytical linear channel (Marcenko Pastur)
     model = glm_state_evolution(
         alpha=alpha, prior_type="gauss_bernoulli", output_type="abs",
-        prior_rho=rho, prior_mean=0
+        prior_rho=rho, prior_mean=0.01
     )
     # SE : uninformed initialization
     initializer = CustomInit(a_init=[("x", "bwd", 0.1)])
+    callback = EarlyStopping(wait_increase=10)
     se = StateEvolution(model)
-    se.iterate(max_iter=200, initializer=initializer)
+    se.iterate(max_iter=200, initializer=initializer, callback=callback)
     x_data = se.get_variable_data(id="x")
     return dict(source="SE", v=x_data["v"])
 
@@ -78,12 +80,13 @@ def run_BO(alpha, rho):
     # analytical linear channel (Marcenko Pastur)
     model = glm_state_evolution(
         alpha=alpha, prior_type="gauss_bernoulli", output_type="abs",
-        prior_rho=rho, prior_mean=0
+        prior_rho=rho, prior_mean=0.01
     )
     # Bayes optimal : informed initialization
     initializer = CustomInit(a_init=[("x", "bwd", 10**3)])
+    callback = EarlyStopping(wait_increase=10)
     se = StateEvolution(model)
-    se.iterate(max_iter=200, initializer=initializer)
+    se.iterate(max_iter=200, initializer=initializer, callback=callback)
     x_data = se.get_variable_data(id="x")
     return dict(source="BO", v=x_data["v"])
 
