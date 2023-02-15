@@ -7,16 +7,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def norm(x):
+    return np.sqrt(np.mean(x**2))
+
+
 class Callback(ReprMixin):
     pass
-
-
-class PassCallback(Callback):
-    def __init__(self):
-        self.repr_init()
-
-    def __call__(self, algo,  i, max_iter):
-        pass
 
 
 class JoinCallback(Callback):
@@ -24,34 +20,19 @@ class JoinCallback(Callback):
         self.callbacks = callbacks
         self.repr_init(pad="\t")
 
-    def __call__(self, algo,  i, max_iter):
+    def __call__(self, algo,  i):
         stops = [
-            callback(algo,  i, max_iter) for callback in self.callbacks
+            callback(algo,  i) for callback in self.callbacks
         ]
         stop = any(stops)
         return stop
-
-
-class LogProgress(Callback):
-    def __init__(self, ids="all", every=1):
-        self.ids = ids
-        self.every = every
-        self.repr_init()
-
-    def __call__(self, algo,  i, max_iter):
-        if (i % self.every == 0):
-            variables_data = algo.get_variables_data(self.ids)
-            logger.info(f"iteration={i+1}/{max_iter}")
-            for variable_id, data in variables_data.items():
-                logger.info(f"id={variable_id} v={data['v']:.3f}")
-
 
 class TrackMessages(Callback):
     def __init__(self, keys=["a", "n_iter", "direction"]):
         self.keys = keys
         self.records = []
 
-    def __call__(self, algo,  i, max_iter):
+    def __call__(self, algo,  i):
         if (i == 0):
             self.records = []
         self.records += algo.get_edges_data(self.keys)
@@ -66,10 +47,11 @@ class TrackObjective(Callback):
         self.node_records = []
         self.model_records = []
 
-    def __call__(self, algo,  i, max_iter):
+    def __call__(self, algo,  i):
         if (i == 0):
-            self.records = []
-        algo.update_objective()
+            self.edge_records = []
+            self.node_records = []
+            self.model_records = []
         # model
         model_record = dict(A=algo.A_model, n_iter=algo.n_iter)
         self.model_records.append(model_record)
@@ -85,108 +67,91 @@ class TrackObjective(Callback):
         return edge_df, node_df, model_df
 
 
-class TrackEvolution(Callback):
-    def __init__(self, ids="all", every=1, verbose=False):
+class TrackVariance(Callback):
+    def __init__(self, ids="all"):
         self.ids = ids
-        self.every = every
         self.repr_init()
         self.records = []
-        self.verbose = verbose
 
-    def __call__(self, algo,  i, max_iter):
+    def __call__(self, algo,  i):
         if (i == 0):
             self.records = []
-        if (i % self.every == 0):
-            variables_data = algo.get_variables_data(self.ids)
-            for variable_id, data in variables_data.items():
-                record = dict(id=variable_id, v=data["v"], iter=i)
-                self.records.append(record)
-                if self.verbose:
-                    print(record)
+        variables_data = algo.get_variables_data(self.ids)
+        for variable_id, data in variables_data.items():
+            record = dict(id=variable_id, v=data["v"], iter=i)
+            self.records.append(record)
 
     def get_dataframe(self):
         return pd.DataFrame(self.records)
 
 
 class TrackEstimate(Callback):
-    def __init__(self, ids="all", every=1):
+    def __init__(self, ids="all"):
         self.ids = ids
-        self.every = every
         self.repr_init()
         self.records = []
 
-    def __call__(self, algo,  i, max_iter):
+    def __call__(self, algo,  i):
         if (i == 0):
             self.records = []
-        if (i % self.every == 0):
-            variables_data = algo.get_variables_data(self.ids)
-            for variable_id, data in variables_data.items():
-                record = dict(id=variable_id, r=data["r"], iter=i)
-                self.records.append(record)
+        variables_data = algo.get_variables_data(self.ids)
+        for variable_id, data in variables_data.items():
+            record = dict(id=variable_id, r=data["r"], iter=i)
+            self.records.append(record)
 
     def get_dataframe(self):
         return pd.DataFrame(self.records)
 
 
-class TrackErrors(Callback):
-    def __init__(self, true_values, metrics=["mse"], every=1, verbose=False):
+class TrackError(Callback):
+    def __init__(self, true_values, metrics=["mse"]):
         self.ids = true_values.keys()
         self.metrics = metrics
-        self.every = every
         self.repr_init()
         self.X_true = true_values
         self.errors = []
-        self.verbose = verbose
 
-    def __call__(self, algo,  i, max_iter):
+    def __call__(self, algo,  i):
         if (i == 0):
             self.errors = []
-        if (i % self.every == 0):
-            variables_data = algo.get_variables_data(self.ids)
-            X_pred = {
-                variable_id: data["r"]
-                for variable_id, data in variables_data.items()
-            }
-            errors = []
-            for id in self.ids:
-                error = dict(id=id, iter=i)
-                for metric in self.metrics:
-                    func = METRICS.get(metric)
-                    error[metric] = func(X_pred[id], self.X_true[id])
-                errors.append(error)
-            if self.verbose:
-                print(errors)
-            self.errors += errors
+        variables_data = algo.get_variables_data(self.ids)
+        X_pred = {
+            variable_id: data["r"]
+            for variable_id, data in variables_data.items()
+        }
+        errors = []
+        for id in self.ids:
+            error = dict(id=id, iter=i)
+            for metric in self.metrics:
+                func = METRICS.get(metric)
+                error[metric] = func(X_pred[id], self.X_true[id])
+            errors.append(error)
+        self.errors += errors
 
     def get_dataframe(self):
         return pd.DataFrame(self.errors)
 
 
 class TrackOverlaps(Callback):
-    def __init__(self, true_values, ids="all", every=1, verbose=False):
+    def __init__(self, true_values, ids="all"):
         self.ids = ids
-        self.every = every
         self.repr_init()
         self.X_true = true_values
         self.records = []
-        self.verbose = verbose
 
-    def __call__(self, algo,  i, max_iter):
+    def __call__(self, algo,  i):
         if (i == 0):
             self.records = []
-        if (i % self.every == 0):
-            variables_data = algo.get_variables_data(self.ids)
-            for variable_id, data in variables_data.items():
-                m = 1/self.X_true[variable_id].shape[0] * \
-                    (data['r'].T).dot(self.X_true[variable_id])
-                q = 1/self.X_true[variable_id].shape[0] * \
-                    (data['r'].T).dot(data['r'])
-                Q = 1/self.X_true[variable_id].shape[0] * \
-                    (self.X_true[variable_id].T).dot(self.X_true[variable_id])
-                record = dict(id=variable_id, m=m, q=q, Q=Q, iter=i)
-                self.records.append(record)
-                if self.verbose:
-                    print(record)
+        variables_data = algo.get_variables_data(self.ids)
+        for variable_id, data in variables_data.items():
+            m = 1/self.X_true[variable_id].shape[0] * \
+                (data['r'].T).dot(self.X_true[variable_id])
+            q = 1/self.X_true[variable_id].shape[0] * \
+                (data['r'].T).dot(data['r'])
+            Q = 1/self.X_true[variable_id].shape[0] * \
+                (self.X_true[variable_id].T).dot(self.X_true[variable_id])
+            record = dict(id=variable_id, m=m, q=q, Q=Q, iter=i)
+            self.records.append(record)
 
     def get_dataframe(self):
         return pd.DataFrame(self.records)
@@ -203,7 +168,7 @@ class EarlyStopping(Callback):
         self.repr_init()
         self.old_vs = None
 
-    def __call__(self, algo,  i, max_iter):
+    def __call__(self, algo,  i):
         if (i == 0):
             self.old_vs = None
         variables_data = algo.get_variables_data(self.ids)
@@ -243,20 +208,39 @@ class EarlyStopping(Callback):
         self.old_message_dag = algo.message_dag.copy()
 
 
-def norm(x):
-    return np.sqrt(np.mean(x**2))
+class TrackTolerance(Callback):
+    def __init__(self, ids="all"):
+        self.ids = ids
+        self.repr_init()
+        self.records = []
+        self.old = None
 
+    def __call__(self, algo,  i):
+        if (i == 0):
+            self.records = []
+            self.old = None
+        new = algo.get_variables_data(self.ids)
+        if self.old:
+            for x_id in new.keys():
+                new_r = new[x_id]["r"]
+                old_r = self.old[x_id]["r"]
+                tol = norm(new_r - old_r)/norm(new_r)
+                record = dict(id=x_id, tol=tol, iter=i)
+                self.records.append(record)
+        # for next iteration
+        self.old = new
+
+    def get_dataframe(self):
+        return pd.DataFrame(self.records)
 
 class EarlyStoppingEP(Callback):
-    def __init__(self, ids="all", tol=1e-6, wait_increase=5, max_increase=0.2):
+    def __init__(self, ids="all", tol=1e-6):
         self.ids = ids
         self.tol = tol
-        self.wait_increase = wait_increase
-        self.max_increase = max_increase
         self.repr_init()
         self.old_rs = None
 
-    def __call__(self, algo,  i, max_iter):
+    def __call__(self, algo,  i):
         if (i == 0):
             self.old_rs = None
         variables_data = algo.get_variables_data(self.ids)
@@ -271,15 +255,6 @@ class EarlyStoppingEP(Callback):
                     "early stopping all tolerances (on r) are "
                     f"below tol={self.tol:.2e}"
                 )
-                return True
-            increase = tols
-            if i > self.wait_increase and max(increase) > self.max_increase:
-                logger.info(
-                    f"increase={max(increase)} above "
-                    f"max_increase={self.max_increase:.2e}"
-                )
-                logger.info("restoring old message dag")
-                algo.reset_message_dag(self.old_message_dag)
                 return True
         # for next iteration
         self.old_rs = new_rs

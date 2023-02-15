@@ -21,7 +21,5 @@ class StateEvolution(MessagePassing):
     def node_objective(self, node, message):
         return node.free_energy(message)
 
-    def entropy(self, update=True):
-        if update:
-            self.update_objective()
+    def entropy(self):
         return -self.A_model

@@ -1,4 +1,4 @@
-from .callbacks import EarlyStopping
+from .callbacks import JoinCallback
 from .initial_conditions import ConstantInit
 from ..models import Model
 from ..base import Variable, Factor
@@ -67,123 +67,6 @@ class MessagePassing():
         self.variables = model.variables
         self.n_iter = 0
 
-    def configure_damping(self, damping):
-        """Configure damping options
-
-        Parameters
-        ----------
-        - damping: str 'adaptive', float or list
-            - str 'adaptive': adaptive damping
-            - float: global damping
-            - list of variable.id, direction, damping tuples
-            Factor-to-variable edges into `variable.id` and given `direction`
-            will be damped with `damping`.
-        """
-        if not damping:
-            self.damping = False
-            logger.info("no damping")
-            return
-        self.damping = True
-        self.adaptive_damping = (damping == "adaptive")
-        if self.adaptive_damping:
-            logger.info("adaptive damping activated")
-            return
-        if not (isinstance(damping, float) or isinstance(damping, list)):
-            raise ValueError("damping must be 'adaptive', float or list")
-        if isinstance(damping, float):
-            x_ids = [variable.id for variable in self.variables]
-            damping = [
-                (x_id, "fwd", damping) for x_id in x_ids
-            ] + [
-                (x_id, "bwd", damping) for x_id in x_ids
-            ]
-        for id, direction, damp in damping:
-            variable = find_variable_in_nodes(id, self.message_dag.nodes())
-            edges = self.message_dag.in_edges(variable, data=True)
-            for source, target, data in edges:
-                if data["direction"] == direction:
-                    data["damping"] = damp
-                    logger.info(info_arrow(source, target, data, ["damping"]))
-
-    def damp_message(self, message):
-        "Damp message in-place"
-        if not self.damping:
-            return
-        for source, target, data in message:
-            if self.adaptive_damping:
-                data_new = self.compute_adaptive_damping(source, target, data)
-            else:
-                data_new = self.compute_constant_damping(source, target, data)
-            data.update(data_new)
-
-    def compute_constant_damping(self, source, target, data):
-        damping = self.message_dag[source][target]["damping"]
-        if not damping:
-            return data
-        data_new = data.copy()
-        for key in self.message_keys:
-            old_value = self.message_dag[source][target][key]
-            data_new[key] = damping*old_value + (1 - damping)*data[key]
-        return data_new
-
-    def compute_dA(self, source, target, data):
-        if self.n_iter == 0:
-            return 0
-        variable = target if isinstance(target, Variable) else source
-        data_old = self.message_dag[source][target]
-        m_target_old = self.message_dag.in_edges(target, data=True)
-        m_edge_old = [
-            (source, target, self.message_dag[source][target]),
-            (target, source, self.message_dag[target][source])
-        ]
-        A_old_target = self.node_objective(target, m_target_old)
-        A_old_edge = self.node_objective(variable, m_edge_old)
-        A_old = A_old_target - A_old_edge
-        data_new = data
-        m_target_new = create_message(m_target_old, source, target, data_new)
-        m_edge_new = create_message(m_edge_old, source, target, data_new)
-        A_new_target = self.node_objective(target, m_target_new)
-        A_new_edge = self.node_objective(variable, m_edge_new)
-        A_new = A_new_target - A_new_edge
-        dA = A_new - A_old
-        return dA
-
-    def compute_adaptive_damping(self, source, target, data):
-        if self.n_iter == 0:
-            return data
-        variable = target if isinstance(target, Variable) else source
-        data_old = self.message_dag[source][target]
-        data_var = {
-            key: data[key] - data_old[key] for key in self.message_keys
-        }
-        m_target_old = self.message_dag.in_edges(target, data=True)
-        m_edge_old = [
-            (source, target, self.message_dag[source][target]),
-            (target, source, self.message_dag[target][source])
-        ]
-        A_old_target = self.node_objective(target, m_target_old)
-        A_old_edge = self.node_objective(variable, m_edge_old)
-        A_old = A_old_target - A_old_edge
-        data_new = data.copy()
-        n_max = 10
-        for n in range(n_max):
-            beta = 1 / 2**n
-            for key in self.message_keys:
-                data_new[key] = data_old[key] + beta*data_var[key]
-            m_target_new = create_message(m_target_old, source, target, data_new)
-            m_edge_new = create_message(m_edge_old, source, target, data_new)
-            A_new_target = self.node_objective(target, m_target_new)
-            A_new_edge = self.node_objective(variable, m_edge_new)
-            A_new = A_new_target - A_new_edge
-            dA = A_new - A_old
-            if dA >= 0:
-                data_new.update(dA=dA, beta=beta)
-                return data_new
-        # if damping wasn't enough, return old value
-        data_new = data_old.copy()
-        data_new.update(dA=0, beta=0)
-        return data_new
-
     def check_message(self, new_message, old_message):
         "Raise error on nan values"
         for source, target, data in new_message:
@@ -212,12 +95,10 @@ class MessagePassing():
         message_dag = nx.DiGraph()
         message_dag.add_nodes_from(self.model_dag.nodes(data=True))
         message_dag.add_edges_from(
-            self.model_dag.edges(data=True), direction="fwd",
-            damping=None, n_iter=0
+            self.model_dag.edges(data=True), direction="fwd", n_iter=0
         )
         message_dag.add_edges_from(
-            self.model_dag.reverse().edges(data=True), direction="bwd",
-            damping=None, n_iter=0
+            self.model_dag.reverse().edges(data=True), direction="bwd", n_iter=0
         )
         for source, target, data in message_dag.edges(data=True):
             variable = source if isinstance(source, Variable) else target
@@ -237,13 +118,19 @@ class MessagePassing():
             node for node in message_dag.nodes()
             if isinstance(node, Variable)
         ]
+        self.compute_objective()
+
+    def damp_message(self, message):
+        "Damp message in-place"
+        for source, target, data in message:
+            for key in self.message_keys:
+                old_value = self.message_dag[source][target][key]
+                data[key] = self.damping*old_value + (1 - self.damping)*data[key]    
 
     def update_message(self, new_message):
         for source, target, new_data in new_message:
             n_iter = self.message_dag[source][target]["n_iter"]
             new_data.update(n_iter=n_iter + 1)
-            if self.update_dA:
-                new_data["dA"] = self.compute_dA(source, target, new_data)
             self.message_dag[source][target].update(new_data)
 
     def forward_message(self):
@@ -304,6 +191,7 @@ class MessagePassing():
         raise ValueError(f"id={id} not in variables")
 
     def update_objective(self):
+        "Computes A on each node (variable/factor) and edge"
         for node in self.forward_ordering:
             message = self.message_dag.in_edges(node, data=True)
             A = self.node_objective(node, message)
@@ -318,6 +206,9 @@ class MessagePassing():
                 A = self.node_objective(variable, message)
                 self.message_dag[source][target].update(A=A)
                 self.message_dag[target][source].update(A=A)
+
+    def compute_objective(self):
+        "Computes A for the model = A_nodes - A_edges"
         A_nodes = sum(
             data["A"] for node, data in self.message_dag.nodes(data=True)
         )
@@ -327,29 +218,27 @@ class MessagePassing():
         )
         self.A_model = A_nodes - A_edges
 
-    def iterate(self, max_iter=200,
-                callback=None, initializer=None, damping=None,
-                warm_start=False, update_dA=False):
-        initializer = initializer or ConstantInit(a=0, b=0)
+    def iterate(self, max_iter=200, callback=None, initializer=None, damping=0):
+        # handle arguments
         callback = callback or self.default_stopping
-        if warm_start:
-            if not hasattr(self, "message_dag"):
-                raise ValueError("message dag was never initialized")
-            logger.info(f"warm start with n_iter={self.n_iter} no initialization")
-        else:
-            logger.info(f"init message dag with {initializer}")
-            self.init_message_dag(initializer)
-            self.n_iter = 0
-        self.configure_damping(damping)
-        self.update_dA = update_dA
+        if isinstance(callback, list):
+            callback = JoinCallback(callback)
+        initializer = initializer or ConstantInit(a=0, b=0)
+        logger.info(f"init message dag with {initializer}")
+        self.init_message_dag(initializer)
+        self.n_iter = 0
+        self.damping = damping
+        # main loop
         for i in range(max_iter):
             # forward, backward, update pass
             self.forward_message()
             self.backward_message()
             self.update_variables()
+            self.update_objective()
+            self.compute_objective()
             # callbacks
             self.n_iter += 1
-            stop = callback(self, i, max_iter)
+            stop = callback(self, i)
             if stop:
                 logger.info(f"terminated after n_iter={self.n_iter} iterations")
                 return

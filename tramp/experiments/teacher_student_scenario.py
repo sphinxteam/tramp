@@ -1,6 +1,6 @@
 from ..algos.metrics import METRICS
 from ..models import Model
-from ..algos import TrackErrors, TrackEvolution, EarlyStopping, JoinCallback
+from ..algos import TrackError, TrackVariance, EarlyStopping, Callback, JoinCallback
 from ..algos import ExpectationPropagation, StateEvolution
 import pandas as pd
 import logging
@@ -96,12 +96,15 @@ class TeacherStudentScenario():
         return x_data
 
     def ep_convergence(self, metrics, **algo_kwargs):
-        # add TrackEvolution and TrackErrors to callback
-        track = TrackErrors(true_values=self.x_true, metrics=metrics)
-        evo = TrackEvolution(ids=self.x_ids)
+        # add TrackVariance and TrackError to callback
+        track = TrackError(true_values=self.x_true, metrics=metrics)
+        evo = TrackVariance(ids=self.x_ids)
         callbacks = [track, evo]
-        if "callback" in algo_kwargs:
-            callbacks.append(algo_kwargs["callback"])
+        callback = algo_kwargs.get("callback")
+        if isinstance(callback, Callback):
+            callbacks += [callback]
+        if isinstance(callback, list):
+            callbacks += callback
         algo_kwargs["callback"] = JoinCallback(callbacks)
         try:
             self.run_ep(**algo_kwargs)
@@ -115,11 +118,14 @@ class TeacherStudentScenario():
         return df
 
     def se_convergence(self, **algo_kwargs):
-        # add TrackEvolution to callback
-        evo = TrackEvolution(ids=self.x_ids)
+        # add TrackVariance to callback
+        evo = TrackVariance(ids=self.x_ids)
         callbacks = [evo]
-        if "callback" in algo_kwargs:
-            callbacks.append(algo_kwargs["callback"])
+        callback = algo_kwargs.get("callback")
+        if isinstance(callback, Callback):
+            callbacks += [callback]
+        if isinstance(callback, list):
+            callbacks += callback
         algo_kwargs["callback"] = JoinCallback(callbacks)
         try:
             self.run_se(**algo_kwargs)

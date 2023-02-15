@@ -21,12 +21,8 @@ class ExpectationPropagation(MessagePassing):
     def node_objective(self, node, message):
         return node.log_partition(message)
 
-    def log_evidence(self, update=True):
-        if update:
-            self.update_objective()
+    def log_evidence(self):
         return self.A_model
 
-    def surprisal(self, update=True):
-        if update:
-            self.update_objective()
+    def surprisal(self):
         return -self.A_model
