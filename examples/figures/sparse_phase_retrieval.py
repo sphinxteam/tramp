@@ -97,6 +97,8 @@ if __name__ == "__main__":
     df_EP = run_experiments(
         run_EP, alpha=np.linspace(0.03, 1.2, 40), rho=0.6, seed=np.arange(25)
     )
+    logging.info("Saving sparse_phase_retrieval_ep.csv")
+    df_EP.to_csv("sparse_phase_retrieval_ep.csv", index=False)
     df_EP = df_EP.groupby(["alpha", "source", "rho"], as_index=False).mean()
     del df_EP["seed"]
     df_SE = run_experiments(run_SE, alpha=np.linspace(0.01, 1.2, 120), rho=0.6)
