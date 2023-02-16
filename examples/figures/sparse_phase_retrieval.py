@@ -54,8 +54,8 @@ def run_EP(alpha, rho, seed):
     )
     scenario = BayesOptimalScenario(model, x_ids=["x"])
     scenario.setup(seed)
-    callback = EarlyStoppingEP(tol=1e-4)
-    x_data = scenario.run_ep(max_iter=200, damping=0.3, callback=callback)
+    callback = EarlyStoppingEP(tol=1e-6)
+    x_data = scenario.run_ep(max_iter=300, damping=0.3, callback=callback)
     x_pred = x_data["x"]["r"]
     mse = sign_symmetric_mse(x_pred, scenario.x_true["x"])
     return dict(source="EP", v=mse)
@@ -93,9 +93,9 @@ def run_BO(alpha, rho):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    # avg over 25 instances of EP
+    # avg over 100 instances of EP
     df_EP = run_experiments(
-        run_EP, alpha=np.linspace(0.03, 1.2, 40), rho=0.6, seed=np.arange(25)
+        run_EP, alpha=np.linspace(0.03, 1.2, 40), rho=0.6, seed=np.arange(100)
     )
     logging.info("Saving sparse_phase_retrieval_ep.csv")
     df_EP.to_csv("sparse_phase_retrieval_ep.csv", index=False)
