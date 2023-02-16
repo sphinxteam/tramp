@@ -9,8 +9,7 @@ def run_se(a0, alpha, prior_rho, prior_mean):
         alpha=alpha, prior_type="gauss_bernoulli", output_type="modulus",
         prior_rho=prior_rho, prior_mean=prior_mean
     )
-    a_init = [("x", "bwd", a0)]
-    initializer = CustomInit(a_init=a_init)
+    initializer = CustomInit(a_init={"x->f_0": a0})
     records = run_state_evolution(
         x_ids=["x"], model=model, max_iter=200, initializer=initializer
     )

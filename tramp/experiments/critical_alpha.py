@@ -36,7 +36,7 @@ def find_state_evolution_mse(id, a0, alpha, model_builder, **model_kwargs):
     id : str
         id of the variables to infer (signal)
     a0 : float
-        initial value of the a message id -> prior
+        initial value of the a message id -> f_0
     alpha : float
         measurement density
     model_builder : function or class
@@ -49,8 +49,7 @@ def find_state_evolution_mse(id, a0, alpha, model_builder, **model_kwargs):
         The variable mse according to state evolution
     """
     model = model_builder(alpha=alpha, **model_kwargs)
-    a_init = [(id, "bwd", a0)]
-    initializer = CustomInit(a_init=a_init)
+    initializer = CustomInit(a_init={f"{id}->f_0": a0})
     se = StateEvolution(model)
     se.iterate(max_iter=200, initializer=initializer)
     v = se.get_variable_data(id=id)["v"]

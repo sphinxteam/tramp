@@ -9,8 +9,7 @@ def run_se(a0, alpha, output_width, prior_p_pos):
         alpha=alpha, prior_type="binary", output_type="door",
         output_width=output_width, prior_p_pos=prior_p_pos
     )
-    a_init = [("x", "bwd", a0)]
-    initializer = CustomInit(a_init=a_init)
+    initializer = CustomInit(a_init={"x->f_0": a0})
     early = EarlyStopping(max_increase=0.1)
     records = run_state_evolution(
         x_ids=["x"], model=model,

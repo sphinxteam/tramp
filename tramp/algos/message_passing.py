@@ -107,7 +107,7 @@ class MessagePassing():
             data["shape"] = x_data.get("shape")
             for message_key in self.message_keys:
                 data[message_key] = initializer.init(
-                    message_key, data["shape"], variable.id, data["direction"]
+                    message_key, data["shape"], source.id, target.id
                 )
         self.message_dag = message_dag
         nx.freeze(self.message_dag)

@@ -21,7 +21,7 @@ def plot_discontinuous(ax, x, y, marker, label):
 def plot_mse_curves():
     # read data
     csv_file = __file__.replace(".py", ".csv")
-    df = pd.read_csv(csv_file).sort_values(by=["source","alpha"])
+    df = pd.read_csv(csv_file).sort_values(by=["source", "alpha"])
     # create figure
     fig, ax = plt.subplots(1, 1, figsize=(6, 6))
     df_ep = df[df.source == "EP"]
@@ -68,7 +68,7 @@ def run_SE(alpha, rho):
         prior_rho=rho, prior_mean=0.01
     )
     # SE : uninformed initialization
-    initializer = CustomInit(a_init=[("x", "bwd", 0.1)])
+    initializer = CustomInit(a_init={"x->f_0": 0.1})
     callback = EarlyStopping(wait_increase=10)
     se = StateEvolution(model)
     se.iterate(max_iter=200, initializer=initializer, callback=callback)
@@ -83,7 +83,7 @@ def run_BO(alpha, rho):
         prior_rho=rho, prior_mean=0.01
     )
     # Bayes optimal : informed initialization
-    initializer = CustomInit(a_init=[("x", "bwd", 10**3)])
+    initializer = CustomInit(a_init={"x->f_0": 10**3})
     callback = EarlyStopping(wait_increase=10)
     se = StateEvolution(model)
     se.iterate(max_iter=200, initializer=initializer, callback=callback)

@@ -80,7 +80,7 @@ def run_BO(alpha, rho):
     )
     # BO : informative initialization, scaled to avoid issues at low alpha
     power = 3 * np.exp(alpha)
-    initializer = CustomInit(a_init=[("x", "bwd", 10**power)])
+    initializer = CustomInit(a_init={"x->f_0": 10**power})
     se = StateEvolution(model)
     se.iterate(max_iter=200, initializer=initializer)
     x_data = se.get_variable_data(id="x")
