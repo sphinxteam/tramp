@@ -46,20 +46,22 @@ def plot_mse_curves():
     )
 
 
-def run_EP(alpha, rho, seed):
+def run_EP(alpha, rho):
     model = glm_generative(
         N=2000, alpha=alpha, ensemble_type="gaussian",
         prior_type="gauss_bernoulli", output_type="abs",
         prior_rho=rho, prior_mean=0.01
     )
     scenario = BayesOptimalScenario(model, x_ids=["x"])
-    scenario.setup(seed)
-    callback = EarlyStoppingEP(tol=1e-4)
-    x_data = scenario.run_ep(max_iter=200, damping=0.3, callback=callback)
-    x_pred = x_data["x"]["r"]
-    mse = sign_symmetric_mse(x_pred, scenario.x_true["x"])
-    return dict(source="EP", v=mse)
-
+    mses = []
+    # avg over 25 instances
+    for _ in range(25):
+        scenario.setup()
+        callback = EarlyStoppingEP(tol=1e-4)
+        x_data = scenario.run_ep(max_iter=200, damping=0.3, callback=callback)
+        mse = sign_symmetric_mse(x_data["x"]["r"], scenario.x_true["x"])
+        mses.append(mse)
+    return dict(source="EP", v=np.mean(mses))
 
 def run_SE(alpha, rho):
     # analytical linear channel (Marcenko Pastur)
@@ -93,14 +95,7 @@ def run_BO(alpha, rho):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    # avg over 100 instances of EP
-    df_EP = run_experiments(
-        run_EP, alpha=np.linspace(0.03, 1.2, 40), rho=0.6, seed=np.arange(100)
-    )
-    logging.info("Saving sparse_phase_retrieval_ep.csv")
-    df_EP.to_csv("sparse_phase_retrieval_ep.csv", index=False)
-    df_EP = df_EP.groupby(["alpha", "source", "rho"], as_index=False).mean()
-    del df_EP["seed"]
+    df_EP = run_experiments(run_EP, alpha=np.linspace(0.01, 1.2, 120), rho=0.6)
     df_SE = run_experiments(run_SE, alpha=np.linspace(0.01, 1.2, 120), rho=0.6)
     df_BO = run_experiments(run_BO, alpha=np.linspace(0.01, 1.2, 120), rho=0.6)
     # concat and save
