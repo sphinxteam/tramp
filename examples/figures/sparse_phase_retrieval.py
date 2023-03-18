@@ -97,7 +97,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     #df_EP = run_experiments(run_EP, alpha=np.linspace(0.02, 1.18, 30), rho=0.6)
     # EP computed by sparse_phase_retrieval_N.py
-    df_EP = pd.read_csv("sparse_phase_retrieval_N8000.csv")
+    df_EP = pd.read_csv("sparse_phase_retrieval_N10000.csv")
     df_SE = run_experiments(run_SE, alpha=np.linspace(0.01, 1.2, 120), rho=0.6)
     df_BO = run_experiments(run_BO, alpha=np.linspace(0.01, 1.2, 120), rho=0.6)
     # concat and save
