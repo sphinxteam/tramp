@@ -58,7 +58,7 @@ class LinearRegionLikelihood(Likelihood):
             logZ = truncated.A(az, bz, self.zmin, self.zmax)
         else:
             z = (y - self.x0) / self.slope
-            logZ = -0.5*az*(z**2) + bz*z -np.log(self.slope)
+            logZ = -0.5*az*(z**2) + bz*z -np.log(np.abs(self.slope))
         logZ = np.where(self.contains(y), logZ, -np.inf)
         return logZ
 
