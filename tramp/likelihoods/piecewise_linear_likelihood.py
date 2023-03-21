@@ -5,9 +5,8 @@ from ..utils.integration import gaussian_measure, gaussian_measure_2d
 from ..beliefs import truncated
 
 
-# TODO: ConstantRegionLikelihood (slope=0)
 class LinearRegionLikelihood(Likelihood):
-    "Inference knowing z in [zmin, zmax] and x = x0 + slope*z"
+    "Inference knowing z in [zmin, zmax] and y = x0 + slope*z"
 
     def __init__(self, zmin, zmax, x0, slope):
         assert zmin < zmax
@@ -28,130 +27,161 @@ class LinearRegionLikelihood(Likelihood):
         X = self.x(Z) * (self.zmin <= Z) * (Z < self.zmax)
         return X
 
+
+class ConstantRegionLikelihood(LinearRegionLikelihood):
+    "slope = 0"
+
     def backward_mean(self, az, bz, y):
-        if self.slope == 0:
-            rz = truncated.r(az, bz, self.zmin, self.zmax)
-        else:
-            rz = (y - self.x0) / self.slope
+        rz = truncated.r(az, bz, self.zmin, self.zmax)
         rz = np.where(self.contains(y), rz, 0)
         return rz
 
     def backward_variance(self, az, bz, y):
-        if self.slope == 0:
-            vz = truncated.v(az, bz, self.zmin, self.zmax)
-        else:
-            vz = 0
+        vz = truncated.v(az, bz, self.zmin, self.zmax)
         vz = np.where(self.contains(y), vz, 0)
         return vz
 
     def contains(self, y):
-        if self.slope == 0:
-            y_in_region = (y == self.x0)
-        else:
-            z = (y - self.x0) / self.slope
-            y_in_region = self.strict_indicator(z)
+        y_in_region = (y == self.x0)
         return y_in_region
 
     def log_partitions(self, az, bz, y):
         "Element-wise log_partition"
-        if self.slope == 0:
-            logZ = truncated.A(az, bz, self.zmin, self.zmax)
-        else:
-            z = (y - self.x0) / self.slope
-            logZ = -0.5*az*(z**2) + bz*z -np.log(np.abs(self.slope))
+        logZ = truncated.A(az, bz, self.zmin, self.zmax)
         logZ = np.where(self.contains(y), logZ, -np.inf)
         return logZ
 
     def b_measure(self, mz_hat, qz_hat, tz0_hat, f):
-        if self.slope == 0:
-            mz_star = mz_hat**2 / qz_hat
-            az_star = mz_star + tz0_hat
+        mz_star = mz_hat**2 / qz_hat
+        az_star = mz_star + tz0_hat
 
-            def p_times_f(bz):
-                bz_star = (mz_hat / qz_hat) * bz
-                p = truncated.p(az_star, bz_star, self.zmin, self.zmax)
-                return p * f(bz, self.x0)
-            tz0 = 1 / tz0_hat
-            sz_eff = np.sqrt(qz_hat + (mz_hat**2) * tz0)
-            mu = gaussian_measure(0, sz_eff, p_times_f)
-        else:
-            def integrand(z, xi_b):
-                """
-                The integrand must return 1_R(z)*f(bz, y) but f(bz, y) is slow to
-                compute. If z is outside R we directly return 0 to bypass the
-                computation of f(bz, y).
-                """
-                if not self.strict_indicator(z):
-                    return 0
-                bz = mz_hat * z + np.sqrt(qz_hat) * xi_b
-                y = self.x(z)
-                return f(bz, y)
-            tz0 = 1 / tz0_hat
-            mu = gaussian_measure_2d(0, np.sqrt(tz0), 0, 1, integrand)
+        def p_times_f(bz):
+            bz_star = (mz_hat / qz_hat) * bz
+            p = truncated.p(az_star, bz_star, self.zmin, self.zmax)
+            return p * f(bz, self.x0)
+        tz0 = 1 / tz0_hat
+        sz_eff = np.sqrt(qz_hat + (mz_hat**2) * tz0)
+        mu = gaussian_measure(0, sz_eff, p_times_f)
         return mu
 
     def bz_measure(self, mz_hat, qz_hat, tz0_hat, f):
-        if self.slope == 0:
-            mz_star = mz_hat**2 / qz_hat
-            az_star = mz_star + tz0_hat
 
-            def rp_times_f(bz):
-                bz_star = (mz_hat / qz_hat) * bz
-                r = truncated.r(az_star, bz_star, self.zmin, self.zmax)
-                p = truncated.p(az_star, bz_star, self.zmin, self.zmax)
-                return r * p * f(bz, self.x0)
-            tz0 = 1 / tz0_hat
-            sz_eff = np.sqrt(qz_hat + (mz_hat**2) * tz0)
-            mu = gaussian_measure(0, sz_eff, rp_times_f)
-        else:
-            def integrand(z, xi_b):
-                """
-                The integrand must return 1_R(z)*z*f(bz, y) but f(bz, y) is slow
-                to compute. If z is outside R we directly return 0 to bypass the
-                computation of f(bz, y).
-                """
-                if not self.strict_indicator(z):
-                    return 0
-                bz = mz_hat * z + np.sqrt(qz_hat) * xi_b
-                y = self.x(z)
-                return z*f(bz, y)
-            tz0 = 1 / tz0_hat
-            mu = gaussian_measure_2d(0, np.sqrt(tz0), 0, 1, integrand)
+        mz_star = mz_hat**2 / qz_hat
+        az_star = mz_star + tz0_hat
+
+        def rp_times_f(bz):
+            bz_star = (mz_hat / qz_hat) * bz
+            r = truncated.r(az_star, bz_star, self.zmin, self.zmax)
+            p = truncated.p(az_star, bz_star, self.zmin, self.zmax)
+            return r * p * f(bz, self.x0)
+        tz0 = 1 / tz0_hat
+        sz_eff = np.sqrt(qz_hat + (mz_hat**2) * tz0)
+        mu = gaussian_measure(0, sz_eff, rp_times_f)
         return mu
 
     def beliefs_measure(self, az, tau_z, f):
         mz_hat = az - 1 / tau_z
-        assert mz_hat > 0 , "az must be greater than 1/ tau_z"
+        assert mz_hat > 0, "az must be greater than 1/ tau_z"
 
-        if self.slope == 0:
-            def integrand(bz):
-                p = truncated.p(az, bz, self.zmin, self.zmax)
-                return p * f(bz, self.x0)
-            sz_eff = np.sqrt(mz_hat + (mz_hat**2) * tau_z)
-            mu = gaussian_measure(0, sz_eff, integrand)
-        else:
-            def integrand(z, xi_b):
-                """
-                The integrand must return 1_R(z)*f(bz, y) but f(bz, y) is slow to
-                compute. If z is outside R we directly return 0 to bypass the
-                computation of f(bz, y).
-                """
-                if not self.strict_indicator(z):
-                    return 0
-                bz = mz_hat * z + np.sqrt(mz_hat) * xi_b
-                y = self.x(z)
-                return f(bz, y)
-            mu = gaussian_measure_2d(0, np.sqrt(tau_z), 0, 1, integrand)
+        def integrand(bz):
+            p = truncated.p(az, bz, self.zmin, self.zmax)
+            return p * f(bz, self.x0)
+        sz_eff = np.sqrt(mz_hat + (mz_hat**2) * tau_z)
+        mu = gaussian_measure(0, sz_eff, integrand)
         return mu
 
     def measure(self, y, f):
         if not self.contains(y):
             return 0
-        if self.slope == 0:
-            return quad(f, self.zmin, self.zmax)[0]
-        else:
-            z = (y - self.x0) / self.slope
-            return f(z)
+        return quad(f, self.zmin, self.zmax)[0]
+
+
+class StrictLinearRegionLikelihood(LinearRegionLikelihood):
+    "slope != 0"
+
+    def backward_mean(self, az, bz, y):
+        rz = (y - self.x0) / self.slope
+        rz = np.where(self.contains(y), rz, 0)
+        return rz
+
+    def backward_variance(self, az, bz, y):
+        vz = 0
+        return vz
+
+    def contains(self, y):
+        z = (y - self.x0) / self.slope
+        y_in_region = self.strict_indicator(z)
+        return y_in_region
+
+    def log_partitions(self, az, bz, y):
+        "Element-wise log_partition"
+        z = (y - self.x0) / self.slope
+        logZ = -0.5*az*(z**2) + bz*z - np.log(np.abs(self.slope))
+        logZ = np.where(self.contains(y), logZ, -np.inf)
+        return logZ
+
+    def b_measure(self, mz_hat, qz_hat, tz0_hat, f):
+        def integrand(z, xi_b):
+            """
+            The integrand must return 1_R(z)*f(bz, y) but f(bz, y) is slow to
+            compute. If z is outside R we directly return 0 to bypass the
+            computation of f(bz, y).
+            """
+            if not self.strict_indicator(z):
+                return 0
+            bz = mz_hat * z + np.sqrt(qz_hat) * xi_b
+            y = self.x(z)
+            return f(bz, y)
+        tz0 = 1 / tz0_hat
+        mu = gaussian_measure_2d(0, np.sqrt(tz0), 0, 1, integrand)
+        return mu
+
+    def bz_measure(self, mz_hat, qz_hat, tz0_hat, f):
+        def integrand(z, xi_b):
+            """
+            The integrand must return 1_R(z)*z*f(bz, y) but f(bz, y) is slow
+            to compute. If z is outside R we directly return 0 to bypass the
+            computation of f(bz, y).
+            """
+            if not self.strict_indicator(z):
+                return 0
+            bz = mz_hat * z + np.sqrt(qz_hat) * xi_b
+            y = self.x(z)
+            return z*f(bz, y)
+        tz0 = 1 / tz0_hat
+        mu = gaussian_measure_2d(0, np.sqrt(tz0), 0, 1, integrand)
+        return mu
+
+    def beliefs_measure(self, az, tau_z, f):
+        mz_hat = az - 1 / tau_z
+        assert mz_hat > 0, "az must be greater than 1/ tau_z"
+
+        def integrand(z, xi_b):
+            """
+            The integrand must return 1_R(z)*f(bz, y) but f(bz, y) is slow to
+            compute. If z is outside R we directly return 0 to bypass the
+            computation of f(bz, y).
+            """
+            if not self.strict_indicator(z):
+                return 0
+            bz = mz_hat * z + np.sqrt(mz_hat) * xi_b
+            y = self.x(z)
+            return f(bz, y)
+        mu = gaussian_measure_2d(0, np.sqrt(tau_z), 0, 1, integrand)
+        return mu
+
+    def measure(self, y, f):
+        if not self.contains(y):
+            return 0
+        z = (y - self.x0) / self.slope
+        return f(z)
+
+
+def linear_region_likelhood(region):
+    if region["slope"] == 0:
+        return ConstantRegionLikelihood(**region)
+    else:
+        return StrictLinearRegionLikelihood(**region)
 
 
 class PiecewiseLinearLikelihood(Likelihood):
@@ -162,7 +192,7 @@ class PiecewiseLinearLikelihood(Likelihood):
         self.repr_init()
         self.name = name
         self.y = y
-        self.regions = [LinearRegionLikelihood(**region) for region in regions]
+        self.regions = [linear_region_likelhood(region) for region in regions]
         self.n_regions = len(regions)
 
     def sample(self, Z):
