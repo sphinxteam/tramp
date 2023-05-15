@@ -65,6 +65,7 @@ class MessagePassing():
         self.forward_ordering = model.forward_ordering
         self.backward_ordering = list(reversed(model.forward_ordering))
         self.variables = model.variables
+        self.factors = model.factors
         self.n_iter = 0
 
     def check_message(self, new_message, old_message):
@@ -117,6 +118,10 @@ class MessagePassing():
         self.variables = [
             node for node in message_dag.nodes()
             if isinstance(node, Variable)
+        ]
+        self.factors = [
+            node for node in message_dag.nodes()
+            if isinstance(node, Factor)
         ]
         self.compute_objective()
 
