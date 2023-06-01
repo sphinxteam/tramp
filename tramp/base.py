@@ -373,6 +373,32 @@ class Factor(ReprMixin):
         else:
             logZ = self.compute_log_partition(az, bz, ax, bx)
         return logZ
+    
+    def compute_moments(self, message):
+        z_source, x_source, az, bz, ax, bx = self._parse_message_ab(message)
+        # compute fwd and bwd posterior
+        if self.n_prev == 0:
+            rx, vx = self.compute_forward_posterior(ax, bx)
+        elif self.n_next == 0:
+            rz, vz = self.compute_backward_posterior(az, bz, self.y)
+        else:
+            rx, vx = self.compute_forward_posterior(az, bz, ax, bx)
+            rz, vz = self.compute_backward_posterior(az, bz, ax, bx)
+        # return list of (source, r, v) tuples
+        if self.n_next==0:
+            x_moments = []
+        elif self.n_next==1:
+            x_moments = [(x_source, rx, vx)]
+        else:
+            x_moments = [(source, r, v) for r, v, source in zip(rx, vx, x_source)]
+        if self.n_prev == 0:
+            z_moments = []
+        elif self.n_prev == 1:
+            z_moments = [(z_source, rz, vz)]
+        else:
+            z_moments = [(source, r, v) for r, v, source in zip(rz, vz, z_source)]
+        moments = x_moments + z_moments
+        return moments
 
     def forward_state_evolution(self, message):
         if self.n_next == 0:

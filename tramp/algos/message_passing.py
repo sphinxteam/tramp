@@ -195,8 +195,8 @@ class MessagePassing():
                 return self.message_dag.node[variable].copy()
         raise ValueError(f"id={id} not in variables")
 
-    def update_objective(self):
-        "Computes A on each node (variable/factor) and edge"
+    def compute_objective(self):
+        "Computes A for the model = A_nodes - A_edges"
         for node in self.forward_ordering:
             message = self.message_dag.in_edges(node, data=True)
             A = self.node_objective(node, message)
@@ -211,9 +211,6 @@ class MessagePassing():
                 A = self.node_objective(variable, message)
                 self.message_dag[source][target].update(A=A)
                 self.message_dag[target][source].update(A=A)
-
-    def compute_objective(self):
-        "Computes A for the model = A_nodes - A_edges"
         A_nodes = sum(
             data["A"] for node, data in self.message_dag.nodes(data=True)
         )
@@ -221,7 +218,7 @@ class MessagePassing():
             data["A"] for s, t, data in self.message_dag.edges(data=True)
             if data["direction"] == "fwd"  # avoid double counting !
         )
-        self.A_model = A_nodes - A_edges
+        return A_nodes - A_edges
 
     def iterate(self, max_iter=200, callback=None, initializer=None, damping=0):
         # handle arguments
@@ -239,8 +236,6 @@ class MessagePassing():
             self.forward_message()
             self.backward_message()
             self.update_variables()
-            self.update_objective()
-            self.compute_objective()
             # callbacks
             self.n_iter += 1
             stop = callback(self, i)

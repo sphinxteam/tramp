@@ -41,31 +41,59 @@ class TrackMessages(Callback):
         return pd.DataFrame(self.records)
 
 
+def is_fwd(record): return record["direction"]=="fwd"
+
 class TrackObjective(Callback):
-    def __init__(self):
+    def __init__(self, track_all=False):
+        self.track_all = track_all
+        self.model_records = []
         self.edge_records = []
         self.node_records = []
-        self.model_records = []
 
     def __call__(self, algo,  i):
         if (i == 0):
+            self.model_records = []
             self.edge_records = []
             self.node_records = []
-            self.model_records = []
-        # model
-        model_record = dict(A=algo.A_model, n_iter=algo.n_iter)
+        model_record = dict(A=algo.compute_objective(), n_iter=algo.n_iter)
         self.model_records.append(model_record)
-        # edges
-        self.edge_records += algo.get_edges_data(["A", "n_iter", "direction"])
-        # nodes
-        self.node_records += algo.get_nodes_data(["A", "n_iter"])
+        if self.track_all:
+            self.edge_records += [
+                record 
+                for record in algo.get_edges_data(["A", "n_iter", "direction"])
+                if record["direction"]=="fwd"
+            ]
+            self.node_records += algo.get_nodes_data(["A", "n_iter"])
 
     def get_dataframe(self):
+        model_df = pd.DataFrame(self.model_records)
         edge_df = pd.DataFrame(self.edge_records)
         node_df = pd.DataFrame(self.node_records)
-        model_df = pd.DataFrame(self.model_records)
-        return edge_df, node_df, model_df
+        return (edge_df, node_df, model_df) if self.track_all else model_df
 
+class TrackMCondition(Callback):
+    def __init__(self, track_all=False):
+        self.track_all = track_all
+        self.model_records = []
+        self.edge_records = []
+
+    def __call__(self, algo,  i):
+        if (i == 0):
+            self.model_records = []
+            self.edge_records = []
+        model_record = dict(m=algo.compute_m_condition(), n_iter=algo.n_iter)
+        self.model_records.append(model_record)
+        if self.track_all:
+            self.edge_records += [
+                record 
+                for record in algo.get_edges_data(["m", "n_iter", "direction"])
+                if record["direction"]=="fwd"
+            ]
+
+    def get_dataframe(self):
+        model_df = pd.DataFrame(self.model_records)
+        edge_df = pd.DataFrame(self.edge_records)
+        return (edge_df, model_df) if self.track_all else model_df
 
 class TrackVariance(Callback):
     def __init__(self, ids="all"):
