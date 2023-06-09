@@ -27,6 +27,48 @@ class JoinCallback(Callback):
         stop = any(stops)
         return stop
 
+
+class AdaptiveDamping(Callback):
+    """
+    Adapt damping = 1 - step at each iteration following: 
+    https://github.com/GAMPTeam/vampyre/blob/master/vampyre/solver/gamp.py
+
+    If the convergence criteria (m-condition) improves we increase the step:
+        step = min(1, step*step_inc)
+    else we decrease the step:
+        step = max(step_min, step*step_dec)
+    """
+
+    def __init__(self, step_min=1e-6, step_dec=0.5, step_inc=1.5):
+        self.step_min = step_min
+        self.step_dec = step_dec
+        self.step_inc = step_inc
+        self.repr_init()
+        self.step = self.old_m = None
+        self.records = []
+
+    def __call__(self, algo, i):
+        if (i == 0):
+            # initial value for the step
+            self.step = 1 - algo.damping
+        new_m = algo.compute_m_condition()
+        self.records.append(dict(iter=i, m=new_m, step=self.step))
+        if (i >= 1):
+            if new_m < self.old_m:
+                # increase step if m-condition better
+                self.step = min(1, self.step*self.step_inc)
+            else:
+                # decrease step if m-condition worse
+                self.step = max(self.step_min, self.step*self.step_dec)
+            # reset damping for the algorithm
+            algo.damping = 1 - self.step
+        # for next iteration
+        self.old_m = new_m
+
+    def get_dataframe(self):
+        return pd.DataFrame(self.records)
+
+
 class TrackMessages(Callback):
     def __init__(self, keys=["a", "n_iter", "direction"]):
         self.keys = keys
@@ -41,7 +83,8 @@ class TrackMessages(Callback):
         return pd.DataFrame(self.records)
 
 
-def is_fwd(record): return record["direction"]=="fwd"
+def is_fwd(record): return record["direction"] == "fwd"
+
 
 class TrackObjective(Callback):
     def __init__(self, track_all=False):
@@ -59,9 +102,9 @@ class TrackObjective(Callback):
         self.model_records.append(model_record)
         if self.track_all:
             self.edge_records += [
-                record 
+                record
                 for record in algo.get_edges_data(["A", "n_iter", "direction"])
-                if record["direction"]=="fwd"
+                if record["direction"] == "fwd"
             ]
             self.node_records += algo.get_nodes_data(["A", "n_iter"])
 
@@ -70,6 +113,7 @@ class TrackObjective(Callback):
         edge_df = pd.DataFrame(self.edge_records)
         node_df = pd.DataFrame(self.node_records)
         return (edge_df, node_df, model_df) if self.track_all else model_df
+
 
 class TrackMCondition(Callback):
     def __init__(self, track_all=False):
@@ -85,15 +129,16 @@ class TrackMCondition(Callback):
         self.model_records.append(model_record)
         if self.track_all:
             self.edge_records += [
-                record 
+                record
                 for record in algo.get_edges_data(["m", "n_iter", "direction"])
-                if record["direction"]=="fwd"
+                if record["direction"] == "fwd"
             ]
 
     def get_dataframe(self):
         model_df = pd.DataFrame(self.model_records)
         edge_df = pd.DataFrame(self.edge_records)
         return (edge_df, model_df) if self.track_all else model_df
+
 
 class TrackVariance(Callback):
     def __init__(self, ids="all"):
@@ -260,6 +305,7 @@ class TrackTolerance(Callback):
 
     def get_dataframe(self):
         return pd.DataFrame(self.records)
+
 
 class EarlyStoppingEP(Callback):
     def __init__(self, ids="all", tol=1e-6):
