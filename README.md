@@ -36,17 +36,18 @@ In both cases, the necessary requirements should be automatically installed.
 
 ## Citation
 
-The package is presented in [arXiv:2004.01571](https://arxiv.org/abs/2004.01571).
-To cite this work, please use:
+The package is presented in this [article](https://jmlr.org/papers/v24/20-695.html).
+To cite this work:
 
 ```
-@misc{Baker2021TreeAMP,
-  title={Tree-AMP: Compositional Inference with Tree Approximate Message Passing},
-  author={Antoine Baker and Benjamin Aubin and Florent Krzakala and Lenka Zdeborová},
-  year={2021},
-  eprint={2004.01571},
-  archivePrefix={arXiv},
-  primaryClass={stat.ML}
+@article{baker2023tree,
+  title={Tree-AMP: Compositional inference with tree approximate message passing},
+  author={Baker, Antoine and Krzakala, Florent and Aubin, Benjamin and Zdeborová, Lenka},
+  journal={Journal of Machine Learning Research},
+  volume={24},
+  number={57},
+  pages={1--89},
+  year={2023}
 }
 ```
 
